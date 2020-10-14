@@ -1,6 +1,6 @@
 
 function test() {
     console.log('test');
-    formatParallelData();
+    console.log(formatParallelData());
     formatSankeyData();
 }
