@@ -7,5 +7,5 @@
  * ]
  */
 function formatParallelData() {
-    return Object.entries(rawData).map(x => [x[0], x[1]['Exam 1'], x[1]['Exam 2'], x[1]['Exam 2'], x[1][' Final Exam']]);
+    return Object.entries(rawData).map(x => [x[0], x[1]['Exam 1'], x[1]['Exam 2'], x[1]['Exam 3'], x[1][' Final Exam']]);
 }
