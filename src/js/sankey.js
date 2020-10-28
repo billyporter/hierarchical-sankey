@@ -18,7 +18,7 @@
 const assessments = ["Exam 1", "Exam 2", "Exam 3", " Final Exam", "Calculated Grade"];
 const grades = ["A", "B", "C", "D", "F"];
 
-const width = 740;
+const width = 800;
 const height = 500;
 const svgBackground = "#eff";
 const svgBorder = "1px solid #333";
@@ -145,9 +145,8 @@ const svg = d3.select("#canvas")
                   .attr("height", height)
                   .style("background-color", svgBackground)
                   .style("border", svgBorder)
-                  .append("g")
-                  .attr("transform", `translate(${margin},${margin})`);
-                  const graphSize = [width - 2*margin, height - 2*margin];
+                  .append("g");
+
 const sankey = d3.sankey()
     .size([width, height])
     .nodeId(d => d.id)
