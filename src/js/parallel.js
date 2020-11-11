@@ -7,7 +7,9 @@
  * ]
  */
 function formatParallelData() {
-    return Object.entries(rawData).map(x => [x[0], x[1]['Exam 1'], x[1]['Exam 2'], x[1]['Exam 3'], x[1][' Final Exam']]);
+    result = [];
+    Object.entries(rawData).map(x => result.push({"id": x[0], "Exam 1": x[1]["Exam 1"], "Exam 2": x[1]["Exam 2"], "Exam 3": x[1]["Exam 3"], "Final Exam": x[1][" Final Exam"]}));
+    return result;
 }
 
 
@@ -27,9 +29,9 @@ var svg = d3.select("#parallel_viz")
 
 // Get formatted data
 let data = formatParallelData();
-
+console.log(data);
 // Define the dimensions of our plot
-dimensions = ["Exam 1", "Exam 2", "Exam 3", " Final Exam"];
+dimensions = ["Exam 1", "Exam 2", "Exam 3", "Final Exam"];
 
 // build linear scale for y axis
 var y = {}
@@ -46,9 +48,9 @@ x = d3.scalePoint()
     .padding(1)
     .domain(dimensions);
 
+// The path function take a row of the csv as input, and return x and y coordinates of the line to draw for this raw.
 function path(d) {
-    console.log(d)
-    return d3.line()(dimensions.map(function(p) { return [x(p), y[p]]; }));
+    return d3.line()(dimensions.map(function(p) { return [x(p), y[p](d[p])]; }));
 }
 
 svg
@@ -59,3 +61,19 @@ svg
     .style("fill", "none")
     .style("stroke", "#69b3a2")
     .style("opacity", 0.5)
+
+// Draw the axis:
+svg.selectAll("myAxis")
+    // For each dimension of the dataset I add a 'g' element:
+    .data(dimensions).enter()
+    .append("g")
+    // I translate this element to its right position on the x axis
+    .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
+    // And I build the axis with the call function
+    .each(function(d) { d3.select(this).call(d3.axisLeft().scale(y[d])); })
+    // Add axis title
+    .append("text")
+        .style("text-anchor", "middle")
+        .attr("y", -9)
+        .text(function(d) { return d; })
+        .style("fill", "black")
