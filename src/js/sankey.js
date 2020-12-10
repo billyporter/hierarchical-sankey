@@ -24,62 +24,62 @@ const svgBackground = "#eff";
 const svgBorder = "1px solid #333";
 const margin = 10;
 
-function gradeScale(score){
-    if(!score){
+function gradeScale(score) {
+    if (!score) {
         return "";
     }
-    if(score >= 90){
+    if (score >= 90) {
         return "A";
-    } else if (score >= 80){
+    } else if (score >= 80) {
         return "B";
-    } else if (score >= 70){
+    } else if (score >= 70) {
         return "C";
-    } else if (score >=60){
+    } else if (score >= 60) {
         return "D";
     } else {
         return "F";
     }
 }
 
-function createIds(){
+function createIds() {
     dict = {};
 
     let id = 0;
-    for ([index, assessment] of assessments.entries()){
-        for([jndex, grade] of grades.entries()){
-            dict[id++] = {[assessment.trim()]: grade};
+    for ([index, assessment] of assessments.entries()) {
+        for ([jndex, grade] of grades.entries()) {
+            dict[id++] = { [assessment.trim()]: grade };
         }
     }
 
     return dict;
 }
-function createGrades(){
+function createGrades() {
     dict = {};
 
     let id = 0;
-    for ([index, assessment] of assessments.entries()){
+    for ([index, assessment] of assessments.entries()) {
         dict[assessment.trim()] = {};
-        for([jndex, grade] of grades.entries()){
-            dict[assessment.trim()][grade] = {"id":id++, "count":0};
+        for ([jndex, grade] of grades.entries()) {
+            dict[assessment.trim()][grade] = { "id": id++, "count": 0 };
         }
     }
 
     return dict;
 }
 
-function createNodes(){
+function createNodes() {
     nodes = [];
-    
+
     let id = 0;
-    for ([index, assessment] of assessments.entries()){
-        for([jndex, grade] of grades.entries()){
-            nodes.push({"id": id++});
+    for ([index, assessment] of assessments.entries()) {
+        for ([jndex, grade] of grades.entries()) {
+            nodes.push({ "id": id++ });
         }
     }
     return nodes;
 }
 
-function createLinks(){
+function createLinks() {
     /* links = [
         {"source": {"Exam 1": "A"}, "target": {"Exam 2": "A"}, "value": 0}, 
         ...
@@ -88,21 +88,21 @@ function createLinks(){
     links = [];
 
     let assessment = 0;
-    for ([index, assessment1] of assessments.entries()){ 
+    for ([index, assessment1] of assessments.entries()) {
         let distance = 5;
-        for ([jndex, grade1] of grades.entries()){
-            for([kndex, grade2] of grades.entries()){
-                if (index < 4){
-                    links.push({"source": assessment, "target": assessment + distance + kndex, "value":0});
+        for ([jndex, grade1] of grades.entries()) {
+            for ([kndex, grade2] of grades.entries()) {
+                if (index < 4) {
+                    links.push({ "source": assessment, "target": assessment + distance + kndex, "value": 0 });
                 }
             }
             assessment++;
-            distance --; // looping through A, B, C, D, F moves the id closer to the next assessments id
+            distance--; // looping through A, B, C, D, F moves the id closer to the next assessments id
         }
     }
     return links;
 }
- 
+
 function formatSankeyData(data) {
 
     output = {
@@ -111,41 +111,41 @@ function formatSankeyData(data) {
         "nodes": createNodes(),
         "links": createLinks()
     }
-    for (student in data){
-        for ([index, assessment] of assessments.entries()){
+    for (student in data) {
+        for ([index, assessment] of assessments.entries()) {
             let grade = gradeScale(data[student][assessment]);
-            if(grade == ""){
+            if (grade == "") {
                 continue;
             }
             output["grades"][assessment.trim()][grade]["count"]++;
 
-            if (index < 4){
-                let nextGrade = gradeScale(data[student][assessments[index+1]]);
-                if(nextGrade == ""){
+            if (index < 4) {
+                let nextGrade = gradeScale(data[student][assessments[index + 1]]);
+                if (nextGrade == "") {
                     continue;
                 }
                 let source = output["grades"][assessment.trim()][grade]["id"];
-                let target = output["grades"][assessments[index+1].trim()][gradeScale(data[student][assessments[index+1]])]["id"];
-                for ([index, link] of output["links"].entries()){
-                    if (JSON.stringify(link["source"]) == source && JSON.stringify(link["target"]) == target){
+                let target = output["grades"][assessments[index + 1].trim()][gradeScale(data[student][assessments[index + 1]])]["id"];
+                for ([index, link] of output["links"].entries()) {
+                    if (JSON.stringify(link["source"]) == source && JSON.stringify(link["target"]) == target) {
                         output["links"][index]["value"]++;
                     }
                 }
-            }   
+            }
         }
     }
 
     return output;
 }
 
-const data = formatSankeyData(rawData);
-console.log(data);
+const sankeyData = formatSankeyData(rawData);
+console.log(sankeyData);
 const svg = d3.select("#canvas")
-                  .attr("width", width)
-                  .attr("height", height)
-                  .style("background-color", svgBackground)
-                  .style("border", svgBorder)
-                  .append("g");
+    .attr("width", width)
+    .attr("height", height)
+    .style("background-color", svgBackground)
+    .style("border", svgBorder)
+    .append("g");
 
 const sankey = d3.sankey()
     .size([width, height])
@@ -153,7 +153,7 @@ const sankey = d3.sankey()
     .nodeWidth(20)
     .nodePadding(10)
     .nodeAlign(d3.sankeyCenter);
-let graph = sankey(data);
+let graph = sankey(sankeyData);
 
 let graphlink = svg
     .append("g")
