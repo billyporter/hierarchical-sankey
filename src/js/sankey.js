@@ -15,6 +15,14 @@
  * (number of assignments) * (number of letters) = totalNodes
  * 
  */
+const assessments = ["Exam 1", "Exam 2", "Exam 3", " Final Exam", "Calculated Grade"];
+const grades = ["A", "B", "C", "D", "F"];
+
+const width = 800;
+const height = 500;
+const svgBackground = "#eff";
+const svgBorder = "1px solid #333";
+const margin = 10;
 
 function gradeScale(score){
     if(!score){
@@ -33,24 +41,63 @@ function gradeScale(score){
     }
 }
 
-function createLinks(assessments){
+function createIds(){
+    dict = {};
+
+    let id = 0;
+    for ([index, assessment] of assessments.entries()){
+        for([jndex, grade] of grades.entries()){
+            dict[id++] = {[assessment.trim()]: grade};
+        }
+    }
+
+    return dict;
+}
+function createGrades(){
+    dict = {};
+
+    let id = 0;
+    for ([index, assessment] of assessments.entries()){
+        dict[assessment.trim()] = {};
+        for([jndex, grade] of grades.entries()){
+            dict[assessment.trim()][grade] = {"id":id++, "count":0};
+        }
+    }
+
+    return dict;
+}
+
+function createNodes(){
+    nodes = [];
+    
+    let id = 0;
+    for ([index, assessment] of assessments.entries()){
+        for([jndex, grade] of grades.entries()){
+            nodes.push({"id": id++});
+        }
+    }
+    return nodes;
+}
+
+function createLinks(){
     /* links = [
         {"source": {"Exam 1": "A"}, "target": {"Exam 2": "A"}, "value": 0}, 
         ...
     ]
     */
-    links = []
+    links = [];
 
-    assessments = ["Exam 1", "Exam 2", "Exam 3", " Final Exam", "Calculated Grade"];
-    grades = ["A", "B", "C", "D", "F"]
-
-    for ([index, assessment] of assessments.entries()){
+    let assessment = 0;
+    for ([index, assessment1] of assessments.entries()){ 
+        let distance = 5;
         for ([jndex, grade1] of grades.entries()){
             for([kndex, grade2] of grades.entries()){
                 if (index < 4){
-                    links.push({"source": {[assessment.trim()]: grade1}, "target": {[assessments[index+1].trim()]: grade2}, "value":0});
+                    links.push({"source": assessment, "target": assessment + distance + kndex, "value":0});
                 }
             }
+            assessment++;
+            distance --; // looping through A, B, C, D, F moves the id closer to the next assessments id
         }
     }
     return links;
@@ -59,34 +106,26 @@ function createLinks(assessments){
 function formatSankeyData(data) {
 
     output = {
-        "nodes": {
-            "Exam 1": {},
-            "Exam 2": {},
-            "Exam 3": {},
-            "Final Exam": {},
-            "Calculated Grade": {} 
-        },
+        "ids": createIds(),
+        "grades": createGrades(),
+        "nodes": createNodes(),
         "links": createLinks()
     }
-
-    assessments = ["Exam 1", "Exam 2", "Exam 3", " Final Exam", "Calculated Grade"]
     for (student in data){
         for ([index, assessment] of assessments.entries()){
-            grade = gradeScale(data[student][assessment]);
+            let grade = gradeScale(data[student][assessment]);
             if(grade == ""){
                 continue;
             }
-            loc = output["nodes"][assessment.trim()][grade] 
-            if (loc){
-                loc ++;
-            } else {
-                loc = 1;
-            }
-            output["nodes"][assessment.trim()][grade] = loc;
+            output["grades"][assessment.trim()][grade]["count"]++;
 
             if (index < 4){
-                let source = JSON.stringify({[assessment.trim()]: grade});
-                let target = JSON.stringify({[assessments[index+1].trim()]: gradeScale(data[student][assessments[index+1]])});
+                let nextGrade = gradeScale(data[student][assessments[index+1]]);
+                if(nextGrade == ""){
+                    continue;
+                }
+                let source = output["grades"][assessment.trim()][grade]["id"];
+                let target = output["grades"][assessments[index+1].trim()][gradeScale(data[student][assessments[index+1]])]["id"];
                 for ([index, link] of output["links"].entries()){
                     if (JSON.stringify(link["source"]) == source && JSON.stringify(link["target"]) == target){
                         output["links"][index]["value"]++;
@@ -96,8 +135,51 @@ function formatSankeyData(data) {
         }
     }
 
-    console.log(output);
     return output;
 }
 
-formatSankeyData(rawData);
+const data = formatSankeyData(rawData);
+console.log(data);
+const svg = d3.select("#canvas")
+                  .attr("width", width)
+                  .attr("height", height)
+                  .style("background-color", svgBackground)
+                  .style("border", svgBorder)
+                  .append("g");
+
+const sankey = d3.sankey()
+    .size([width, height])
+    .nodeId(d => d.id)
+    .nodeWidth(20)
+    .nodePadding(10)
+    .nodeAlign(d3.sankeyCenter);
+let graph = sankey(data);
+
+let graphlink = svg
+    .append("g")
+    .classed("links", true)
+    .selectAll("path")
+    .data(graph.links)
+    .enter()
+    .append("path")
+    .classed("link", true)
+    .attr("d", d3.sankeyLinkHorizontal())
+    .attr("fill", "none")
+    .attr("stroke", "#606060")
+    .attr("stroke-width", d => d.width)
+    .attr("stoke-opacity", 0.5);
+
+let graphnode = svg
+    .append("g")
+    .classed("nodes", true)
+    .selectAll("rect")
+    .data(graph.nodes)
+    .enter()
+    .append("rect")
+    .classed("node", true)
+    .attr("x", d => d.x0)
+    .attr("y", d => d.y0)
+    .attr("width", d => d.x1 - d.x0)
+    .attr("height", d => d.y1 - d.y0)
+    .attr("fill", "blue")
+    .attr("opacity", 0.8);
