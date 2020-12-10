@@ -13,7 +13,7 @@ function formatParallelData() {
 }
 
 
-// // set the dimensions and margins of the graph
+// set the dimensions and margins of the graph
 // var margin = { top: 30, right: 10, bottom: 10, left: 0 },
 //     width = 500 - margin.left - margin.right,
 //     height = 400 - margin.top - margin.bottom;
@@ -52,6 +52,7 @@ x = d3.scalePoint()
 function path(d) {
     return d3.line()(dimensions.map(function (p) { return [x(p), y[p](d[p])]; }));
 }
+
 
 svg
     .selectAll("myPath")

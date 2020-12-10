@@ -15,7 +15,7 @@
  * (number of assignments) * (number of letters) = totalNodes
  * 
  */
-const assessments = ["Exam 1", "Exam 2", "Exam 3", " Final Exam", "Calculated Grade"];
+const assessments = ["Exam 1", "Exam 2", "Exam 3", " Final Exam"];
 const grades = ["A", "B", "C", "D", "F"];
 
 const width = 800;
@@ -50,7 +50,6 @@ function createIds() {
             dict[id++] = { [assessment.trim()]: grade };
         }
     }
-
     return dict;
 }
 function createGrades() {
@@ -63,7 +62,7 @@ function createGrades() {
             dict[assessment.trim()][grade] = { "id": id++, "count": 0 };
         }
     }
-
+    console.log(dict);
     return dict;
 }
 
@@ -87,19 +86,16 @@ function createLinks() {
     */
     links = [];
 
-    let assessment = 0;
-    for ([index, assessment1] of assessments.entries()) {
-        let distance = 5;
-        for ([jndex, grade1] of grades.entries()) {
-            for ([kndex, grade2] of grades.entries()) {
-                if (index < 4) {
-                    links.push({ "source": assessment, "target": assessment + distance + kndex, "value": 0 });
-                }
+    for (column = 0; column < assessments.length - 1; column++) {
+        for (first_row = 0; first_row < grades.length; first_row++) {
+            const currPosition = column * grades.length + first_row;
+            for (sec_row = 0; sec_row < grades.length; sec_row++) {
+                const targPosition = (column + 1) * grades.length + sec_row;
+                links.push({ "source": currPosition, "target": targPosition, "value": 0 });
             }
-            assessment++;
-            distance--; // looping through A, B, C, D, F moves the id closer to the next assessments id
         }
     }
+    console.log(links);
     return links;
 }
 
@@ -111,6 +107,7 @@ function formatSankeyData(data) {
         "nodes": createNodes(),
         "links": createLinks()
     }
+
     for (student in data) {
         for ([index, assessment] of assessments.entries()) {
             let grade = gradeScale(data[student][assessment]);
@@ -119,7 +116,7 @@ function formatSankeyData(data) {
             }
             output["grades"][assessment.trim()][grade]["count"]++;
 
-            if (index < 4) {
+            if (index < 3) {
                 let nextGrade = gradeScale(data[student][assessments[index + 1]]);
                 if (nextGrade == "") {
                     continue;
@@ -134,12 +131,12 @@ function formatSankeyData(data) {
             }
         }
     }
-
+    console.log(output);
     return output;
 }
 
 const sankeyData = formatSankeyData(rawData);
-console.log(sankeyData);
+// console.log(sankeyData);
 const svg = d3.select("#canvas")
     .attr("width", width)
     .attr("height", height)
