@@ -13,7 +13,7 @@ function formatParallelData() {
 }
 
 
-// set the dimensions and margins of the graph
+// // set the dimensions and margins of the graph
 // var margin = { top: 30, right: 10, bottom: 10, left: 0 },
 //     width = 500 - margin.left - margin.right,
 //     height = 400 - margin.top - margin.bottom;
@@ -27,6 +27,7 @@ function formatParallelData() {
 //     .attr("transform",
 //         "translate(" + margin.left + "," + margin.top + ")");
 
+
 // Get formatted data
 let pcData = formatParallelData();
 console.log(pcData);
@@ -35,24 +36,30 @@ dimensions = ["Exam 1", "Exam 2", "Exam 3", "Final Exam"];
 
 // build linear scale for y axis
 var y = {}
+// for (i in dimensions) {
+//     name = dimensions[i]
+//     y[name] = d3.scaleLinear()
+//         .domain(d3.extent(pcData, function (d) { return +d[name]; }))
+//         .range([height, 0])
+// }
 for (i in dimensions) {
     name = dimensions[i]
     y[name] = d3.scaleLinear()
-        .domain(d3.extent(pcData, function (d) { return +d[name]; }))
-        .range([height, 0])
+        .domain([0, 10, 60, 85, 90, 100])
+        .range([height, height * 0.8, height * 0.6, height * 0.4, height * 0.2, height * 0.0])
 }
+console.log(d3.extent(pcData, function (d) { return +d[name]; }));
 
 // build linear scale for x axis
 x = d3.scalePoint()
-    .range([0, width])
-    .padding(1)
+    .range([20, width])
+    .padding(0)
     .domain(dimensions);
 
 // The path function take a row of the csv as input, and return x and y coordinates of the line to draw for this raw.
 function path(d) {
     return d3.line()(dimensions.map(function (p) { return [x(p), y[p](d[p])]; }));
 }
-
 
 svg
     .selectAll("myPath")
