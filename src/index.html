@@ -5,11 +5,18 @@
         <meta charset="UTF-8" />
         <title>PerformanceVis</title>
     </head>
-    <body onload="test()">
-        <h1>Hello World!</h1>
-        <script src="js/data.js"></script>
-        <script src="js/script.js"></script>
-        <script src="js/sankey.js"></script>
-        <script src="js/parallel.js"></script>
+    <body>
+        <svg id="canvas"></svg>
     </body>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://unpkg.com/d3-array@1"></script>
+    <script src="https://unpkg.com/d3-collection@1"></script>
+    <script src="https://unpkg.com/d3-path@1"></script>
+    <script src="https://unpkg.com/d3-shape@1"></script>
+    <script src="https://unpkg.com/d3-sankey@0"></script>
+    <script src="js/data.js"></script>
+    <script src="js/util-sankey.js"></script>
+    <script src="js/util-pc.js"></script>
+    <script src="js/sankey.js"></script>
+    <script src="js/parallel.js"></script>
 </html>

@@ -1,103 +1,50 @@
-/**
- * Returns data of the following form:
- * {
- *      "nodes": [
- *          {"node": 0, "name": "A"},
- *          {"node": 1, "name": "B"},
- *          ...
- *      ]
- *      "links": [
- *          {"source": <FIRSTASSIGN_LETTER>, "target": <SECONDASSIGN_LETTEr>, "value": <NUMBER_OF_STUDENTS_FROM_FIRST_TO_SECOND}
- *      ]
- * }
- * 
- * IMPORTANT: Will need a letter grade for each assignment, so there should be
- * (number of assignments) * (number of letters) = totalNodes
- * 
- */
+const sankeyData = formatSankeyData(rawData);
 
-function gradeScale(score){
-    if(!score){
-        return "";
-    }
-    if(score >= 90){
-        return "A";
-    } else if (score >= 80){
-        return "B";
-    } else if (score >= 70){
-        return "C";
-    } else if (score >=60){
-        return "D";
-    } else {
-        return "F";
-    }
-}
+/* Sets up svg */
+const svg = d3.select("#canvas")
+    .attr("width", width)
+    .attr("height", height)
+    .style("background-color", svgBackground)
+    .style("border", svgBorder)
+    .append("g");
 
-function createLinks(assessments){
-    /* links = [
-        {"source": {"Exam 1": "A"}, "target": {"Exam 2": "A"}, "value": 0}, 
-        ...
-    ]
-    */
-    links = []
+/* Creates Sankey Object */
+const sankey = d3.sankey()
+    .size([width, height])
+    .nodeId(d => d.id)
+    .nodeWidth(nodeWdt)
+    .nodePadding(padding)
+    .nodeAlign(d3.sankeyCenter)
+    .nodeSort(null);
 
-    assessments = ["Exam 1", "Exam 2", "Exam 3", " Final Exam", "Calculated Grade"];
-    grades = ["A", "B", "C", "D", "F"]
+/* Draws Sankey on SVG */
+const graph = sankey(sankeyData);
 
-    for ([index, assessment] of assessments.entries()){
-        for ([jndex, grade1] of grades.entries()){
-            for([kndex, grade2] of grades.entries()){
-                if (index < 4){
-                    links.push({"source": {[assessment.trim()]: grade1}, "target": {[assessments[index+1].trim()]: grade2}, "value":0});
-                }
-            }
-        }
-    }
-    return links;
-}
- 
-function formatSankeyData(data) {
+const graphlink = svg
+    .append("g")
+    .classed("links", true)
+    .selectAll("path")
+    .data(graph.links)
+    .enter()
+    .append("path")
+    .classed("link", true)
+    .attr("d", d3.sankeyLinkHorizontal())
+    .attr("fill", "none")
+    .attr("stroke", "#606060")
+    .attr("stroke-width", d => d.width)
+    .attr("stoke-opacity", 0.5);
 
-    output = {
-        "nodes": {
-            "Exam 1": {},
-            "Exam 2": {},
-            "Exam 3": {},
-            "Final Exam": {},
-            "Calculated Grade": {} 
-        },
-        "links": createLinks()
-    }
-
-    assessments = ["Exam 1", "Exam 2", "Exam 3", " Final Exam", "Calculated Grade"]
-    for (student in data){
-        for ([index, assessment] of assessments.entries()){
-            grade = gradeScale(data[student][assessment]);
-            if(grade == ""){
-                continue;
-            }
-            loc = output["nodes"][assessment.trim()][grade] 
-            if (loc){
-                loc ++;
-            } else {
-                loc = 1;
-            }
-            output["nodes"][assessment.trim()][grade] = loc;
-
-            if (index < 4){
-                let source = JSON.stringify({[assessment.trim()]: grade});
-                let target = JSON.stringify({[assessments[index+1].trim()]: gradeScale(data[student][assessments[index+1]])});
-                for ([index, link] of output["links"].entries()){
-                    if (JSON.stringify(link["source"]) == source && JSON.stringify(link["target"]) == target){
-                        output["links"][index]["value"]++;
-                    }
-                }
-            }   
-        }
-    }
-
-    console.log(output);
-    return output;
-}
-
-formatSankeyData(rawData);
+const graphnode = svg
+    .append("g")
+    .classed("nodes", true)
+    .selectAll("rect")
+    .data(graph.nodes)
+    .enter()
+    .append("rect")
+    .classed("node", true)
+    .attr("x", d => d.x0)
+    .attr("y", d => d.y0)
+    .attr("width", d => d.x1 - d.x0)
+    .attr("height", d => d.y1 - d.y0)
+    .attr("fill", "blue")
+    .attr("opacity", 0.8);
