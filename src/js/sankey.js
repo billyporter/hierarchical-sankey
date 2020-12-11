@@ -23,6 +23,8 @@ const height = 500;
 const svgBackground = "#eff";
 const svgBorder = "1px solid #333";
 const margin = 10;
+const padding = 5;
+const nodeWdt = 20;
 
 function gradeScale(score) {
     if (!score) {
@@ -62,7 +64,6 @@ function createGrades() {
             dict[assessment.trim()][grade] = { "id": id++, "count": 0 };
         }
     }
-    console.log(dict);
     return dict;
 }
 
@@ -95,7 +96,6 @@ function createLinks() {
             }
         }
     }
-    console.log(links);
     return links;
 }
 
@@ -136,7 +136,6 @@ function formatSankeyData(data) {
 }
 
 const sankeyData = formatSankeyData(rawData);
-// console.log(sankeyData);
 const svg = d3.select("#canvas")
     .attr("width", width)
     .attr("height", height)
@@ -147,8 +146,8 @@ const svg = d3.select("#canvas")
 const sankey = d3.sankey()
     .size([width, height])
     .nodeId(d => d.id)
-    .nodeWidth(20)
-    .nodePadding(10)
+    .nodeWidth(nodeWdt)
+    .nodePadding(padding)
     .nodeAlign(d3.sankeyCenter);
 let graph = sankey(sankeyData);
 

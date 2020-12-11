@@ -12,43 +12,20 @@ function formatParallelData() {
     return result;
 }
 
-
-// // set the dimensions and margins of the graph
-// var margin = { top: 30, right: 10, bottom: 10, left: 0 },
-//     width = 500 - margin.left - margin.right,
-//     height = 400 - margin.top - margin.bottom;
-
-// // append the svg object to the body of the page
-// var svg = d3.select("#parallel_viz")
-//     .append("svg")
-//     .attr("width", width + margin.left + margin.right)
-//     .attr("height", height + margin.top + margin.bottom)
-//     .append("g")
-//     .attr("transform",
-//         "translate(" + margin.left + "," + margin.top + ")");
-
-
 // Get formatted data
 let pcData = formatParallelData();
-console.log(pcData);
 // Define the dimensions of our plot
 dimensions = ["Exam 1", "Exam 2", "Exam 3", "Final Exam"];
 
 // build linear scale for y axis
 var y = {}
-// for (i in dimensions) {
-//     name = dimensions[i]
-//     y[name] = d3.scaleLinear()
-//         .domain(d3.extent(pcData, function (d) { return +d[name]; }))
-//         .range([height, 0])
-// }
 for (i in dimensions) {
     name = dimensions[i]
+    const scaleyWaley = examToScale(name, sankeyData, height, padding);
     y[name] = d3.scaleLinear()
-        .domain([0, 10, 60, 85, 90, 100])
-        .range([height, height * 0.8, height * 0.6, height * 0.4, height * 0.2, height * 0.0])
+        .domain([0, 59.9, 60, 69.9, 70, 79.9, 80, 89.9, 90, 100])
+        .range(scaleyWaley)
 }
-console.log(d3.extent(pcData, function (d) { return +d[name]; }));
 
 // build linear scale for x axis
 x = d3.scalePoint()
@@ -61,6 +38,8 @@ function path(d) {
     return d3.line()(dimensions.map(function (p) { return [x(p), y[p](d[p])]; }));
 }
 
+woody();
+
 svg
     .selectAll("myPath")
     .data(pcData)
@@ -68,12 +47,13 @@ svg
     .attr("d", path)
     .style("fill", "none")
     .style("stroke", "#69b3a2")
-    .style("opacity", 0.5)
+    .style("opacity", 0.25)
 
 // Draw the axis:
 svg.selectAll("myAxis")
     // For each dimension of the dataset I add a 'g' element:
     .data(dimensions).enter()
+    .hideAxis(["col1"])
     .append("g")
     // I translate this element to its right position on the x axis
     .attr("transform", function (d) { return "translate(" + x(d) + ")"; })
