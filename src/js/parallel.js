@@ -1,24 +1,8 @@
-/**
- * Returns an object of the following form:
- * [
- *      [ id, exam1, exam2, exam3, finalExam ],
- *      ...,
- *      [ id, exam1, exam2, exam3, finalExam ]
- * ]
- */
-function formatParallelData() {
-    result = [];
-    Object.entries(rawData).map(x => result.push({ "id": x[0], "Exam 1": x[1]["Exam 1"], "Exam 2": x[1]["Exam 2"], "Exam 3": x[1]["Exam 3"], "Final Exam": x[1][" Final Exam"] }));
-    return result;
-}
+const pcData = formatParallelData();
 
-// Get formatted data
-let pcData = formatParallelData();
-// Define the dimensions of our plot
-dimensions = ["Exam 1", "Exam 2", "Exam 3", "Final Exam"];
-
-// build linear scale for y axis
+/* Builds the custom y-Scale and x-scale */
 var y = {}
+dimensions = ["Exam 1", "Exam 2", "Exam 3", "Final Exam"];
 for (i in dimensions) {
     name = dimensions[i]
     const scaleyWaley = nodeValueToScale(i, sankeyData);
@@ -26,20 +10,20 @@ for (i in dimensions) {
         .domain([0, 59.99, 60, 69.99, 70, 79.99, 80, 89.99, 90, 100])
         .range(scaleyWaley)
 }
-
-// build linear scale for x axis
 x = d3.scalePoint()
     .range([20, width])
     .padding(0)
     .domain(dimensions);
 
-// The path function take a row of the csv as input, and return x and y coordinates of the line to draw for this raw.
+/* 
+    The path function take a row of the csv as input
+    and return x and y coordinates of the line to draw for this raw.
+*/
 function path(d) {
     return d3.line()(dimensions.map(function (p) { return [x(p), y[p](d[p])]; }));
 }
 
-woody();
-
+/* Draw Plot */
 svg
     .selectAll("myPath")
     .data(pcData)
@@ -49,7 +33,7 @@ svg
     .style("stroke", "#69b3a2")
     .style("opacity", 0.25)
 
-// Draw the axis:
+/* Draw Axis */
 // svg.selectAll("myAxis")
 //     // For each dimension of the dataset I add a 'g' element:
 //     .data(dimensions).enter()
