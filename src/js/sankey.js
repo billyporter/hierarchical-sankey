@@ -23,7 +23,7 @@ const height = 500;
 const svgBackground = "#eff";
 const svgBorder = "1px solid #333";
 const margin = 10;
-const padding = 5;
+const padding = 10;
 const nodeWdt = 20;
 
 function gradeScale(score) {
@@ -148,7 +148,8 @@ const sankey = d3.sankey()
     .nodeId(d => d.id)
     .nodeWidth(nodeWdt)
     .nodePadding(padding)
-    .nodeAlign(d3.sankeyCenter);
+    .nodeAlign(d3.sankeyCenter)
+    .nodeSort(null);
 let graph = sankey(sankeyData);
 
 let graphlink = svg

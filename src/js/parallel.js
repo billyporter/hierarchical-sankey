@@ -21,9 +21,9 @@ dimensions = ["Exam 1", "Exam 2", "Exam 3", "Final Exam"];
 var y = {}
 for (i in dimensions) {
     name = dimensions[i]
-    const scaleyWaley = examToScale(name, sankeyData, height, padding);
+    const scaleyWaley = nodeValueToScale(i, sankeyData);
     y[name] = d3.scaleLinear()
-        .domain([0, 59.9, 60, 69.9, 70, 79.9, 80, 89.9, 90, 100])
+        .domain([0, 59.99, 60, 69.99, 70, 79.99, 80, 89.99, 90, 100])
         .range(scaleyWaley)
 }
 
@@ -50,18 +50,17 @@ svg
     .style("opacity", 0.25)
 
 // Draw the axis:
-svg.selectAll("myAxis")
-    // For each dimension of the dataset I add a 'g' element:
-    .data(dimensions).enter()
-    .hideAxis(["col1"])
-    .append("g")
-    // I translate this element to its right position on the x axis
-    .attr("transform", function (d) { return "translate(" + x(d) + ")"; })
-    // And I build the axis with the call function
-    .each(function (d) { d3.select(this).call(d3.axisLeft().scale(y[d])); })
-    // Add axis title
-    .append("text")
-    .style("text-anchor", "middle")
-    .attr("y", -9)
-    .text(function (d) { return d; })
-    .style("fill", "black")
+// svg.selectAll("myAxis")
+//     // For each dimension of the dataset I add a 'g' element:
+//     .data(dimensions).enter()
+//     .append("g")
+//     // I translate this element to its right position on the x axis
+//     .attr("transform", function (d) { return "translate(" + x(d) + ")"; })
+//     // And I build the axis with the call function
+//     .each(function (d) { d3.select(this).call(d3.axisLeft().scale(y[d])); })
+//     // Add axis title
+//     .append("text")
+//     .style("text-anchor", "middle")
+//     .attr("y", -9)
+//     .text(function (d) { return d; })
+//     .style("fill", "black")

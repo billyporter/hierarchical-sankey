@@ -2,6 +2,28 @@ function woody() {
     console.log('cozy\'s crazy fucked');
 }
 
+
+function nodeValueToScale(examIndex, sankeyData) {
+    const lowerBound = examIndex * 5;
+    const upperBound = lowerBound + 5;
+    const nodes = sankeyData['nodes'].slice(lowerBound, upperBound);
+    const scaleArray = [];
+    for (const node of nodes.reverse()) {
+        scaleArray.push(node['y1']);
+        scaleArray.push(node['y0']);
+    }
+    return scaleArray;
+}
+
+
+
+
+
+
+
+
+
+
 /*
  Ouput -> [height, height * x]
 */
@@ -32,7 +54,6 @@ function examToScale(examName, sankeyData, height, padding) {
             i += 1;
         }
     }
-    console.log(scaleArray);
     return scaleArray;
 
 }
