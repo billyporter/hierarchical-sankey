@@ -4,9 +4,9 @@ const pcData = formatParallelData();
 var y = {}
 dimensions = ["Exam 1", "Exam 2", "Exam 3", "Final Exam"];
 for (i in dimensions) {
-    name = dimensions[i]
+    namer = dimensions[i]
     const scaleyWaley = nodeValueToScale(i, sankeyData);
-    y[name] = d3.scaleLinear()
+    y[namer] = d3.scaleLinear()
         .domain([0, 59.99, 60, 69.99, 70, 79.99, 80, 89.99, 90, 100])
         .range(scaleyWaley)
 }

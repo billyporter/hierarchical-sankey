@@ -12,3 +12,11 @@ body {
     margin-left: auto;
     margin-right: auto;
 }
+
+.link {
+    stroke-opacity: 0.3;
+}
+
+.link:hover {
+    stroke-opacity: 0.6;
+}

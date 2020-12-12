@@ -17,7 +17,6 @@ const sankey = d3.sankey()
 
 /* Draws Sankey on SVG */
 const graph = sankey(sankeyData);
-
 /**
  * 
  * Links Section
@@ -27,19 +26,18 @@ const graph = sankey(sankeyData);
 /* Creates Link */
 const graphlink = svg
     .append("g")
-    .classed("links", true)
+    .attr("class", "links")
     .selectAll("path")
     .data(graph.links)
     .enter()
 
 /* Draws Link */
 graphlink.append("path")
-    .classed("link", true)
+    .attr("class", "link")
     .attr("d", d3.sankeyLinkHorizontal())
     .attr("fill", "none")
     .style("stroke-width", d => d.width)
     .style("stroke", d => sankeyColor(d.source.name))
-    .style("stroke-opacity", 0.4);
 
 
 
@@ -78,12 +76,18 @@ graphnode.append("title")
 /* Add in text */
 graphnode.append("text")
     .style("font-size", "16px")
-    .attr("x", -6)
-    .attr("y", function (d) { return (d.y1 - d.y0) / 2; })
+    .attr("x", function (d) { return d.x0 - 6; })
+    .attr("y", function (d) { return (d.y1 + d.y0) / 2; })
     .attr("dy", "0.35em")
     .attr("text-anchor", "end")
-    .text(function (d) {
-        var t = d.name;
-        t = t[t.length - 1];
-        return t;
-    })
+    .text(function (d) { return d.name; })
+    .filter(function (d) { return d.x0 < width / 2; })
+    .attr("x", function (d) { return d.x1 + 6; })
+    .attr("text-anchor", "start");
+
+
+/* Add hover behvaior for sankey */
+const linksArray = document.getElementsByClassName("link");
+for (let i = 0; i < linksArray.length; i++) {
+    linksArray[i].addEventListener('mouseover', () => hoverBehavior(graph.links[i]), false);
+}

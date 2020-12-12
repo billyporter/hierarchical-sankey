@@ -90,13 +90,12 @@ function createGrades() {
  * [ {id: 0}, {id: 1}, ...]
  */
 function createNodes() {
-    colors = buildColors();
     nodes = [];
 
     let id = 0;
     for ([index, assessment] of assessments.entries()) {
         for ([jndex, grade] of grades.entries()) {
-            nodes.push({ "id": id++, "name": grade, "color": colors.get(grade) });
+            nodes.push({ "id": id++, "name": grade });
         }
     }
     return nodes;
@@ -168,20 +167,8 @@ function formatSankeyData(data) {
 }
 
 
-/**
- * Colors:
- * A: Green: #2ecc71
- * B: Blue: #3498db
- * C: Yellow: #f1c40f
- * D: Orange: #f39c12
- * F: Red: #e74c3c
- */
-function buildColors() {
-    colorMap = new Map();
-    colorMap.set("A", "#4CAF50");
-    colorMap.set("B", "#2196F3");
-    colorMap.set("C", "#FFEB3B");
-    colorMap.set("D", "#FF9800");
-    colorMap.set("F", "#F44336");
-    return colorMap;
+function hoverBehavior(i) {
+    console.log(i);
+    console.log(i.source.name);
+    console.log(i.target.name);
 }
