@@ -3,13 +3,13 @@
 /* Constants */
 const assessments = ["Exam 1", "Exam 2", "Exam 3", " Final Exam"];
 const grades = ["A", "B", "C", "D", "F"];
-const width = 800;
-const height = 500;
+const width = 700; //890;
+const height = 582; //740;
 const svgBackground = "#eff";
 const svgBorder = "1px solid #333";
 const margin = 10;
-const padding = 10;
-const nodeWdt = 20;
+const padding = 40;
+const nodeWdt = 36;
 
 /* Returns corresponding letter grade */
 function gradeScale(score) {
@@ -87,12 +87,13 @@ function createGrades() {
  * [ {id: 0}, {id: 1}, ...]
  */
 function createNodes() {
+    colors = buildColors();
     nodes = [];
 
     let id = 0;
     for ([index, assessment] of assessments.entries()) {
         for ([jndex, grade] of grades.entries()) {
-            nodes.push({ "id": id++ });
+            nodes.push({ "id": id++, "name": grade, "color": colors.get(grade) });
         }
     }
     return nodes;
@@ -161,4 +162,23 @@ function formatSankeyData(data) {
         }
     }
     return output;
+}
+
+
+/**
+ * Colors:
+ * A: Green: #2ecc71
+ * B: Blue: #3498db
+ * C: Yellow: #f1c40f
+ * D: Orange: #f39c12
+ * F: Red: #e74c3c
+ */
+function buildColors() {
+    colorMap = new Map();
+    colorMap.set("A", "#4CAF50");
+    colorMap.set("B", "#2196F3");
+    colorMap.set("C", "#FFEB3B");
+    colorMap.set("D", "#FF9800");
+    colorMap.set("F", "#F44336");
+    return colorMap;
 }

@@ -11,7 +11,7 @@ for (i in dimensions) {
         .range(scaleyWaley)
 }
 x = d3.scalePoint()
-    .range([20, width])
+    .range([nodeWdt, width])
     .padding(0)
     .domain(dimensions);
 
