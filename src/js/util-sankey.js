@@ -3,13 +3,16 @@
 /* Constants */
 const assessments = ["Exam 1", "Exam 2", "Exam 3", " Final Exam"];
 const grades = ["A", "B", "C", "D", "F"];
-const width = 800;
-const height = 500;
+const width = 700; //890;
+const height = 582; //740;
 const svgBackground = "#eff";
 const svgBorder = "1px solid #333";
 const margin = 10;
-const padding = 10;
-const nodeWdt = 20;
+const padding = 40;
+const nodeWdt = 36;
+const sankeyColor = d3.scaleOrdinal()
+    .domain(['A', 'B', 'C', 'D', 'F'])
+    .range(['#00ABA5', '#00A231', '#e2d000', '#E69200', '#DA1D02']);
 
 /* Returns corresponding letter grade */
 function gradeScale(score) {
@@ -92,7 +95,7 @@ function createNodes() {
     let id = 0;
     for ([index, assessment] of assessments.entries()) {
         for ([jndex, grade] of grades.entries()) {
-            nodes.push({ "id": id++ });
+            nodes.push({ "id": id++, "name": grade });
         }
     }
     return nodes;
@@ -161,4 +164,11 @@ function formatSankeyData(data) {
         }
     }
     return output;
+}
+
+
+function hoverBehavior(i) {
+    console.log(i);
+    console.log(i.source.name);
+    console.log(i.target.name);
 }

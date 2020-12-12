@@ -4,14 +4,14 @@ const pcData = formatParallelData();
 var y = {}
 dimensions = ["Exam 1", "Exam 2", "Exam 3", "Final Exam"];
 for (i in dimensions) {
-    name = dimensions[i]
+    namer = dimensions[i]
     const scaleyWaley = nodeValueToScale(i, sankeyData);
-    y[name] = d3.scaleLinear()
+    y[namer] = d3.scaleLinear()
         .domain([0, 59.99, 60, 69.99, 70, 79.99, 80, 89.99, 90, 100])
         .range(scaleyWaley)
 }
 x = d3.scalePoint()
-    .range([20, width])
+    .range([nodeWdt, width])
     .padding(0)
     .domain(dimensions);
 
@@ -23,15 +23,15 @@ function path(d) {
     return d3.line()(dimensions.map(function (p) { return [x(p), y[p](d[p])]; }));
 }
 
-/* Draw Plot */
-svg
-    .selectAll("myPath")
-    .data(pcData)
-    .enter().append("path")
-    .attr("d", path)
-    .style("fill", "none")
-    .style("stroke", "#69b3a2")
-    .style("opacity", 0.25)
+// /* Draw Plot */
+// svg
+//     .selectAll("myPath")
+//     .data(pcData)
+//     .enter().append("path")
+//     .attr("d", path)
+//     .style("fill", "none")
+//     .style("stroke", "#69b3a2")
+//     .style("opacity", 0.25)
 
 /* Draw Axis */
 // svg.selectAll("myAxis")
