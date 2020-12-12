@@ -25,7 +25,7 @@ function path(d) {
 /* Draws Plot */
 function drawPlot(data) {
     svg
-        .selectAll("myPath")
+        .selectAll("yPath")
         .data(data)
         .enter().append("path")
         .attr("d", path)
@@ -34,8 +34,6 @@ function drawPlot(data) {
         .style("stroke", "#69b3a2")
         .style("opacity", 0.25)
 }
-
-drawPlot(pcData);
 
 /* Draw Axis */
 // svg.selectAll("myAxis")
