@@ -38,6 +38,6 @@ function formatParallelData() {
 */
 const pcData = formatParallelData();
 function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAssessment) {
-    return pcData.filter( x => gradeScale(x[sourceAssessment]) === sourceGrade
-                            && gradeScale(x[targetAssessment]) === targetGrade );
+    return pcData.filter( x => gradeScale(x[sourceAssessment.trim()]) === sourceGrade
+                            && gradeScale(x[targetAssessment.trim()]) === targetGrade );
 }
