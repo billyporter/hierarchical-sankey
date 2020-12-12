@@ -1,4 +1,3 @@
-const pcData = formatParallelData();
 
 /* Builds the custom y-Scale and x-scale */
 var y = {}
@@ -23,15 +22,20 @@ function path(d) {
     return d3.line()(dimensions.map(function (p) { return [x(p), y[p](d[p])]; }));
 }
 
-// /* Draw Plot */
-// svg
-//     .selectAll("myPath")
-//     .data(pcData)
-//     .enter().append("path")
-//     .attr("d", path)
-//     .style("fill", "none")
-//     .style("stroke", "#69b3a2")
-//     .style("opacity", 0.25)
+/* Draws Plot */
+function drawPlot(data) {
+    svg
+        .selectAll("myPath")
+        .data(data)
+        .enter().append("path")
+        .attr("d", path)
+        .attr("class", "lines")
+        .style("fill", "none")
+        .style("stroke", "#69b3a2")
+        .style("opacity", 0.25)
+}
+
+drawPlot(pcData);
 
 /* Draw Axis */
 // svg.selectAll("myAxis")

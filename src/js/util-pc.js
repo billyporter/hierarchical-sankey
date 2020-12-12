@@ -30,3 +30,14 @@ function formatParallelData() {
         }));
     return result;
 }
+
+/*
+* Takes in source node ID, target node ID,
+* and returns list of corresponding datapoints
+* in same format as formatParallelData()
+*/
+const pcData = formatParallelData();
+function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAssessment) {
+    return pcData.filter( x => gradeScale(x[sourceAssessment]) === sourceGrade
+                            && gradeScale(x[targetAssessment]) === targetGrade );
+}
