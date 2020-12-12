@@ -95,7 +95,7 @@ function createNodes() {
     let id = 0;
     for ([index, assessment] of assessments.entries()) {
         for ([jndex, grade] of grades.entries()) {
-            nodes.push({ "id": id++, "name": grade, "assessment": assessment });
+            nodes.push({ "id": id++, "name": grade });
         }
     }
     return nodes;
@@ -168,9 +168,7 @@ function formatSankeyData(data) {
 
 
 function hoverBehavior(i) {
-    tructus = filterParallelData(i.source.name, i.target.name, i.source.assessment, i.target.assessment);
-    svg
-        .selectAll(".lines")
-        .remove();
-    drawPlot(tructus);
+    console.log(i);
+    console.log(i.source.name);
+    console.log(i.target.name);
 }

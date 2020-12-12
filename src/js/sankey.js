@@ -38,8 +38,6 @@ graphlink.append("path")
     .attr("fill", "none")
     .style("stroke-width", d => d.width)
     .style("stroke", d => sankeyColor(d.source.name))
-    .on("mouseover", (d, i) => hoverBehavior(i)) // show PC lines on hover
-    .on("mouseout", () => svg.selectAll(".lines").remove()) // clear PC lines when not hovering
 
 
 
@@ -86,3 +84,10 @@ graphnode.append("text")
     .filter(function (d) { return d.x0 < width / 2; })
     .attr("x", function (d) { return d.x1 + 6; })
     .attr("text-anchor", "start");
+
+
+/* Add hover behvaior for sankey */
+const linksArray = document.getElementsByClassName("link");
+for (let i = 0; i < linksArray.length; i++) {
+    linksArray[i].addEventListener('mouseover', () => hoverBehavior(graph.links[i]), false);
+}
