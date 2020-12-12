@@ -37,9 +37,11 @@ graphlink.append("path")
     .classed("link", true)
     .attr("d", d3.sankeyLinkHorizontal())
     .attr("fill", "none")
-    .attr("stroke", "#606060")
-    .attr("stroke-width", d => d.width)
-    .attr("stoke-opacity", 0.5);
+    .style("stroke-width", d => d.width)
+    .style("stroke", d => sankeyColor(d.source.name))
+    .style("stroke-opacity", 0.4);
+
+
 
 /**
  * 
@@ -60,21 +62,17 @@ graphnode.append("rect")
     .classed("node", true)
     .attr("x", d => d.x0)
     .attr("y", d => d.y0)
-    .attr("width", d => d.x1 - d.x0)
-    .attr("height", d => d.y1 - d.y0)
-    .attr("fill", (d) => {
-        return d.color;
-    })
+    .attr("width", d => (d.x1 - d.x0))
+    .attr("height", d => (d.y1 - d.y0))
+    .style("fill", (d) => (sankeyColor(d.name)))
     .attr("stroke", (d) => {
-        return d3.rgb(d.color).darker(2);
-    })
+        return d3.rgb(sankeyColor(d.name)).darker(0.6);
+    });
 
 
 /* Add in title */
 graphnode.append("title")
-    .text((d) => {
-        return d.name + "\n" + " Students";
-    });
+    .text((d) => d.name + "\n" + " Students");
 
 
 /* Add in text */
