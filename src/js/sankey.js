@@ -4,8 +4,6 @@ const sankeyData = formatSankeyData(rawData);
 const svg = d3.select("#canvas")
     .attr("width", width)
     .attr("height", height)
-    .style("background-color", svgBackground)
-    .style("border", svgBorder)
     .append("g");
 
 /* Creates Sankey Object */
