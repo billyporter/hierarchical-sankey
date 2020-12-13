@@ -179,7 +179,6 @@ function hoverBehavior(i) {
     const filteredReturn = filterParallelData(i.source.name, i.target.name, i.source.assessment, i.target.assessment);
     const filteredData = filteredReturn[0];
     const totalGroups = filteredReturn[1];
-    console.log(filteredData);
 
     /* Build colors */
     const colorArray = createColorMap(totalGroups);
@@ -189,6 +188,8 @@ function hoverBehavior(i) {
         d3.select(this).style("visibility", () => show.has(d['id']) ? "visible" : "hidden")
             .style("stroke", colorArray[d['group']]);
     });
+
+    buildLegend(colorArray, filteredReturn[2]);
 }
 
 function createColorMap(i) {
