@@ -23,17 +23,19 @@ function path(d) {
 }
 
 /* Draws Plot */
-function drawPlot(data) {
-    svg
-        .selectAll("yPath")
-        .data(data)
-        .enter().append("path")
-        .attr("d", path)
-        .attr("class", "lines")
-        .style("fill", "none")
-        .style("stroke", "#69b3a2")
-        .style("opacity", 0.25)
-}
+svg
+    .selectAll("yPath")
+    .data(pcData)
+    .enter().append("path")
+    .attr("d", path)
+    .attr("class", "lines")
+    .style("fill", "none")
+    .style("stroke", "#69b3a2")
+    .style("opacity", 0.25)
+    .style("visibility", d => {
+        console.log(d['id'], "=>", showLines.get(d['id']));
+        return showLines.get(d['id']) ? "visible" : "hidden";
+     })
 
 /* Draw Axis */
 // svg.selectAll("myAxis")

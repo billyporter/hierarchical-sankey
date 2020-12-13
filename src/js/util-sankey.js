@@ -168,9 +168,9 @@ function formatSankeyData(data) {
 
 
 function hoverBehavior(i) {
-    tructus = filterParallelData(i.source.name, i.target.name, i.source.assessment, i.target.assessment);
-    svg
-        .selectAll(".lines")
-        .remove();
-    drawPlot(tructus);
+    filteredData = filterParallelData(i.source.name, i.target.name, i.source.assessment, i.target.assessment);
+    for ( id of filteredData ) {
+        showLines.set(id, true);
+    }
+    console.log(showLines);
 }

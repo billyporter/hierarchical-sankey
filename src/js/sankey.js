@@ -39,7 +39,11 @@ graphlink.append("path")
     .style("stroke-width", d => d.width)
     .style("stroke", d => sankeyColor(d.source.name))
     .on("mouseover", (d, i) => hoverBehavior(i)) // show PC lines on hover
-    .on("mouseout", () => svg.selectAll(".lines").remove()) // clear PC lines when not hovering
+    // .on("mouseout", () => {
+    //     for(key in showLines){
+    //         showLines[key] = false;
+    //     }
+    // }) // clear PC lines when not hovering
 
 
 

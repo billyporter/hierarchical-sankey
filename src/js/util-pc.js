@@ -37,7 +37,9 @@ function formatParallelData() {
 * in same format as formatParallelData()
 */
 const pcData = formatParallelData();
+showLines = new Map(pcData.map(x => [x["id"], false])); // initialize map of id: False pairs (all lines should be hidden to start)
 function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAssessment) {
     return pcData.filter( x => gradeScale(x[sourceAssessment.trim()]) === sourceGrade
-                            && gradeScale(x[targetAssessment.trim()]) === targetGrade );
+                            && gradeScale(x[targetAssessment.trim()]) === targetGrade )
+                 .map(x => x['id']);
 }
