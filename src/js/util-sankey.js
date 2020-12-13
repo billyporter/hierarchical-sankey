@@ -5,6 +5,8 @@ const assessments = ["Exam 1", "Exam 2", "Exam 3", " Final Exam"];
 const grades = ["A", "B", "C", "D", "F"];
 const width = 700; //890;
 const height = 582; //740;
+const legendWidth = 200;
+const legendHeight = 400;
 const svgBackground = "#eff";
 const svgBorder = "1px solid #333";
 const margin = 10;
@@ -190,7 +192,7 @@ function hoverBehavior(i) {
 }
 
 function createColorMap(i) {
-    const priority = ["#311B92", "#880E4F", "#b71c1c", "#3E2723", "#004D40", "#BF360C", "#1A237E", "#AA00FF", "#E65100"];
+    const priority = ["#880E4F", "#311B92", "#b71c1c", "#3E2723", "#004D40", "#BF360C", "#1A237E", "#AA00FF", "#E65100"];
     for (let j = priority.length; j <= i; j++) {
         priority.push("#AA00FF");
     }
@@ -207,8 +209,8 @@ const sankeyData = formatSankeyData(rawData);
 
 /* Sets up svg */
 const svg = d3.select("#canvas")
-    .attr("width", width)
-    .attr("height", height)
+    .attr("width", width + legendWidth)
+    .attr("height", height + legendHeight)
     .append("g");
 
 /* Creates Sankey Object */
