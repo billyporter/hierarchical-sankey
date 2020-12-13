@@ -5,25 +5,25 @@
 
 function buildLegend(colorArray, rankedArray) {
 
-    const legendX = width + legendWidth / 2;
-    clearPrevLegend();
-    for (let i = 0; i < rankedArray.length && i < 8; i++) {
-        svg.append("circle")
-            .attr("cx", legendX)
-            .attr("cy", 130 + 30 * i)
-            .attr("r", 6)
-            .style("fill", colorArray[i])
-            .attr("class", "leg");
-        svg.append("text")
-            .attr("x", legendX + 30)
-            .attr("y", 130 + 30 * i)
-            .text(rankedArray[i][0] + " " + rankedArray[i][1])
-            .style("font-size", "15px")
-            .attr("alignment-baseline", "middle")
-            .attr("class", "leg");
-    }
-    // const barData = buildBarGraphData(rankedArray, colorArray);
-    // console.log(barData);
+    // const legendX = width + legendWidth / 2;
+    // clearPrevLegend();
+    // for (let i = 0; i < rankedArray.length && i < 8; i++) {
+    //     svg.append("circle")
+    //         .attr("cx", legendX)
+    //         .attr("cy", 130 + 30 * i)
+    //         .attr("r", 6)
+    //         .style("fill", colorArray[i])
+    //         .attr("class", "leg");
+    //     svg.append("text")
+    //         .attr("x", legendX + 30)
+    //         .attr("y", 130 + 30 * i)
+    //         .text(rankedArray[i][0] + " " + rankedArray[i][1])
+    //         .style("font-size", "15px")
+    //         .attr("alignment-baseline", "middle")
+    //         .attr("class", "leg");
+    // }
+    const barData = buildBarGraphData(rankedArray, colorArray);
+    console.log(barData);
 }
 
 function clearPrevLegend() {

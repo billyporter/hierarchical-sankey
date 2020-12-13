@@ -12,6 +12,15 @@ const graphlink = svg
     .data(graph.links)
     .enter()
 
+let nah = true
+document.addEventListener("click", function (event) {
+    const target = event.target;
+    if (!target.closest('.link')) {
+        isActive = false;
+        d3.selectAll(".lines").style("visibility", "hidden");
+    }
+})
+
 /* Draws Link */
 graphlink.append("path")
     .attr("class", "link")
