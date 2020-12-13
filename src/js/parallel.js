@@ -79,5 +79,6 @@ svg
     .attr("class", "lines")
     .style("fill", "none")
     .style("stroke", "#69b3a2")
-    .style("opacity", 0.25)
+    .style("stroke-width", "3")
+    .style("opacity", 0.6)
     .style("visibility", "hidden");

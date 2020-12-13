@@ -46,6 +46,7 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
     const newData = pcData.filter(x => gradeScale(x[sourceAssessment.trim()]) === sourceGrade
         && gradeScale(x[targetAssessment.trim()]) === targetGrade)
 
+
     /**
      * Generate Groups
      */
@@ -53,7 +54,7 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
     /* Switch from number to letter Grade */
     for (let line of newData) {
         for (let assessment of assessments) {
-            line[assessment.trim()] = gradeScale(line[assessment.trim()]);
+            line[assessment.trim() + ' letter'] = gradeScale(line[assessment.trim()]);
         }
     }
 
@@ -62,7 +63,7 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
     for (let line of newData) {
         let allExams = ''
         for (let assessment of assessments) {
-            allExams += line[assessment.trim()];
+            allExams += line[assessment.trim() + ' letter'];
         }
         line['concat'] = allExams;
         if (groupsMap.has(allExams)) {
@@ -95,5 +96,5 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
         line['group'] = rankedMap.get(line['concat']);
     }
 
-    return newData;
+    return [newData, i];
 }
