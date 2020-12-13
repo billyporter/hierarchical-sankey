@@ -19,6 +19,19 @@ graphlink.append("path")
     .attr("fill", "none")
     .style("stroke-width", d => d.width)
     .style("stroke", d => sankeyColor(d.source.name))
-    .on("mouseover", (d, i) => hoverBehavior(i)) // show PC lines on hover
-    .on("mouseout", () => d3.selectAll(".lines").style("visibility", "hidden"));
+    .on("mouseover", (d, i) => {
+        if (!isActive) {
+            hoverBehavior(i);
+        }
+    })
+    .on("click", (d, i) => {
+        isActive = true
+        activeLink = i.index;
+        hoverBehavior(i);
+    })
+    .on("mouseout", () => {
+        if (!isActive) {
+            d3.selectAll(".lines").style("visibility", "hidden");
+        }
+    });
 

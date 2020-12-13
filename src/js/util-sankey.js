@@ -12,6 +12,8 @@ const svgBorder = "1px solid #333";
 const margin = 10;
 const padding = 40;
 const nodeWdt = 36;
+let isActive = false;
+let activeLink = -1;
 // const sankeyColor = d3.scaleOrdinal()
 //     .domain(['A', 'B', 'C', 'D', 'F'])
 //     .range(['#00ABA5', '#00A231', '#e2d000', '#E69200', '#DA1D02']);
