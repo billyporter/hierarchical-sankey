@@ -38,7 +38,52 @@ function formatParallelData() {
 */
 const pcData = formatParallelData();
 const showLines = new Map(pcData.map(x => [x["id"], false])); // initialize map of id: False pairs (all lines should be hidden to start)
+
+
 function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAssessment) {
-    return pcData.filter(x => gradeScale(x[sourceAssessment.trim()]) === sourceGrade
-        && gradeScale(x[targetAssessment.trim()]) === targetGrade);
+
+    /* Filter lines */
+    const newData = pcData.filter(x => gradeScale(x[sourceAssessment.trim()]) === sourceGrade
+        && gradeScale(x[targetAssessment.trim()]) === targetGrade)
+
+    /**
+     * Generate Groups
+     */
+
+    /* Switch from number to letter Grade */
+    for (let line of newData) {
+        for (let assessment of assessments) {
+            line[assessment.trim()] = gradeScale(line[assessment.trim()]);
+        }
+    }
+
+    /* Get groups and their sizes */
+    let groupsMap = new Map();
+    for (line of newData) {
+        let allExams = ''
+        for (let assessment of assessments) {
+            allExams += line[assessment.trim()];
+        }
+        line['concat'] = allExams;
+        if (groupsMap.has(allExams)) {
+            groupsMap.set(allExams, groupsMap.get(allExams) + 1);
+        }
+        else {
+            groupsMap.set(allExams, 1);
+        }
+    }
+
+    /* Rank the groups */
+    let rankedMap = new Map();
+    let rankedArray = [];
+    for (let group of groupsMap) {
+        rankedArray.push(group);
+    }
+    let sortedArray = rankedArray.sort(function (a, b) {
+        return (a[1] < b[1]) ? 1 : -1;
+    })
+
+
+
+    return newData;
 }

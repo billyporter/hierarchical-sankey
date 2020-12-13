@@ -170,12 +170,14 @@ function formatSankeyData(data) {
 
 function hoverBehavior(i) {
     filteredData = filterParallelData(i.source.name, i.target.name, i.source.assessment, i.target.assessment);
-    // console.log(filteredData);
     show = new Set(filteredData.map(x => x['id']));
     d3.selectAll(".lines").each(function (d) {
         d3.select(this).style("visibility", () => show.has(d['id']) ? "visible" : "hidden");
     });
 }
+
+
+
 /**
  * Initial drawing of Sankey 
  **/
