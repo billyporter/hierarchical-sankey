@@ -34,14 +34,14 @@ graphnode.append("title")
 /* Add in text */
 graphnode.append("text")
     .style("font-size", "16px")
-    .attr("x", function (d) { return d.x0 - 6; })
+    .attr("x", function (d) { return d.x0 - 20; })
     .attr("y", function (d) { return (d.y1 + d.y0) / 2; })
     .attr("dy", "0.35em")
-    .attr("text-anchor", "end")
+    // .attr("text-anchor", "end")
     .text(function (d) { return d.name; })
-    .filter(function (d) { return d.x0 < width / 2; })
-    .attr("x", function (d) { return d.x1 + 6; })
-    .attr("text-anchor", "start");
+// .filter(function (d) { return d.x0 < width / 2; })
+// .attr("x", function (d) { return d.x1 + 6; })
+// .attr("text-anchor", "start");
 
 
 /**
@@ -82,3 +82,67 @@ svg
     .style("stroke-width", "2")
     .style("opacity", 0.6)
     .style("visibility", "hidden");
+
+
+/**
+ * Draws Axes
+ */
+
+/* Create Map for grades */
+const gradeMap = new Map();
+gradeMap.set('A', 90);
+gradeMap.set('B', 80);
+gradeMap.set('C', 70);
+gradeMap.set('D', 60);
+gradeMap.set('F', 0);
+
+/**
+ * Loop through nodes and draw axes
+ */
+svg.selectAll('.node').each(function (d, i) {
+    /* Variables */
+    const data = [];
+    let start = gradeMap.get(d['name']);
+    const end = start + 11;
+    let inc = 1;
+
+    /* Change number of points depending on size */
+    const size = d['y1'] - d['y0'];
+    if (size > 240) {
+        inc = 1;
+    }
+    else if (size > 110) {
+        inc = 2;
+    }
+    else if (size > 65) {
+        inc = 5;
+    }
+    else if (size > 35) {
+        inc = 10;
+    }
+    else {
+        start = end;
+    }
+
+    for (let i = start; i < end; i += inc) {
+        data.push(i);
+    }
+
+    /* Create point scale */
+    var scale = d3.scalePoint()
+        .domain(data)
+        .range([d["y1"], d["y0"]]);
+
+    /* Add scale to axis */
+    var y_axis = d3.axisRight()
+        .scale(scale);
+
+    /* Append to svg */
+    svg.append("g")
+        .attr("transform", "translate(" + d['x1'] + ", 0)")
+        .attr('class', 'axes')
+        .call(y_axis)
+        .style("visibility", "hidden");
+});
+
+

@@ -18,6 +18,7 @@ document.addEventListener("click", function (event) {
     if (!target.closest('.link')) {
         isActive = false;
         d3.selectAll(".lines").style("visibility", "hidden");
+        d3.selectAll(".axes").style("visibility", "hidden");
         clearPrevLegend();
     }
 })
@@ -32,16 +33,19 @@ graphlink.append("path")
     .on("mouseover", (d, i) => {
         if (!isActive) {
             hoverBehavior(i, false);
+            d3.selectAll(".axes").style("visibility", "visible");
         }
     })
     .on("click", (d, i) => {
         isActive = true
         activeLink = i.index;
         hoverBehavior(i, true);
+        d3.selectAll(".axes").style("visibility", "visible");
     })
     .on("mouseout", () => {
         if (!isActive) {
             d3.selectAll(".lines").style("visibility", "hidden");
+            d3.selectAll(".axes").style("visibility", "hidden");
         }
     });
 
