@@ -18,6 +18,7 @@ document.addEventListener("click", function (event) {
     if (!target.closest('.link')) {
         isActive = false;
         d3.selectAll(".lines").style("visibility", "hidden");
+        clearPrevLegend();
     }
 })
 
@@ -30,13 +31,13 @@ graphlink.append("path")
     .style("stroke", d => sankeyColor(d.source.name))
     .on("mouseover", (d, i) => {
         if (!isActive) {
-            hoverBehavior(i);
+            hoverBehavior(i, false);
         }
     })
     .on("click", (d, i) => {
         isActive = true
         activeLink = i.index;
-        hoverBehavior(i);
+        hoverBehavior(i, true);
     })
     .on("mouseout", () => {
         if (!isActive) {

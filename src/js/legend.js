@@ -4,58 +4,12 @@
  */
 
 function buildLegend(colorArray, rankedArray) {
-
-    // const legendX = width + legendWidth / 2;
-    // clearPrevLegend();
-    // for (let i = 0; i < rankedArray.length && i < 8; i++) {
-    //     svg.append("circle")
-    //         .attr("cx", legendX)
-    //         .attr("cy", 130 + 30 * i)
-    //         .attr("r", 6)
-    //         .style("fill", colorArray[i])
-    //         .attr("class", "leg");
-    //     svg.append("text")
-    //         .attr("x", legendX + 30)
-    //         .attr("y", 130 + 30 * i)
-    //         .text(rankedArray[i][0] + " " + rankedArray[i][1])
-    //         .style("font-size", "15px")
-    //         .attr("alignment-baseline", "middle")
-    //         .attr("class", "leg");
-    // }
     const barData = buildBarGraphData(rankedArray, colorArray);
-    console.log(barData);
-}
-
-function clearPrevLegend() {
-    d3.selectAll(".leg").remove();
-}
-
-/**
- * Returns of Form:
- * [ 
- *      {Exam: examConcat, Students: "count"}
- * ]
- */
-function buildBarGraphData(rankedArray, colorArray) {
-    d3.selectAll(".bar").remove();
-    barData = []
-    let i = 0;
-    for (let group of rankedArray) {
-        barData.push({ "Exam": group[0], "Students": group[1] });
-        i += 1;
-        if (i == 8) {
-            break;
-        }
-    }
-
     const numBars = rankedArray.length < 8 ? rankedArray.length : 8;
-    const barHeight = 200;
+    const barHeight = 400;
     const barPadding = 15;
-    const barWidth = 30;
-
-    var bar_x = d3.scaleLinear()
-        .range([0, 145])
-        .domain([0, 200]);
+    const barWidth = 60;
+    const startingX = 800;
 
     domainY = []
     for (let i = 0; i < 9; i++) {
@@ -72,18 +26,80 @@ function buildBarGraphData(rankedArray, colorArray) {
         .append("rect")
         .attr("class", "bar")
         .attr("y", function (d, i) {
-            console.log(d, i);
-            console.log(bar_y(i));
-            return bar_y(i) + 150;
+            return bar_y(i) + 100;
         })
         .attr("height", barWidth - barPadding)
-        .attr("x", 800)
+        .attr("x", startingX)
         .attr("width", function (d) {
-            return d.Students;
+            return d.Students * 2;
         })
         .style('fill', function (d, i) {
             return colorArray[i];
         })
+
+    const students = svg.selectAll(".label").data(barData);
+
+    students
+        .enter()
+        .append("text")
+        .attr("class", "label")
+        //y position of the label is halfway down the bar
+        .attr("y", function (d, i) {
+            return bar_y(i) + 130;
+        })
+        //x position is 3 pixels to the right of the bar
+        .attr("x", function (d) {
+            return startingX + 25 + d.Students * 2;
+        })
+        .text(function (d) {
+            return d.Students;
+        })
+        .style("fill", "black")
+
+    const examLabel = svg.selectAll(".exam").data(barData)
+    examLabel
+        .enter()
+        .append("text")
+        .attr("class", "label")
+        //y position of the label is halfway down the bar
+        .attr("y", function (d, i) {
+            return bar_y(i) + 130;
+        })
+        //x position is 3 pixels to the right of the bar
+        .attr("x", function (d) {
+            return 825 - 90;
+        })
+        .text(function (d) {
+            return d.Exam;
+        })
+        .style("fill", "black")
+}
+
+function clearPrevLegend() {
+    d3.selectAll(".leg").remove();
+    d3.selectAll(".bar").remove();
+    d3.selectAll(".label").remove();
+    d3.selectAll(".exam").remove();
+}
+
+/**
+ * Returns of Form:
+ * [ 
+ *      {Exam: examConcat, Students: "count"}
+ * ]
+ */
+function buildBarGraphData(rankedArray, colorArray) {
+    clearPrevLegend();
+    barData = []
+    let i = 0;
+    for (let group of rankedArray) {
+        barData.push({ "Exam": group[0], "Students": group[1] });
+        i += 1;
+        if (i == 8) {
+            break;
+        }
+    }
+
 
     return barData;
 }
