@@ -166,12 +166,34 @@ function formatSankeyData(data) {
     return output;
 }
 
+/* Filters out PC lines when node hovered*/
 
 function hoverBehavior(i) {
-    console.log();
     filteredData = filterParallelData(i.source.name, i.target.name, i.source.assessment, i.target.assessment);
     show = new Set(filteredData);
     d3.selectAll(".lines").each( function(d) {
         d3.select(this).style("visibility", () => show.has(d['id']) ? "visible" : "hidden");
     });
 }
+/**
+ * Initial drawing of Sankey 
+ **/
+const sankeyData = formatSankeyData(rawData);
+
+/* Sets up svg */
+const svg = d3.select("#canvas")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g");
+
+/* Creates Sankey Object */
+const sankey = d3.sankey()
+    .size([width, height])
+    .nodeId(d => d.id)
+    .nodeWidth(nodeWdt)
+    .nodePadding(padding)
+    .nodeAlign(d3.sankeyCenter)
+    .nodeSort(null);
+
+/* Draws Sankey on SVG */
+const graph = sankey(sankeyData);

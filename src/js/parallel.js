@@ -33,19 +33,3 @@ svg
     .style("stroke", "#69b3a2")
     .style("opacity", 0.25)
     .style("visibility", "hidden" );
-
-/* Draw Axis */
-// svg.selectAll("myAxis")
-//     // For each dimension of the dataset I add a 'g' element:
-//     .data(dimensions).enter()
-//     .append("g")
-//     // I translate this element to its right position on the x axis
-//     .attr("transform", function (d) { return "translate(" + x(d) + ")"; })
-//     // And I build the axis with the call function
-//     .each(function (d) { d3.select(this).call(d3.axisLeft().scale(y[d])); })
-//     // Add axis title
-//     .append("text")
-//     .style("text-anchor", "middle")
-//     .attr("y", -9)
-//     .text(function (d) { return d; })
-//     .style("fill", "black")

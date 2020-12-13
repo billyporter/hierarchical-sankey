@@ -1,22 +1,3 @@
-const sankeyData = formatSankeyData(rawData);
-
-/* Sets up svg */
-const svg = d3.select("#canvas")
-    .attr("width", width)
-    .attr("height", height)
-    .append("g");
-
-/* Creates Sankey Object */
-const sankey = d3.sankey()
-    .size([width, height])
-    .nodeId(d => d.id)
-    .nodeWidth(nodeWdt)
-    .nodePadding(padding)
-    .nodeAlign(d3.sankeyCenter)
-    .nodeSort(null);
-
-/* Draws Sankey on SVG */
-const graph = sankey(sankeyData);
 /**
  * 
  * Links Section
@@ -39,13 +20,7 @@ graphlink.append("path")
     .style("stroke-width", d => d.width)
     .style("stroke", d => sankeyColor(d.source.name))
     .on("mouseover", (d, i) => hoverBehavior(i)) // show PC lines on hover
-    // .on("mouseout", () => {
-    //     for(key in showLines){
-    //         showLines[key] = false;
-    //     }
-    // }) // clear PC lines when not hovering
-
-
+    .on("mouseout", () => d3.selectAll(".lines").style("visibility", "hidden"));
 
 /**
  * 
