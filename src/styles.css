@@ -20,7 +20,3 @@ body {
 .link:hover {
     stroke-opacity: 0.6;
 }
-
-.lines {
-    z-index: -9999;
-}

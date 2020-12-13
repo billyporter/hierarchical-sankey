@@ -65,3 +65,10 @@ graphnode.append("text")
     .filter(function (d) { return d.x0 < width / 2; })
     .attr("x", function (d) { return d.x1 + 6; })
     .attr("text-anchor", "start");
+
+
+/* Add hover behvaior for sankey */
+const linksArray = document.getElementsByClassName("link");
+for (let i = 0; i < linksArray.length; i++) {
+    linksArray[i].addEventListener('mouseover', () => hoverBehavior(graph.links[i]), false);
+}

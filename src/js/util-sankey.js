@@ -95,7 +95,7 @@ function createNodes() {
     let id = 0;
     for ([index, assessment] of assessments.entries()) {
         for ([jndex, grade] of grades.entries()) {
-            nodes.push({ "id": id++, "name": grade, "assessment": assessment });
+            nodes.push({ "id": id++, "name": grade });
         }
     }
     return nodes;
@@ -195,5 +195,5 @@ const sankey = d3.sankey()
     .nodeAlign(d3.sankeyCenter)
     .nodeSort(null);
 
-/* Draws Sankey on SVG */
+/* Calculates Sankey */
 const graph = sankey(sankeyData);

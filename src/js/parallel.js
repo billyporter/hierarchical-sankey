@@ -1,3 +1,4 @@
+const pcData = formatParallelData();
 
 /* Builds the custom y-Scale and x-scale */
 var y = {}
@@ -33,3 +34,4 @@ svg
     .style("stroke", "#69b3a2")
     .style("opacity", 0.25)
     .style("visibility", "hidden" );
+
