@@ -59,7 +59,7 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
 
     /* Get groups and their sizes */
     let groupsMap = new Map();
-    for (line of newData) {
+    for (let line of newData) {
         let allExams = ''
         for (let assessment of assessments) {
             allExams += line[assessment.trim()];
@@ -74,16 +74,26 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
     }
 
     /* Rank the groups */
-    let rankedMap = new Map();
     let rankedArray = [];
     for (let group of groupsMap) {
         rankedArray.push(group);
     }
-    let sortedArray = rankedArray.sort(function (a, b) {
+    let sortedArray = rankedArray.sort((a, b) => {
         return (a[1] < b[1]) ? 1 : -1;
     })
 
+    /* Put rank and group into Map */
+    let rankedMap = new Map();
+    let i = 0
+    for (let [group] of sortedArray) {
+        rankedMap.set(group, i)
+        i += 1
+    }
 
+    /* Add in color field to data */
+    for (let line of newData) {
+        line['group'] = rankedMap.get(line['concat']);
+    }
 
     return newData;
 }
