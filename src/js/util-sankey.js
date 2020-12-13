@@ -168,9 +168,10 @@ function formatSankeyData(data) {
 
 
 function hoverBehavior(i) {
+    console.log();
     filteredData = filterParallelData(i.source.name, i.target.name, i.source.assessment, i.target.assessment);
-    for ( id of filteredData ) {
-        showLines.set(id, true);
-    }
-    console.log(showLines);
+    show = new Set(filteredData);
+    d3.selectAll(".lines").each( function(d) {
+        d3.select(this).style("visibility", () => show.has(d['id']) ? "visible" : "hidden");
+    });
 }

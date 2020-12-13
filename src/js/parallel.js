@@ -32,10 +32,7 @@ svg
     .style("fill", "none")
     .style("stroke", "#69b3a2")
     .style("opacity", 0.25)
-    .style("visibility", d => {
-        console.log(d['id'], "=>", showLines.get(d['id']));
-        return showLines.get(d['id']) ? "visible" : "hidden";
-     })
+    .style("visibility", "hidden" );
 
 /* Draw Axis */
 // svg.selectAll("myAxis")
