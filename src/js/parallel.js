@@ -23,28 +23,15 @@ function path(d) {
     return d3.line()(dimensions.map(function (p) { return [x(p), y[p](d[p])]; }));
 }
 
-// /* Draw Plot */
-// svg
-//     .selectAll("myPath")
-//     .data(pcData)
-//     .enter().append("path")
-//     .attr("d", path)
-//     .style("fill", "none")
-//     .style("stroke", "#69b3a2")
-//     .style("opacity", 0.25)
+/* Draws Plot */
+svg
+    .selectAll("yPath")
+    .data(pcData)
+    .enter().append("path")
+    .attr("d", path)
+    .attr("class", "lines")
+    .style("fill", "none")
+    .style("stroke", "#69b3a2")
+    .style("opacity", 0.25)
+    .style("visibility", "hidden" );
 
-/* Draw Axis */
-// svg.selectAll("myAxis")
-//     // For each dimension of the dataset I add a 'g' element:
-//     .data(dimensions).enter()
-//     .append("g")
-//     // I translate this element to its right position on the x axis
-//     .attr("transform", function (d) { return "translate(" + x(d) + ")"; })
-//     // And I build the axis with the call function
-//     .each(function (d) { d3.select(this).call(d3.axisLeft().scale(y[d])); })
-//     // Add axis title
-//     .append("text")
-//     .style("text-anchor", "middle")
-//     .attr("y", -9)
-//     .text(function (d) { return d; })
-//     .style("fill", "black")
