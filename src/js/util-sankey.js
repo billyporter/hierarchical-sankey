@@ -3,13 +3,13 @@
 /* Constants */
 const assessments = ["Exam 1", "Exam 2", "Exam 3", " Final Exam"];
 const grades = ["A", "B", "C", "D", "F"];
+const margin = { top: 10, right: 10, bottom: 10, left: 10 }
 const width = 700; //890;
 const height = 582; //740;
 const legendWidth = 600;
 const legendHeight = 900;
 const svgBackground = "#eff";
 const svgBorder = "1px solid #333";
-const margin = 10;
 const padding = 40;
 const nodeWdt = 36;
 const deflineColor = "#90A4AE";
@@ -221,7 +221,8 @@ const sankeyData = formatSankeyData(rawData);
 const svg = d3.select("#canvas")
     .attr("width", width + legendWidth)
     .attr("height", height + legendHeight)
-    .append("g");
+    .append("g")
+    .attr("transform", "translate(20, 20)");
 
 /* Creates Sankey Object */
 const sankey = d3.sankey()
