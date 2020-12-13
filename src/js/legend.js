@@ -1,9 +1,10 @@
 
 /**
- * Build Legend For plot
+ * Build Bar Graph Legend For plot
  */
-
 function buildLegend(colorArray, rankedArray, filteredData) {
+
+    /* Constants needed to build graph */
     const barData = buildBarGraphData(rankedArray, colorArray);
     const numBars = rankedArray.length < 8 ? rankedArray.length : 8;
     const barHeight = 400;
@@ -11,6 +12,7 @@ function buildLegend(colorArray, rankedArray, filteredData) {
     const barWidth = 60;
     const startingX = 800;
 
+    /* Build domain for graph */
     domainY = []
     for (let i = 0; i < 9; i++) {
         domainY.push(i);
@@ -20,6 +22,7 @@ function buildLegend(colorArray, rankedArray, filteredData) {
         .range([0, barHeight])
         .domain(domainY);
 
+    /* Draw Bars */
     const bars = svg.selectAll(".bar").data(barData);
     bars
         .enter()
@@ -41,20 +44,19 @@ function buildLegend(colorArray, rankedArray, filteredData) {
             d3.select(this).style('opacity', 0.5);
         })
         .on('mouseout', function (d, i) {
+            highlightGroup(colorArray, filteredData, '');
             d3.select(this).style('opacity', 1.0);
         })
 
+    /* Draw numeric labels to right of bar */
     const students = svg.selectAll(".label").data(barData);
-
     students
         .enter()
         .append("text")
         .attr("class", "label")
-        //y position of the label is halfway down the bar
         .attr("y", function (d, i) {
             return bar_y(i) + 130;
         })
-        //x position is 3 pixels to the right of the bar
         .attr("x", function (d) {
             return startingX + 25 + d.Students * 2;
         })
@@ -63,6 +65,7 @@ function buildLegend(colorArray, rankedArray, filteredData) {
         })
         .style("fill", "black")
 
+    /* Draw Labels to left of bar */
     const examLabel = svg.selectAll(".exam").data(barData)
     examLabel
         .enter()
@@ -80,12 +83,12 @@ function buildLegend(colorArray, rankedArray, filteredData) {
             return d.Exam;
         })
         .style("fill", "black")
-
-    // highlightGroup(colorArray, filteredData, 'AAAA');
 }
 
+/**
+ * Function to remove legend
+ */
 function clearPrevLegend() {
-    d3.selectAll(".leg").remove();
     d3.selectAll(".bar").remove();
     d3.selectAll(".label").remove();
     d3.selectAll(".exam").remove();
@@ -111,6 +114,10 @@ function buildBarGraphData(rankedArray, colorArray) {
     return barData;
 }
 
+
+/**
+ * When hovering over bar, highlights appropriate lines
+ */
 function highlightGroup(colorArray, filteredData, group) {
     d3.selectAll(".lines").each(function (d) {
         d3.select(this)

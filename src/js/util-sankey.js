@@ -174,8 +174,9 @@ function formatSankeyData(data) {
     return output;
 }
 
-/* Filters out PC lines when node hovered*/
-
+/**
+* Filters out PC lines when node hovered
+*/
 function hoverBehavior(i, flag) {
 
     /* Filtered Data */
@@ -197,6 +198,9 @@ function hoverBehavior(i, flag) {
     }
 }
 
+/**
+ * Function to create color mapping based on size of input
+ */
 function createColorMap(i) {
     const priority = ["#880E4F", "#311B92", "#b71c1c", "#3E2723", "#004D40", "#BF360C", "#1A237E", "#AA00FF", "#E65100"];
     for (let j = priority.length; j <= i; j++) {
