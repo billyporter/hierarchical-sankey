@@ -5,14 +5,22 @@ const assessments = ["Exam 1", "Exam 2", "Exam 3", " Final Exam"];
 const grades = ["A", "B", "C", "D", "F"];
 const width = 700; //890;
 const height = 582; //740;
+const legendWidth = 600;
+const legendHeight = 900;
 const svgBackground = "#eff";
 const svgBorder = "1px solid #333";
 const margin = 10;
 const padding = 40;
 const nodeWdt = 36;
+const deflineColor = "#90A4AE";
+let isActive = false;
+let activeLink = -1;
 const sankeyColor = d3.scaleOrdinal()
     .domain(['A', 'B', 'C', 'D', 'F'])
     .range(['#00ABA5', '#00A231', '#e2d000', '#E69200', '#DA1D02']);
+// const sankeyColor = d3.scaleOrdinal()
+//     .domain(['A', 'B', 'C', 'D', 'F'])
+//     .range(['#4DD0E1', '#81C784', '#FFF176', '#FFCC80', '#FF8A65']);
 
 /* Returns corresponding letter grade */
 function gradeScale(score) {
@@ -166,15 +174,44 @@ function formatSankeyData(data) {
     return output;
 }
 
-/* Filters out PC lines when node hovered*/
+/**
+* Filters out PC lines when node hovered
+*/
+function hoverBehavior(i, flag) {
 
-function hoverBehavior(i) {
-    filteredData = filterParallelData(i.source.name, i.target.name, i.source.assessment, i.target.assessment);
-    show = new Set(filteredData);
-    d3.selectAll(".lines").each( function(d) {
-        d3.select(this).style("visibility", () => show.has(d['id']) ? "visible" : "hidden");
+    /* Filtered Data */
+    const filteredReturn = filterParallelData(i.source.name, i.target.name, i.source.assessment, i.target.assessment);
+    const filteredData = filteredReturn[0];
+    const totalGroups = filteredReturn[1];
+
+    /* Build colors */
+    const colorArray = createColorMap(totalGroups);
+
+    show = new Set(filteredData.map(x => x['id']));
+    d3.selectAll(".lines").each(function (d) {
+        d3.select(this).style("visibility", () => show.has(d['id']) ? "visible" : "hidden")
+            .style("stroke", deflineColor)
+            .style("opacity", 0.6);
     });
+    if (flag) {
+        buildLegend(colorArray, filteredReturn[2], filteredData);
+    }
 }
+
+/**
+ * Function to create color mapping based on size of input
+ */
+function createColorMap(i) {
+    const priority = ["#880E4F", "#311B92", "#b71c1c", "#3E2723", "#004D40", "#BF360C", "#1A237E", "#AA00FF", "#E65100"];
+    for (let j = priority.length; j <= i; j++) {
+        priority.push("#AA00FF");
+    }
+
+    return priority
+}
+
+
+
 /**
  * Initial drawing of Sankey 
  **/
@@ -182,8 +219,8 @@ const sankeyData = formatSankeyData(rawData);
 
 /* Sets up svg */
 const svg = d3.select("#canvas")
-    .attr("width", width)
-    .attr("height", height)
+    .attr("width", width + legendWidth)
+    .attr("height", height + legendHeight)
     .append("g");
 
 /* Creates Sankey Object */

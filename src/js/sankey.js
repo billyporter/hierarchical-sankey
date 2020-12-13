@@ -12,6 +12,16 @@ const graphlink = svg
     .data(graph.links)
     .enter()
 
+let nah = true
+document.addEventListener("click", function (event) {
+    const target = event.target;
+    if (!target.closest('.link')) {
+        isActive = false;
+        d3.selectAll(".lines").style("visibility", "hidden");
+        clearPrevLegend();
+    }
+})
+
 /* Draws Link */
 graphlink.append("path")
     .attr("class", "link")
@@ -19,49 +29,19 @@ graphlink.append("path")
     .attr("fill", "none")
     .style("stroke-width", d => d.width)
     .style("stroke", d => sankeyColor(d.source.name))
-    .on("mouseover", (d, i) => hoverBehavior(i)) // show PC lines on hover
-    .on("mouseout", () => d3.selectAll(".lines").style("visibility", "hidden"));
-
-/**
- * 
- * Nodes Section
- * 
- */
-
-/* Creates Node */
-const graphnode = svg
-    .append("g")
-    .classed("nodes", true)
-    .selectAll("rect")
-    .data(graph.nodes)
-    .enter()
-
-/* Draws Node */
-graphnode.append("rect")
-    .classed("node", true)
-    .attr("x", d => d.x0)
-    .attr("y", d => d.y0)
-    .attr("width", d => (d.x1 - d.x0))
-    .attr("height", d => (d.y1 - d.y0))
-    .style("fill", (d) => (sankeyColor(d.name)))
-    .attr("stroke", (d) => {
-        return d3.rgb(sankeyColor(d.name)).darker(0.6);
+    .on("mouseover", (d, i) => {
+        if (!isActive) {
+            hoverBehavior(i, false);
+        }
+    })
+    .on("click", (d, i) => {
+        isActive = true
+        activeLink = i.index;
+        hoverBehavior(i, true);
+    })
+    .on("mouseout", () => {
+        if (!isActive) {
+            d3.selectAll(".lines").style("visibility", "hidden");
+        }
     });
 
-
-/* Add in title */
-graphnode.append("title")
-    .text((d) => d.name + "\n" + " Students");
-
-
-/* Add in text */
-graphnode.append("text")
-    .style("font-size", "16px")
-    .attr("x", function (d) { return d.x0 - 6; })
-    .attr("y", function (d) { return (d.y1 + d.y0) / 2; })
-    .attr("dy", "0.35em")
-    .attr("text-anchor", "end")
-    .text(function (d) { return d.name; })
-    .filter(function (d) { return d.x0 < width / 2; })
-    .attr("x", function (d) { return d.x1 + 6; })
-    .attr("text-anchor", "start");

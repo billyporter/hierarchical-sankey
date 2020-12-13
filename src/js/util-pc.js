@@ -38,8 +38,63 @@ function formatParallelData() {
 */
 const pcData = formatParallelData();
 const showLines = new Map(pcData.map(x => [x["id"], false])); // initialize map of id: False pairs (all lines should be hidden to start)
+
+
 function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAssessment) {
-    return pcData.filter( x => gradeScale(x[sourceAssessment.trim()]) === sourceGrade
-                            && gradeScale(x[targetAssessment.trim()]) === targetGrade )
-                 .map(x => x['id']);
+
+    /* Filter lines */
+    const newData = pcData.filter(x => gradeScale(x[sourceAssessment.trim()]) === sourceGrade
+        && gradeScale(x[targetAssessment.trim()]) === targetGrade)
+
+
+    /**
+     * Generate Groups
+     */
+
+    /* Switch from number to letter Grade */
+    for (let line of newData) {
+        for (let assessment of assessments) {
+            line[assessment.trim() + ' letter'] = gradeScale(line[assessment.trim()]);
+        }
+    }
+
+    /* Get groups and their sizes */
+    let groupsMap = new Map();
+    for (let line of newData) {
+        let allExams = ''
+        for (let assessment of assessments) {
+            allExams += line[assessment.trim() + ' letter'];
+        }
+        line['concat'] = allExams;
+        if (groupsMap.has(allExams)) {
+            groupsMap.set(allExams, groupsMap.get(allExams) + 1);
+        }
+        else {
+            groupsMap.set(allExams, 1);
+        }
+    }
+
+    /* Rank the groups */
+    let rankedArray = [];
+    for (let group of groupsMap) {
+        rankedArray.push(group);
+    }
+    let sortedArray = rankedArray.sort((a, b) => {
+        return (a[1] < b[1]) ? 1 : -1;
+    })
+
+    /* Put rank and group into Map */
+    let rankedMap = new Map();
+    let i = 0
+    for (let [group] of sortedArray) {
+        rankedMap.set(group, i)
+        i += 1
+    }
+
+    /* Add in color field to data */
+    for (let line of newData) {
+        line['group'] = rankedMap.get(line['concat']);
+    }
+
+    return [newData, i, rankedArray];
 }

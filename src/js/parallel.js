@@ -1,4 +1,52 @@
 
+/**
+ * 
+ * Nodes Section
+ * 
+ */
+
+/* Creates Node */
+const graphnode = svg
+    .append("g")
+    .classed("nodes", true)
+    .selectAll("rect")
+    .data(graph.nodes)
+    .enter()
+
+/* Draws Node */
+graphnode.append("rect")
+    .classed("node", true)
+    .attr("x", d => d.x0)
+    .attr("y", d => d.y0)
+    .attr("width", d => (d.x1 - d.x0))
+    .attr("height", d => (d.y1 - d.y0))
+    .style("fill", (d) => (sankeyColor(d.name)))
+    .attr("stroke", (d) => {
+        return d3.rgb(sankeyColor(d.name)).darker(0.6);
+    });
+
+
+/* Add in title */
+graphnode.append("title")
+    .text((d) => d.name + "\n" + " Students");
+
+
+/* Add in text */
+graphnode.append("text")
+    .style("font-size", "16px")
+    .attr("x", function (d) { return d.x0 - 6; })
+    .attr("y", function (d) { return (d.y1 + d.y0) / 2; })
+    .attr("dy", "0.35em")
+    .attr("text-anchor", "end")
+    .text(function (d) { return d.name; })
+    .filter(function (d) { return d.x0 < width / 2; })
+    .attr("x", function (d) { return d.x1 + 6; })
+    .attr("text-anchor", "start");
+
+
+/**
+ * Parallel Coordinates Section
+ */
 /* Builds the custom y-Scale and x-scale */
 var y = {}
 dimensions = ["Exam 1", "Exam 2", "Exam 3", "Final Exam"];
@@ -31,5 +79,6 @@ svg
     .attr("class", "lines")
     .style("fill", "none")
     .style("stroke", "#69b3a2")
-    .style("opacity", 0.25)
-    .style("visibility", "hidden" );
+    .style("stroke-width", "2")
+    .style("opacity", 0.6)
+    .style("visibility", "hidden");
