@@ -189,10 +189,11 @@ function hoverBehavior(i, flag) {
     show = new Set(filteredData.map(x => x['id']));
     d3.selectAll(".lines").each(function (d) {
         d3.select(this).style("visibility", () => show.has(d['id']) ? "visible" : "hidden")
-            .style("stroke", deflineColor);
+            .style("stroke", deflineColor)
+            .style("opacity", 0.6);
     });
     if (flag) {
-        buildLegend(colorArray, filteredReturn[2]);
+        buildLegend(colorArray, filteredReturn[2], filteredData);
     }
 }
 

@@ -3,7 +3,7 @@
  * Build Legend For plot
  */
 
-function buildLegend(colorArray, rankedArray) {
+function buildLegend(colorArray, rankedArray, filteredData) {
     const barData = buildBarGraphData(rankedArray, colorArray);
     const numBars = rankedArray.length < 8 ? rankedArray.length : 8;
     const barHeight = 400;
@@ -35,6 +35,13 @@ function buildLegend(colorArray, rankedArray) {
         })
         .style('fill', function (d, i) {
             return colorArray[i];
+        })
+        .on('mouseover', function (d, i) {
+            highlightGroup(colorArray, filteredData, i['Exam']);
+            d3.select(this).style('opacity', 0.5);
+        })
+        .on('mouseout', function (d, i) {
+            d3.select(this).style('opacity', 1.0);
         })
 
     const students = svg.selectAll(".label").data(barData);
@@ -73,6 +80,8 @@ function buildLegend(colorArray, rankedArray) {
             return d.Exam;
         })
         .style("fill", "black")
+
+    // highlightGroup(colorArray, filteredData, 'AAAA');
 }
 
 function clearPrevLegend() {
@@ -99,7 +108,17 @@ function buildBarGraphData(rankedArray, colorArray) {
             break;
         }
     }
-
-
     return barData;
+}
+
+function highlightGroup(colorArray, filteredData, group) {
+    d3.selectAll(".lines").each(function (d) {
+        d3.select(this)
+            .style("stroke", () => {
+                return d['concat'] === group ? colorArray[d['group']] : deflineColor;
+            })
+            .style("opacity", () => {
+                return d['concat'] === group ? 1 : 0.6;
+            });
+    });
 }
