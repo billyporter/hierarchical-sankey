@@ -54,7 +54,7 @@ for (i in dimensions) {
     namer = dimensions[i]
     const scaleyWaley = nodeValueToScale(i, sankeyData);
     y[namer] = d3.scaleLinear()
-        .domain([0, 59.99, 60, 69.99, 70, 79.99, 80, 89.99, 90, 100])
+        .domain([0, 59.99999999999999, 60, 69.99999999999999, 70, 79.99999999999999, 80, 89.999999999999, 90, 100])
         .range(scaleyWaley)
 }
 x = d3.scalePoint()
@@ -79,7 +79,7 @@ svg
     .attr("class", "lines")
     .style("fill", "none")
     .style("stroke", "#69b3a2")
-    .style("stroke-width", "2")
+    .style("stroke-width", "1.5")
     .style("opacity", 0.6)
     .style("visibility", "hidden");
 
