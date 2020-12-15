@@ -222,7 +222,7 @@ const svg = d3.select("#canvas")
     .attr("width", width + legendWidth)
     .attr("height", height + legendHeight)
     .append("g")
-    .attr("transform", "translate(20, 20)");
+    .attr("transform", "translate(30, 30)");
 
 /* Creates Sankey Object */
 const sankey = d3.sankey()
@@ -232,35 +232,6 @@ const sankey = d3.sankey()
     .nodePadding(padding)
     .nodeAlign(d3.sankeyCenter)
     .nodeSort(null);
-
-/* Adds x axis labels of sankey nodes */
-svg.append("text")
-    .attr("class", "axis-label")
-    .attr("y", height + 25)
-    .attr("x", 20)
-    .style("text-anchor", "middle")
-    .text("Exam 1");
-
-svg.append("text")
-    .attr("class", "axis-label")
-    .attr("y", height + 25)
-    .attr("x", width/3 + 8)
-    .style("text-anchor", "middle")
-    .text("Exam 2");
-
-svg.append("text")
-    .attr("class", "axis-label")
-    .attr("y", height + 25)
-    .attr("x", width*2/3 - 4)
-    .style("text-anchor", "middle")
-    .text("Exam 3");
-
-svg.append("text")
-    .attr("class", "axis-label")
-    .attr("y", height + 25)
-    .attr("x", width - 15)
-    .style("text-anchor", "middle")
-    .text("Final Exam");
 
 /* Draws Sankey on SVG */
 const graph = sankey(sankeyData);
