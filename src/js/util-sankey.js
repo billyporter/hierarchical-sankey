@@ -222,7 +222,7 @@ const svg = d3.select("#canvas")
     .attr("width", width + legendWidth)
     .attr("height", height + legendHeight)
     .append("g")
-    .attr("transform", "translate(20, 20)");
+    .attr("transform", "translate(30, 30)");
 
 /* Creates Sankey Object */
 const sankey = d3.sankey()
