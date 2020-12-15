@@ -119,26 +119,39 @@ gradeMap.set('F', 0);
 svg.selectAll('.node').each(function (d, i) {
     /* Variables */
     const data = [];
-    let start = gradeMap.get(d['name']);
-    const end = start + 11;
+    let start = gradeMap.get(d["name"]);
+    let end = start + 11;
+    if (d.name === 'F') // consider that F scale is of size 60 whereas other grades are of size 10
+        end += 50;
     let inc = 1;
 
-    /* Change number of points depending on size */
-    const size = d['y1'] - d['y0'];
+    /* Change number of points depending on size, A-D */
+    const size = d["y1"] - d["y0"];
     if (size > 240) {
         inc = 1;
-    }
-    else if (size > 110) {
+    } else if (size > 110) {
         inc = 2;
-    }
-    else if (size > 65) {
+    } else if (size > 65) {
         inc = 5;
-    }
-    else if (size > 35) {
+    } else if (size > 15) {
         inc = 10;
-    }
-    else {
+    } else {
         start = end;
+    }
+
+    /* Case for F grade (multiplies by 6 to remain proportional with A-D)*/
+    if (d.name === 'F'){
+        if (size > 240) {
+            inc = 6;
+        } else if (size > 110) {
+            inc = 12;
+        } else if (size > 65) {
+            inc = 30;
+        } else if (size > 15) {
+            inc = 60;
+        } else {
+            start = end;
+        }
     }
 
     for (let i = start; i < end; i += inc) {
@@ -146,18 +159,16 @@ svg.selectAll('.node').each(function (d, i) {
     }
 
     /* Create point scale */
-    var scale = d3.scalePoint()
-        .domain(data)
-        .range([d["y1"], d["y0"]]);
+    var scale = d3.scalePoint().domain(data).range([d["y1"], d["y0"]]);
 
     /* Add scale to axis */
-    var y_axis = d3.axisRight()
-        .scale(scale);
+    var y_axis = d3.axisRight().scale(scale);
 
     /* Append to svg */
-    svg.append("g")
-        .attr("transform", "translate(" + d['x1'] + ", 0)")
-        .attr('class', 'axes')
+    svg
+        .append("g")
+        .attr("transform", "translate(" + d["x1"] + ", 0)")
+        .attr("class", "axes")
         .call(y_axis)
         .style("visibility", "hidden");
 });
