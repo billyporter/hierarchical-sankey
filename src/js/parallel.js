@@ -46,6 +46,10 @@ graphnode.append("text")
 
 /**
  * Parallel Coordinates Section
+ * 
+ * 
+ * 
+ * 
  */
 /* Builds the custom y-Scale and x-scale */
 var y = {}
@@ -81,7 +85,20 @@ svg
     .style("stroke", "#69b3a2")
     .style("stroke-width", "1.5")
     .style("opacity", 0.6)
-    .style("visibility", "hidden");
+    .style("visibility", "hidden")
+    .style("pointer-events", "visiblePainted")
+    .on("mouseover", function () {
+        d3.select(this)
+            .style("stroke", "#000000")
+            .style("stroke-width", "4")
+            .style("opacity", 1.0);
+    })
+    .on("mouseout", function () {
+        d3.select(this)
+            .style("stroke", "#69b3a2")
+            .style("stroke-width", "1.5")
+            .style("opacity", 0.6);
+    });
 
 
 /**
