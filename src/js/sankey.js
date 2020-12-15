@@ -16,7 +16,6 @@ let nah = true
 document.addEventListener("click", function (event) {
     const target = event.target;
     if (!target.closest('.link')) {
-        console.log('back on!');
         isActive = false;
         d3.selectAll(".lines")
             .style("visibility", "hidden")
@@ -45,7 +44,6 @@ graphlink.append("path")
         activeLink = i.index;
         hoverBehavior(i, true);
         d3.selectAll(".link").style('pointer-events', 'none');
-        console.log('off!');
         d3.selectAll(".axes").style("visibility", "visible");
     })
     .on("mouseout", () => {
