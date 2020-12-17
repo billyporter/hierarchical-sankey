@@ -216,6 +216,7 @@ function createColorMap(i) {
  * Initial drawing of Sankey 
  **/
 const sankeyData = formatSankeyData(rawData);
+console.log(sankeyData);
 
 /* Sets up svg */
 const svg = d3.select("#canvas")
@@ -235,3 +236,10 @@ const sankey = d3.sankey()
 
 /* Draws Sankey on SVG */
 const graph = sankey(sankeyData);
+
+
+/**
+ * Hierarchical Node
+ * Exploratory Section
+ */
+
