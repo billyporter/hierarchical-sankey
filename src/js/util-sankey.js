@@ -44,13 +44,13 @@ function gradeScale(score) {
 /** Returns specific letter */
 function specificLetterScale(letter, number) {
     const secondDigit = parseInt(number.toString()[number.toString().length - 1]);
-    if (letter.localeCompare("A")) {
+    if (letter.localeCompare("A") == 0) {
         if (number >= 94) {
             return 'A'
         }
         return 'A-'
     }
-    else if (letter.localeCompare("F")) {
+    else if (letter.localeCompare("F") == 0) {
         return letter;
     }
     else if (secondDigit >= 7) {
@@ -316,6 +316,26 @@ function breakdownRouter(nodeID) {
  * Takes in nodeId and returns new Sankey
  */
 function breakdownRawLetter(nodeId) {
+    console.log('here');
+    const nodeGrades = sankeyData['nodes'][nodeId]['grades'];
+
+    gradesMap = new Map();
+
+    /* Divide into nodes */
+    for (const g of nodeGrades) {
+        const letter = specificLetterScale(sankeyData['nodes'][nodeId]['name'], g);
+        if (gradesMap.has(letter)) {
+            gradesMap.get(letter).push(g);
+        }
+        else {
+            gradesMap.set(letter, [g]);
+        }
+    }
+
+    /* Create node for each key */
+    for (const [key, value] of gradesMap.entries()) {
+
+    }
 }
 
 
