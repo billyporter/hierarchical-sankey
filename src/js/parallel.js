@@ -25,7 +25,7 @@ graphnode.append("rect")
         return d3.rgb(sankeyColor(d.name)).darker(0.6);
     })
     .on("click", function (d, i) {
-        console.log(i);
+        wanedilliams(i);
     });
 
 

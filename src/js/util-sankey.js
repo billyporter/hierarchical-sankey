@@ -19,6 +19,7 @@ const gradeCountDict = {};
 const sankeyColor = d3.scaleOrdinal()
     .domain(['A', 'B', 'C', 'D', 'F'])
     .range(['#00ABA5', '#00A231', '#e2d000', '#E69200', '#DA1D02']);
+const assessGradeLevelMap = {};
 // const sankeyColor = d3.scaleOrdinal()
 //     .domain(['A', 'B', 'C', 'D', 'F'])
 //     .range(['#4DD0E1', '#81C784', '#FFF176', '#FFCC80', '#FF8A65']);
@@ -81,8 +82,10 @@ function createIds() {
 
     let id = 0;
     for ([index, assessment] of assessments.entries()) {
+        assessGradeLevelMap[assessment] = {};
         for ([jndex, grade] of grades.entries()) {
             dict[id++] = { [assessment.trim()]: grade };
+            assessGradeLevelMap[assessment][grade] = 0;
         }
     }
     return dict;
@@ -208,9 +211,9 @@ function formatSankeyData(data) {
                 if (nextGrade == "") {
                     continue;
                 }
-                let source = output["grades"][assessment.trim()][grade]["id"];
-                let target = output["grades"][assessments[index + 1].trim()][gradeScale(data[student][assessments[index + 1]])]["id"];
-                for ([index, link] of output["links"].entries()) {
+                let source = output["grades"][assessment.trim()][grade]["id"]; // prev grade id 
+                let target = output["grades"][assessments[index + 1].trim()][gradeScale(data[student][assessments[index + 1]])]["id"]; // next grade id
+                for ([index, link] of output["links"].entries()) { // if the link is from the source node to target node, add 1
                     if (JSON.stringify(link["source"]) == source && JSON.stringify(link["target"]) == target) {
                         output["links"][index]["value"]++;
                     }
@@ -294,6 +297,85 @@ const graph = sankey(sankeyData);
  * Exploratory Section
  */
 
+
+/** New appraoch */
+
+/**
+ * Routes from click behavior to create new data
+ */
+function wanedilliams(node) {
+
+    /* Update Ids */
+    const locAs = node['assessment'];
+    const locGrade = node['name'];
+    assessGradeLevelMap[locAs][locGrade] += 1;
+
+    newIds = updateIDS();
+    updateLinks(newIds);
+}
+
+/**
+ * Update the ids with the new node expansion
+ */
+function updateIDS() {
+    let id = 0;
+    dict = {} // dict to hold ids
+    for ([index, assessment] of assessments.entries()) {
+        for ([jndex, grade] of grades.entries()) {
+
+            /* Curr level = level of breakdown (0 = no breakdown) */
+            const currLevel = assessGradeLevelMap[assessment][grade];
+            switch (currLevel) {
+                case 0:
+                    dict[id++] = { [assessment.trim()]: grade };
+                    break;
+                case 1:
+                    dict[id++] = { [assessment.trim()]: grade.concat("+") };
+                    dict[id++] = { [assessment.trim()]: grade };
+                    dict[id++] = { [assessment.trim()]: grade.concat("-") };
+                /* TODO: add case 2: (indiivual scores) */
+            }
+
+        }
+    }
+    return dict;
+}
+
+/**
+ * Updates links based on newIds
+ */
+function updateLinks(newIds) {
+
+    links = [];
+    let prevTop = 0; // top of previous column
+    for (column = 0; column < assessments.length - 1; column++) {
+        let firstColLength = 0;
+        let secColLength = 0;
+
+        /* Count length of columns based on expansion */
+        for ([key, value] of Object.entries(newIds)) {
+            if (assessments[column] === Object.keys(value)[0]) {
+                firstColLength += 1;
+            }
+            if (assessments[column + 1].trim() === Object.keys(value)[0]) {
+                secColLength += 1;
+            }
+        }
+        for (first = 0; first < firstColLength; first++) {
+            const currPosition = prevTop + first;
+            for (second = 0; second < secColLength; second++) {
+                const targPosition = prevTop + firstColLength + second;
+                links.push({ "source": currPosition, "target": targPosition, "value": 0 });
+            }
+        }
+        prevTop += firstColLength;
+    }
+}
+
+
+
+
+
 /**
 * Function that serves as the first step and routes to either
 * breakdown from:
@@ -318,12 +400,13 @@ function breakdownRouter(nodeID) {
 function breakdownRawLetter(nodeId) {
     console.log('here');
     const nodeGrades = sankeyData['nodes'][nodeId]['grades'];
+    const nodeLetter = sankeyData['nodes'][nodeId]['name'];
 
-    gradesMap = new Map();
+    let gradesMap = new Map();
 
     /* Divide into nodes */
     for (const g of nodeGrades) {
-        const letter = specificLetterScale(sankeyData['nodes'][nodeId]['name'], g);
+        const letter = specificLetterScale(nodeLetter, g);
         if (gradesMap.has(letter)) {
             gradesMap.get(letter).push(g);
         }
@@ -331,12 +414,23 @@ function breakdownRawLetter(nodeId) {
             gradesMap.set(letter, [g]);
         }
     }
+    gradesMap = new Map([...gradesMap.entries()].sort());
 
     /* Create node for each key */
+    let idCounter = nodeId + 1;
     for (const [key, value] of gradesMap.entries()) {
-
+        console.log(key)
+        const localNode = {
+            'id': idCounter,
+            'name': key,
+            'assessment': sankeyData['nodes'][nodeId]['assessment'],
+            'level': 1,
+            'grades': value
+        }
+        idCounter += 1;
     }
 }
+
 
 
 
