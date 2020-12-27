@@ -15,6 +15,7 @@ const nodeWdt = 36;
 const deflineColor = "#90A4AE";
 let isActive = false;
 let activeLink = -1;
+const gradeCountDict = {};
 const sankeyColor = d3.scaleOrdinal()
     .domain(['A', 'B', 'C', 'D', 'F'])
     .range(['#00ABA5', '#00A231', '#e2d000', '#E69200', '#DA1D02']);
@@ -37,6 +38,29 @@ function gradeScale(score) {
         return "D";
     } else {
         return "F";
+    }
+}
+
+/** Returns specific letter */
+function specificLetterScale(letter, number) {
+    const secondDigit = parseInt(number.toString()[number.toString().length - 1]);
+    if (letter.localeCompare("A")) {
+        if (number >= 94) {
+            return 'A'
+        }
+        return 'A-'
+    }
+    else if (letter.localeCompare("F")) {
+        return letter;
+    }
+    else if (secondDigit >= 7) {
+        return letter.concat("+");
+    }
+    else if (secondDigit >= 4) {
+        return letter
+    }
+    else {
+        return letter.concat("-");
     }
 }
 
@@ -103,7 +127,7 @@ function createNodes() {
     let id = 0;
     for ([index, assessment] of assessments.entries()) {
         for ([jndex, grade] of grades.entries()) {
-            nodes.push({ "id": id++, "name": grade, "assessment": assessment });
+            nodes.push({ "id": id++, "name": grade, "assessment": assessment, "level": 0, "grades": [] });
         }
     }
     return nodes;
@@ -133,6 +157,27 @@ function createLinks() {
     return links;
 }
 
+/**
+ * Creates letter object of raw data in following form:
+ * {
+ *      Exam 1:
+ *          {
+ *              A:
+ *                  {
+ *                      A: 
+ *                        {
+ *                            count: 5
+ *                            grades: [96, 97, 98, 97, 96]
+ *                         }   
+ *                  }
+ *          }
+ * }
+ */
+function updateLetterObject(assessment, numberGrade) {
+    const generalLetter = gradeScale(numberGrade);
+    const specificLetter = specificLetterScale(generalLetter, numberGrade);
+    gradeCountDict[assessment]
+}
 
 /**
  * Function that updates values of the links
@@ -150,11 +195,13 @@ function formatSankeyData(data) {
 
     for (student in data) {
         for ([index, assessment] of assessments.entries()) {
-            let grade = gradeScale(data[student][assessment]);
+            const grade = gradeScale(data[student][assessment]);
             if (grade == "") {
                 continue;
             }
+            updateLetterObject(assessment, data[student][assessment]);
             output["grades"][assessment.trim()][grade]["count"]++;
+            output["nodes"][output["grades"][assessment.trim()][grade]["id"]]["grades"].push(data[student][assessment]);
 
             if (index < 3) {
                 let nextGrade = gradeScale(data[student][assessments[index + 1]]);
@@ -173,6 +220,7 @@ function formatSankeyData(data) {
     }
     return output;
 }
+
 
 /**
 * Filters out PC lines when node hovered
@@ -216,7 +264,10 @@ function createColorMap(i) {
  * Initial drawing of Sankey 
  **/
 const sankeyData = formatSankeyData(rawData);
-console.log(sankeyData);
+
+/* Deep copy so it doesn't get edited by reference */
+let copySankeyData = JSON.parse(JSON.stringify(sankeyData));
+console.log(copySankeyData);
 
 /* Sets up svg */
 const svg = d3.select("#canvas")
@@ -242,4 +293,38 @@ const graph = sankey(sankeyData);
  * Hierarchical Node
  * Exploratory Section
  */
+
+/**
+* Function that serves as the first step and routes to either
+* breakdown from:
+* 1) Letter to Letter+ Letter Letter-
+* 2) Letter+ to Number
+*/
+function breakdownRouter(nodeID) {
+    const level = copySankeyData["nodes"][nodeID]["level"];
+    switch (level) {
+        case 0:
+            breakdownRawLetter(nodeID);
+            break;
+        case 1:
+            break;
+    }
+}
+
+
+/**
+ * Takes in nodeId and returns new Sankey
+ */
+function breakdownRawLetter(nodeId) {
+}
+
+
+
+
+
+
+/**
+ * Test Driver section
+ * */
+breakdownRouter(1)
 
