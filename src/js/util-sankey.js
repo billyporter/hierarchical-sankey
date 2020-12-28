@@ -212,7 +212,8 @@ function formatSankeyData(data) {
                     continue;
                 }
                 let source = output["grades"][assessment.trim()][grade]["id"]; // prev grade id 
-                let target = output["grades"][assessments[index + 1].trim()][gradeScale(data[student][assessments[index + 1]])]["id"]; // next grade id
+                let target = output["grades"][assessments[index + 1].trim()]
+                [nextGrade]["id"]; // next grade id
                 for ([index, link] of output["links"].entries()) { // if the link is from the source node to target node, add 1
                     if (JSON.stringify(link["source"]) == source && JSON.stringify(link["target"]) == target) {
                         output["links"][index]["value"]++;
@@ -308,10 +309,9 @@ function wanedilliams(node) {
     /* Update Ids */
     const locAs = node['assessment'];
     const locGrade = node['name'];
-    assessGradeLevelMap[locAs][locGrade] += 1;
+    // assessGradeLevelMap[locAs][locGrade] += 1;
 
-    newIds = updateIDS();
-    updateLinks(newIds);
+    updateFormatSankey();
 }
 
 /**
@@ -370,6 +370,85 @@ function updateLinks(newIds) {
         }
         prevTop += firstColLength;
     }
+    return links;
+}
+
+function updateNodes(newIds) {
+    nodes = []
+    for (const [key, value] of Object.entries(newIds)) {
+        nodes.push({
+            "id": parseInt(key),
+            "name": Object.values(value)[0],
+            "assessment": Object.keys(value)[0],
+            "level": 0,
+            "grades": []
+        });
+    }
+    return nodes
+}
+
+function updateGrades(newIds) {
+    dict = {};
+    for (const [key, value] of Object.entries(newIds)) {
+        if (!dict[Object.keys(value)[0].trim()]) {
+            dict[Object.keys(value)[0].trim()] = {}
+        }
+        dict[Object.keys(value)[0].trim()][Object.values(value)[0]] = {
+            "id": parseInt(key),
+            "count": 0
+        }
+    }
+    return dict
+}
+
+function updateFormatSankey() {
+    newIds = updateIDS();
+    newLinks = updateLinks(newIds);
+    newNodes = updateNodes(newIds);
+    newGrades = updateGrades(newIds);
+
+    output = {
+        "ids": newIds,
+        "grades": newGrades,
+        "nodes": newNodes,
+        "links": newLinks
+    }
+    for (student of Object.entries(rawData)) {
+        for ([index, assessment] of assessments.entries()) {
+            if (!student[1][assessment]) {
+                continue;
+            }
+            let grade = gradeScale(student[1][assessment]);
+            let level = assessGradeLevelMap[assessment][grade];
+            if (level === 1) {
+                grade = specificLetterScale(grade, student[1][assessment]);
+            }
+            output["grades"][assessment.trim()][grade]["count"]++;
+            output["nodes"][output["grades"][assessment.trim()][grade]["id"]]["grades"]
+                .push(student[1][assessment]);
+
+            if (index < 3) {
+                let nextGrade = gradeScale(student[1][assessments[index + 1]]);
+                if (nextGrade == "") {
+                    continue;
+                }
+                let level = assessGradeLevelMap[assessments[index + 1]][nextGrade];
+                if (level === 1) {
+                    nextGrade = specificLetterScale(grade, student[1][assessment]);
+                }
+                let source = output["grades"][assessment.trim()][grade]["id"]; // prev grade id 
+                let target = output["grades"][assessments[index + 1].trim()]
+                [nextGrade]["id"]; // next grade id
+
+                for ([index, link] of output["links"].entries()) {
+                    if (JSON.stringify(link["source"]) == source && JSON.stringify(link["target"]) == target) {
+                        output["links"][index]["value"]++;
+                    }
+                }
+            }
+        }
+    }
+    console.log(output);
 }
 
 
@@ -398,7 +477,6 @@ function breakdownRouter(nodeID) {
  * Takes in nodeId and returns new Sankey
  */
 function breakdownRawLetter(nodeId) {
-    console.log('here');
     const nodeGrades = sankeyData['nodes'][nodeId]['grades'];
     const nodeLetter = sankeyData['nodes'][nodeId]['name'];
 
@@ -419,7 +497,6 @@ function breakdownRawLetter(nodeId) {
     /* Create node for each key */
     let idCounter = nodeId + 1;
     for (const [key, value] of gradesMap.entries()) {
-        console.log(key)
         const localNode = {
             'id': idCounter,
             'name': key,
