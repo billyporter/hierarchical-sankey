@@ -317,12 +317,14 @@ function wanedilliams(node) {
     assessGradeLevelMap[locAs][locGrade] += 1;
 
     const newSankey = formatSankey();
-    removeSankey();
+    removePlots();
     drawSankey(newSankey);
     console.log(newSankey);
 }
 
-function removeSankey() {
+function removePlots() {
     d3.selectAll(".nodes").remove();
     d3.selectAll(".link").remove();
+    d3.selectAll(".axes").remove();
+    d3.selectAll(".lines").remove();
 }
