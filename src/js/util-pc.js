@@ -1,9 +1,20 @@
 /**
  * Returns array of pixel values for y-axis based on sankey  
  * */
-function nodeValueToScale(examIndex, sankeyData) {
-    const lowerBound = examIndex * 5;
-    const upperBound = lowerBound + 5;
+function nodeValueToScale(i, sankeyData, examName) {
+    let lowerBound = 0;
+    let upperBound = 0;
+    starting = true
+    for (const i of sankeyData["nodes"]) {
+        if (i["assessment"].trim() === examName) {
+            upperBound = i["id"] + 1;
+            if (starting) {
+                lowerBound = i["id"]
+                starting = false
+            }
+        }
+    }
+
     const nodes = sankeyData['nodes'].slice(lowerBound, upperBound);
     const scaleArray = [];
     for (const node of nodes.reverse()) {
