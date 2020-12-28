@@ -4,10 +4,6 @@
 const assessments = ["Exam 1", "Exam 2", "Exam 3", " Final Exam"];
 const grades = ["A", "B", "C", "D", "F"];
 const margin = { top: 10, right: 10, bottom: 10, left: 10 }
-const width = 700; //890;
-const height = 582; //740;
-const legendWidth = 600;
-const legendHeight = 900;
 const svgBackground = "#eff";
 const svgBorder = "1px solid #333";
 const padding = 40;
@@ -116,56 +112,6 @@ function createColorMap(i) {
 }
 
 
-
-/**
- * Initial drawing of Sankey 
- **/
-populateGradeLevelMap();
-const sankeyData = formatSankey();
-
-/* Deep copy so it doesn't get edited by reference */
-let copySankeyData = JSON.parse(JSON.stringify(sankeyData));
-console.log(sankeyData);
-
-/* Sets up svg */
-const svg = d3.select("#canvas")
-    .attr("width", width + legendWidth)
-    .attr("height", height + legendHeight)
-    .append("g")
-    .attr("transform", "translate(30, 30)");
-
-/* Creates Sankey Object */
-const sankey = d3.sankey()
-    .size([width, height])
-    .nodeId(d => d.id)
-    .nodeWidth(nodeWdt)
-    .nodePadding(padding)
-    .nodeAlign(d3.sankeyCenter)
-    .nodeSort(null);
-
-/* Draws Sankey on SVG */
-const graph = sankey(sankeyData);
-
-
-/**
- * Hierarchical Node
- * Exploratory Section
- */
-
-
-/**
- * Routes from click behavior to create new data
- */
-function wanedilliams(node) {
-
-    /* Update Ids */
-    const locAs = node['assessment'];
-    const locGrade = node['name'];
-    assessGradeLevelMap[locAs][locGrade] += 1;
-
-    formatSankey();
-}
-
 /** Object:
  *  [
  *      {0: {Exam 1: "A"}},
@@ -180,7 +126,7 @@ function wanedilliams(node) {
 function createIDS() {
     let id = 0;
     dict = {} // dict to hold ids
-    for ([index, assessment] of assessments.entries()) {
+    for (const [index, assessment] of assessments.entries()) {
         for ([jndex, grade] of grades.entries()) {
 
             /* Curr level = level of breakdown (0 = no breakdown) */
@@ -218,7 +164,7 @@ function createLinks(newIds) {
         let secColLength = 0;
 
         /* Count length of columns based on expansion */
-        for ([key, value] of Object.entries(newIds)) {
+        for (const [key, value] of Object.entries(newIds)) {
             if (assessments[column] === Object.keys(value)[0]) {
                 firstColLength += 1;
             }
@@ -226,7 +172,7 @@ function createLinks(newIds) {
                 secColLength += 1;
             }
         }
-        for (first = 0; first < firstColLength; first++) {
+        for (let first = 0; first < firstColLength; first++) {
             const currPosition = prevTop + first;
             for (second = 0; second < secColLength; second++) {
                 const targPosition = prevTop + firstColLength + second;
@@ -289,6 +235,7 @@ function createGrades(newIds) {
  * and combines each function into one ouput
  * object
  */
+var bro = 1;
 function formatSankey() {
     newIds = createIDS();
     newLinks = createLinks(newIds);
@@ -301,7 +248,8 @@ function formatSankey() {
         "nodes": newNodes,
         "links": newLinks
     }
-    for (student of Object.entries(rawData)) {
+    bro += 1
+    for (const student of Object.entries(rawData)) {
         for ([index, assessment] of assessments.entries()) {
             if (!student[1][assessment]) {
                 continue;
@@ -322,13 +270,13 @@ function formatSankey() {
                 }
                 let level = assessGradeLevelMap[assessments[index + 1]][nextGrade];
                 if (level === 1) {
-                    nextGrade = specificLetterScale(grade, student[1][assessment]);
+                    nextGrade = specificLetterScale(nextGrade, student[1][assessment]);
                 }
-                let source = output["grades"][assessment.trim()][grade]["id"]; // prev grade id 
+                let source = output["grades"][assessment.trim()][grade]["id"]; // prev grade id
                 let target = output["grades"][assessments[index + 1].trim()]
                 [nextGrade]["id"]; // next grade id
 
-                for ([index, link] of output["links"].entries()) {
+                for (const [index, link] of output["links"].entries()) {
                     if (JSON.stringify(link["source"]) == source && JSON.stringify(link["target"]) == target) {
                         output["links"][index]["value"]++;
                     }
@@ -337,4 +285,40 @@ function formatSankey() {
         }
     }
     return output;
+}
+
+
+
+/**
+ * 
+ * 
+ * 
+ * Hierarchical Node
+ * Exploratory Section
+ * 
+ * 
+ * 
+ */
+
+
+/**
+ * Routes from click behavior to create new data
+ * and updates level of clicked node
+ */
+function wanedilliams(node) {
+
+    /* Update Ids */
+    const locAs = node['assessment'];
+    const locGrade = node['name'];
+    assessGradeLevelMap[locAs][locGrade] += 1;
+
+    const newSankey = formatSankey();
+    removeSankey();
+    drawSankey(newSankey);
+    console.log(newSankey);
+}
+
+function removeSankey() {
+    d3.selectAll(".nodes").remove();
+    d3.selectAll(".link").remove();
 }
