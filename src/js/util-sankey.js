@@ -136,9 +136,13 @@ function createIDS() {
                     dict[id++] = { [assessment.trim()]: grade };
                     break;
                 case 1:
-                    dict[id++] = { [assessment.trim()]: grade.concat("+") };
-                    dict[id++] = { [assessment.trim()]: grade };
-                    dict[id++] = { [assessment.trim()]: grade.concat("-") };
+                    if (grade !== 'F') {
+                        if (grade !== 'A') {
+                            dict[id++] = { [assessment.trim()]: grade.concat("+") };
+                        }
+                        dict[id++] = { [assessment.trim()]: grade };
+                        dict[id++] = { [assessment.trim()]: grade.concat("-") };
+                    }
                 /* TODO: add case 2: (indiivual scores) */
             }
 
