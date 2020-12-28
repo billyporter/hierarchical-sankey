@@ -23,6 +23,9 @@ graphnode.append("rect")
     .style("fill", (d) => (sankeyColor(d.name)))
     .attr("stroke", (d) => {
         return d3.rgb(sankeyColor(d.name)).darker(0.6);
+    })
+    .on("click", function (d, i) {
+        wanedilliams(i);
     });
 
 
@@ -140,7 +143,7 @@ svg.selectAll('.node').each(function (d, i) {
     }
 
     /* Case for F grade (multiplies by 6 to remain proportional with A-D)*/
-    if (d.name === 'F'){
+    if (d.name === 'F') {
         if (size > 240) {
             inc = 6;
         } else if (size > 110) {
