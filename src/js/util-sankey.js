@@ -312,7 +312,11 @@ function wanedilliams(node) {
     /* Update Ids */
     const locAs = node['assessment'];
     const locGrade = node['name'];
-    assessGradeLevelMap[locAs][locGrade] += 1;
+    let stringToInput = locAs;
+    if (locAs.localeCompare('Final Exam') === 0) {
+        stringToInput = ' '.concat(locAs);
+    }
+    assessGradeLevelMap[stringToInput][locGrade] += 1;
 
     const newSankey = formatSankey();
     removePlots();
