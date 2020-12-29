@@ -239,7 +239,6 @@ function createGrades(newIds) {
  * and combines each function into one ouput
  * object
  */
-var bro = 1;
 function formatSankey() {
     newIds = createIDS();
     newLinks = createLinks(newIds);
@@ -252,7 +251,6 @@ function formatSankey() {
         "nodes": newNodes,
         "links": newLinks
     }
-    bro += 1
     for (const student of Object.entries(rawData)) {
         for ([index, assessment] of assessments.entries()) {
             if (!student[1][assessment]) {
