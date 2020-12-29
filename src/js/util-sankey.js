@@ -317,7 +317,6 @@ function wanedilliams(node) {
     const newSankey = formatSankey();
     removePlots();
     drawSankey(newSankey);
-    console.log(newSankey);
 }
 
 function removePlots() {
