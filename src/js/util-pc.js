@@ -1,7 +1,7 @@
 /**
  * Returns array of pixel values for y-axis based on sankey  
  * */
-function nodeValueToScale(i, sankeyData, examName) {
+function nodeValueToScale(sankeyData, examName) {
     let lowerBound = 0;
     let upperBound = 0;
     starting = true
@@ -22,6 +22,58 @@ function nodeValueToScale(i, sankeyData, examName) {
         scaleArray.push(node['y0']);
     }
     return scaleArray;
+}
+
+/**
+ * Returns array of domain values according to map
+ */
+function domainScale(nodes, examName) {
+    const domain = [0, 59.99];
+    let nodeCounter = 0;
+    const nodesList = Object.entries(nodes).reverse();
+    for (const [node, value] of nodesList) {
+        if (node.localeCompare('F') !== 0) {
+
+            /* Skip nodes accounted for by helper */
+            const previousNode = nodesList[nodeCounter - 1][0]
+            if (previousNode[previousNode.length - 1] !== '-' &&
+                node[node.length - 1] !== '+')
+
+                /* Breakdown block */
+                if (node[node.length - 1].localeCompare('-') === 0) {
+                    domainScaleHelper(domain, node);
+                }
+                else {
+                    domain.push(Math.ceil(domain[domain.length - 1]));
+                    if (node.localeCompare('A') !== 0) {
+                        domain.push(Math.ceil(domain[domain.length - 1]) + 9.99);
+                    }
+                    else {
+                        domain.push(100);
+                    }
+                }
+        }
+        nodeCounter += 1;
+    }
+
+    return domain;
+}
+
+/**
+ * Helper to deal with C-, C, C+. etc.
+ */
+function domainScaleHelper(domain, node) {
+    domain.push(Math.ceil(domain[domain.length - 1]));
+    domain.push(Math.ceil(domain[domain.length - 1]) + 3.99);
+    domain.push(Math.ceil(domain[domain.length - 1]));
+    if (node.localeCompare('A-') !== 0) {
+        domain.push(Math.ceil(domain[domain.length - 1]) + 2.99);
+        domain.push(Math.ceil(domain[domain.length - 1]));
+        domain.push(Math.ceil(domain[domain.length - 1]) + 2.99);
+    }
+    else {
+        domain.push(100);
+    }
 }
 
 /**

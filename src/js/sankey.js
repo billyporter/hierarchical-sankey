@@ -18,9 +18,10 @@ const sankey = d3.sankey()
  * Top level Sankey drawing function
  */
 function drawSankey(sankeyData) {
-    /* Draws Sankey on SVG */
-    console.log(sankeyData);
-    var graph = sankey(sankeyData);
+    /* Fomats Sankey */
+    const graph = sankey(sankeyData);
+
+    /* Calls functions */
     drawNodes(graph);
     drawPC(sankeyData);
     drawLinks(graph);

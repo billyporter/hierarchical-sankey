@@ -7,21 +7,15 @@
  * 
  */
 
-function getColumnScale(sankeyGrades) {
-    console.log(sankeyGrades);
-}
-
 function drawPC(sankeyData) {
-    getColumnScale(sankeyData["grades"]);
     /* Builds the custom y-Scale and x-scale */
     var y = {}
     dimensions = ["Exam 1", "Exam 2", "Exam 3", "Final Exam"];
-    for (i in dimensions) {
-        // const newDomer5 = getColumnScale
-        namer = dimensions[i]
-        const scaleyWaley = nodeValueToScale(i, sankeyData, dimensions[i]);
-        y[namer] = d3.scaleLinear()
-            .domain([0, 59.99999999999999, 60, 69.99999999999999, 70, 79.99999999999999, 80, 89.999999999999, 90, 100])
+    for (const examName of dimensions) {
+        const domainyWainy = domainScale(sankeyData["grades"][examName], examName);
+        const scaleyWaley = nodeValueToScale(sankeyData, examName);
+        y[examName] = d3.scaleLinear()
+            .domain(domainyWainy)
             .range(scaleyWaley)
     }
     x = d3.scalePoint()
