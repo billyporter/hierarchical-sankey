@@ -106,8 +106,35 @@ const showLines = new Map(pcData.map(x => [x["id"], false])); // initialize map 
 function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAssessment) {
 
     /* Filter lines */
-    const newData = pcData.filter(x => gradeScale(x[sourceAssessment.trim()]) === sourceGrade
-        && gradeScale(x[targetAssessment.trim()]) === targetGrade)
+    const newData = pcData.filter(x => {
+
+        let sourceMatch = false
+        const sourceRawLetter = gradeScale(x[sourceAssessment.trim()])
+
+        /* Check if source is broken down */
+        if (assessGradeLevelMap[sourceAssessment][sourceRawLetter] === 1) {
+            sourceMatch = specificLetterScale(sourceRawLetter, x[sourceAssessment.trim()]) === sourceGrade
+        }
+        else {
+            sourceMatch = sourceRawLetter === sourceGrade
+        }
+
+        let targetMatch = false;
+        let targetString = targetAssessment;
+        if (targetAssessment === 'Final Exam') {
+            targetString = ' '.concat(targetAssessment); // corrects for ' Final Exam' issue
+        }
+        /* Check if target is broken down */
+        const targetRawLetter = gradeScale(x[targetAssessment.trim()])
+        if (assessGradeLevelMap[targetString][targetRawLetter] === 1) {
+            targetMatch = specificLetterScale(targetRawLetter, x[targetAssessment.trim()]) === targetGrade
+        }
+        else {
+            targetMatch = targetRawLetter === targetGrade
+        }
+
+        return sourceMatch && targetMatch;
+    });
 
 
     /**
@@ -117,7 +144,13 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
     /* Switch from number to letter Grade */
     for (let line of newData) {
         for (let assessment of assessments) {
-            line[assessment.trim() + ' letter'] = gradeScale(line[assessment.trim()]);
+            const currGrade = gradeScale(line[assessment.trim()]);
+            if (assessGradeLevelMap[assessment][currGrade] === 1) {
+                line[assessment.trim() + ' letter'] = specificLetterScale(currGrade, line[assessment.trim()]);
+            }
+            else {
+                line[assessment.trim() + ' letter'] = gradeScale(line[assessment.trim()]);
+            }
         }
     }
 
