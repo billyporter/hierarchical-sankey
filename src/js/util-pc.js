@@ -111,8 +111,13 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
         let sourceMatch = false
         const sourceRawLetter = gradeScale(x[sourceAssessment.trim()])
 
+
+        if (!sourceRawLetter) {
+            return false;
+        }
+
         /* Check if source is broken down */
-        if (assessGradeLevelMap[sourceAssessment][sourceRawLetter] === 1) {
+        if (assessGradeLevelMap[sourceAssessment][sourceRawLetter]["level"] === 1) {
             sourceMatch = specificLetterScale(sourceRawLetter, x[sourceAssessment.trim()]) === sourceGrade
         }
         else {
@@ -126,7 +131,10 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
         }
         /* Check if target is broken down */
         const targetRawLetter = gradeScale(x[targetAssessment.trim()])
-        if (assessGradeLevelMap[targetString][targetRawLetter] === 1) {
+        if (!targetRawLetter) {
+            return false;
+        }
+        if (assessGradeLevelMap[targetString][targetRawLetter]["level"] === 1) {
             targetMatch = specificLetterScale(targetRawLetter, x[targetAssessment.trim()]) === targetGrade
         }
         else {
@@ -145,7 +153,7 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
     for (let line of newData) {
         for (let assessment of assessments) {
             const currGrade = gradeScale(line[assessment.trim()]);
-            if (assessGradeLevelMap[assessment][currGrade] === 1) {
+            if (assessGradeLevelMap[assessment][currGrade]["level"] === 1) {
                 line[assessment.trim() + ' letter'] = specificLetterScale(currGrade, line[assessment.trim()]);
             }
             else {

@@ -54,7 +54,6 @@ function drawNodes(graph) {
         })
         .on("click", function (d, i) {
             wanedilliams(i);
-            console.log('here');
         });
 
 
