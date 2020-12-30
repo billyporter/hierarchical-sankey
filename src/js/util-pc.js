@@ -32,8 +32,10 @@ function domainScale(nodes, examName) {
     let nodeCounter = 0;
     const nodesList = Object.entries(nodes).reverse();
     for (const [node, value] of nodesList) {
-        if (node.localeCompare('F') !== 0) {
+        if (node.localeCompare('F') !== 0 && node.localeCompare('0-59') !== 0) {
 
+            console.log(nodesList);
+            console.log(nodeCounter);
             /* Skip nodes accounted for by helper */
             const previousNode = nodesList[nodeCounter - 1][0]
             if (previousNode[previousNode.length - 1] !== '-' &&

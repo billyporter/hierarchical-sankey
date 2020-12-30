@@ -125,6 +125,7 @@ function createColorMap(i) {
  * */
 function createIDS() {
     let id = 0;
+    console.log(assessGradeLevelMap);
     dict = {} // dict to hold ids
     for (const [index, assessment] of assessments.entries()) {
         for ([jndex, grade] of grades.entries()) {
@@ -142,6 +143,9 @@ function createIDS() {
                         }
                         dict[id++] = { [assessment.trim()]: grade };
                         dict[id++] = { [assessment.trim()]: grade.concat("-") };
+                    }
+                    else {
+                        dict[id++] = { [assessment.trim()]: "0-59" };
                     }
                     break;
                 /* TODO: add case 2: (indiivual scores) */
@@ -199,6 +203,7 @@ function createIDS() {
 
         }
     }
+    console.log(dict);
     return dict;
 }
 
@@ -291,6 +296,7 @@ function createGrades(newIds) {
  * object
  */
 function formatSankey() {
+    console.log(assessGradeLevelMap);
     newIds = createIDS();
     newLinks = createLinks(newIds);
     newNodes = createNodes(newIds);
@@ -311,6 +317,9 @@ function formatSankey() {
             let level = assessGradeLevelMap[assessment][grade]["level"];
             if (level === 1) {
                 grade = specificLetterScale(grade, student[1][assessment]);
+                if (grade.localeCompare('F') === 0) {
+                    grade = "0-59";
+                }
             }
             if (level === 2) {
                 grade = specificLetterScale(grade, student[1][assessment]);
@@ -334,6 +343,9 @@ function formatSankey() {
                 let level = assessGradeLevelMap[assessments[index + 1]][nextGrade]["level"];
                 if (level === 1) {
                     nextGrade = specificLetterScale(nextGrade, student[1][assessments[index + 1]]);
+                    if (nextGrade.localeCompare('F') === 0) {
+                        nextGrade = "0-59";
+                    }
                 }
                 if (level === 2) {
                     nextGrade = specificLetterScale(nextGrade, student[1][assessments[index + 1]]);
@@ -395,6 +407,9 @@ function wanedilliams(node) {
             assessGradeLevelMap[stringToInput][locGrade]["level"] += 1;
         }
         if (assessGradeLevelMap[stringToInput][locGrade]["level"] === 2) {
+            if (locGrade.localeCompare('F') === 0) {
+                assessGradeLevelMap[stringToInput][locGrade]["level"] = 1;
+            }
             assessGradeLevelMap[stringToInput][locGrade[0]]["def"] = 2;
         }
     }
