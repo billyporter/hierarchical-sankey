@@ -76,7 +76,19 @@ function drawPC(sankeyData) {
     svg.selectAll('.node').each(function (d, i) {
         /* Variables */
         const data = [];
-        let start = gradeMap.get(d["name"]);
+        let start = gradeMap.get(d["name"][0]);
+        if (d["name"][d["name"].length - 1] === '-') {
+            start += 4
+        }
+        if (d["name"][d["name"].length - 1] === '+') {
+            start += 7
+        }
+        let assess = d.assessment;
+        if (assess.localeCompare('Final Exam') === 0) {
+            assess = ' '.concat(assess);
+        }
+
+        /* Calculate end */
         let end = start + 11;
         if (d.name === 'F') // consider that F scale is of size 60 whereas other grades are of size 10
             end += 50;
@@ -109,6 +121,11 @@ function drawPC(sankeyData) {
             } else {
                 start = end;
             }
+        }
+
+        if (assessGradeLevelMap[assess][d.name[0]] === 1) {
+            end = start + 5;
+            inc = 4
         }
 
         for (let i = start; i < end; i += inc) {
