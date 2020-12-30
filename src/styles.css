@@ -22,6 +22,10 @@ body {
     cursor: pointer;
 }
 
+.nodes:hover {
+    cursor: pointer;
+}
+
 .lines {
     z-index: -9999;
 }
