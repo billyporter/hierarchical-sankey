@@ -76,38 +76,61 @@ function drawPC(sankeyData) {
     svg.selectAll('.node').each(function (d, i) {
         /* Variables */
         const data = [];
-        let start = gradeMap.get(d["name"]);
+        let start = gradeMap.get(d["name"][0]);
+        if (d["name"][d["name"].length - 1] === '+') {
+            start += 7;
+        }
+        let assess = d.assessment;
+        if (assess.localeCompare('Final Exam') === 0) {
+            assess = ' '.concat(assess);
+        }
+
+        /* Calculate end */
         let end = start + 11;
         if (d.name === 'F') // consider that F scale is of size 60 whereas other grades are of size 10
             end += 50;
         let inc = 1;
 
+
+        if (assessGradeLevelMap[assess][d.name[0]] === 1) {
+            if (d["name"][d["name"].length - 1] === '-') {
+                end = start + 5;
+            }
+            if(d["name"].length === 1){
+                start += 4;
+                if(d["name"] === 'A'){
+                    end = start + 7;
+                }
+                else{
+                    end = start + 4;
+                }
+            }
+            if (d["name"][d["name"].length - 1] === '+') {
+                end = start + 4;
+            }
+        }
+        
         /* Change number of points depending on size, A-D */
         const size = d["y1"] - d["y0"];
+        const points = end - start - 1;
+
+        /* For when points always equal 10 */
         if (size > 240) {
             inc = 1;
         } else if (size > 110) {
-            inc = 2;
+            inc = Math.floor(points / 5);
         } else if (size > 65) {
-            inc = 5;
+            inc = Math.floor(points / 2);
         } else if (size > 15) {
-            inc = 10;
+            inc = points;
         } else {
             start = end;
         }
 
         /* Case for F grade (multiplies by 6 to remain proportional with A-D)*/
         if (d.name === 'F') {
-            if (size > 240) {
-                inc = 6;
-            } else if (size > 110) {
-                inc = 12;
-            } else if (size > 65) {
-                inc = 30;
-            } else if (size > 15) {
-                inc = 60;
-            } else {
-                start = end;
+            if(inc != points){
+                inc *= 6;
             }
         }
 
@@ -129,7 +152,6 @@ function drawPC(sankeyData) {
             .call(y_axis)
             .style("visibility", "hidden");
     });
-
 }
 
 
