@@ -143,6 +143,9 @@ function createIDS() {
                         dict[id++] = { [assessment.trim()]: grade };
                         dict[id++] = { [assessment.trim()]: grade.concat("-") };
                     }
+                    break;
+                default:
+                    dict[id++] = { [assessment.trim()]: grade };
                 /* TODO: add case 2: (indiivual scores) */
             }
 
@@ -316,7 +319,9 @@ function wanedilliams(node) {
     if (locAs.localeCompare('Final Exam') === 0) {
         stringToInput = ' '.concat(locAs);
     }
-    assessGradeLevelMap[stringToInput][locGrade] += 1;
+    if (locGrade.localeCompare('F') !== 0) {
+        assessGradeLevelMap[stringToInput][locGrade] = 1;
+    }
 
     const newSankey = formatSankey();
     removePlots();
