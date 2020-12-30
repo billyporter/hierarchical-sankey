@@ -91,39 +91,10 @@ function drawPC(sankeyData) {
             end += 50;
         let inc = 1;
 
-        // /* Change number of points depending on size, A-D */
-        // const size = d["y1"] - d["y0"];
-        // if (size > 240) {
-        //     inc = 1;
-        // } else if (size > 110) {
-        //     inc = 2;
-        // } else if (size > 65) {
-        //     inc = 5;
-        // } else if (size > 15) {
-        //     inc = 10;
-        // } else {
-        //     start = end;
-        // }
-
-        // /* Case for F grade (multiplies by 6 to remain proportional with A-D)*/
-        // if (d.name === 'F') {
-        //     if (size > 240) {
-        //         inc = 6;
-        //     } else if (size > 110) {
-        //         inc = 12;
-        //     } else if (size > 65) {
-        //         inc = 30;
-        //     } else if (size > 15) {
-        //         inc = 60;
-        //     } else {
-        //         start = end;
-        //     }
-        // }
 
         if (assessGradeLevelMap[assess][d.name[0]] === 1) {
-            // end = start + 5;
             if (d["name"][d["name"].length - 1] === '-') {
-                end = start + 4;
+                end = start + 5;
             }
             if(d["name"].length === 1){
                 start += 4;
@@ -131,24 +102,25 @@ function drawPC(sankeyData) {
                     end = start + 7;
                 }
                 else{
-                    end = start + 3;
+                    end = start + 4;
                 }
             }
             if (d["name"][d["name"].length - 1] === '+') {
-                end = start + 3;
+                end = start + 4;
             }
         }
         
         /* Change number of points depending on size, A-D */
         const size = d["y1"] - d["y0"];
         const points = end - start - 1;
-        
+
+        /* For when points always equal 10 */
         if (size > 240) {
             inc = 1;
         } else if (size > 110) {
-            inc = 2 % points;
+            inc = Math.floor(points / 5);
         } else if (size > 65) {
-            inc = 5 % points;
+            inc = Math.floor(points / 2);
         } else if (size > 15) {
             inc = points;
         } else {
@@ -156,7 +128,6 @@ function drawPC(sankeyData) {
         }
 
         /* Case for F grade (multiplies by 6 to remain proportional with A-D)*/
-        /* except when the increment is already the whole range because the node size is small */
         if (d.name === 'F') {
             if(inc != points){
                 inc *= 6;
