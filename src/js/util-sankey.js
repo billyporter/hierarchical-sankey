@@ -71,13 +71,6 @@ function populateGradeLevelMap() {
         assessGradeLevelMap[assessment] = {};
         for ([jndex, grade] of grades.entries()) {
             assessGradeLevelMap[assessment][grade] = { "level": 0, "+": 0, "-": 0, "def": 0 };
-            // if (grade.localeCompare('F') !== 0) {
-            //     assessGradeLevelMap[assessment][grade] = 1;
-            //     assessGradeLevelMap[assessment][grade.concat('-')] = 1;
-            // }
-            // if (grade.localeCompare('A') !== 0) {
-            //     assessGradeLevelMap[assessment]["level"][grade.concat('+')] = 1;
-            // }
         }
     }
 }
@@ -133,7 +126,6 @@ function createColorMap(i) {
 function createIDS() {
     let id = 0;
     dict = {} // dict to hold ids
-    console.log(assessGradeLevelMap);
     for (const [index, assessment] of assessments.entries()) {
         for ([jndex, grade] of grades.entries()) {
 
@@ -155,50 +147,53 @@ function createIDS() {
                 /* TODO: add case 2: (indiivual scores) */
                 case 2:
                     /* Keep nodes that aren't level 2 */
-                    if (assessGradeLevelMap[assessment][grade]["+"] === 2) {
-                        /* Do not include every score, only ones that have value */
-                        const seen = new Set();
-                        const numbersArray = []
-                        for (const student of Object.entries(rawData)) {
-                            if (!student[1][assessment]) {
-                                continue;
-                            }
-                            const currGrade = student[1][assessment];
-                            if (seen.has(currGrade)) {
-                                continue;
-                            }
-                            seen.add(currGrade);
-                            currGradeLevel = specificLetterScale(gradeScale(currGrade), currGrade);
+                    for (const subgrade of ["+", "def", "-"]) {
+                        const lev = assessGradeLevelMap[assessment][grade][subgrade]
+                        if (lev) {
+                            /* Seen set so don't have repeat nodes, also memoize */
+                            const seen = new Set();
 
-                            if (currGradeLevel === grade.concat("+")) {
-                                numbersArray.push(currGrade);
+                            /* numbersArray stores nodes that are filtered right */
+                            const numbersArray = []
+                            for (const student of Object.entries(rawData)) {
+                                if (!student[1][assessment]) {
+                                    continue;
+                                }
+                                const currGrade = student[1][assessment];
+                                if (seen.has(currGrade)) {
+                                    continue;
+                                }
+                                seen.add(currGrade);
+                                currGradeLevel = specificLetterScale(gradeScale(currGrade), currGrade);
+                                let suffix = subgrade;
+                                if (suffix.localeCompare("def") === 0) {
+                                    suffix = "";
+                                }
+                                if (currGradeLevel === grade.concat(suffix)) {
+                                    numbersArray.push(currGrade);
+                                }
+                            }
+                            for (const num of numbersArray.sort(function (a, b) { return parseInt(b) - parseInt(a) })) {
+                                dict[id++] = { [assessment.trim()]: num };
+                            }
+                        } /* Proceed as normal if not in second level */
+                        else {
+                            if (subgrade.localeCompare("+") === 0) {
+                                if (grade !== 'A' && grade !== 'F') {
+                                    dict[id++] = { [assessment.trim()]: grade.concat(subgrade) };
+                                }
+                            }
+                            if (subgrade.localeCompare("-") === 0) {
+                                if (grade !== 'F') {
+                                    dict[id++] = { [assessment.trim()]: grade.concat(subgrade) };
+                                }
+                            }
+                            if (subgrade.localeCompare("def") === 0) {
+                                dict[id++] = { [assessment.trim()]: grade };
                             }
                         }
-                        for (const num of numbersArray.sort().reverse()) {
-                            dict[id++] = { [assessment.trim()]: num };
-                        }
                     }
-                    else {
-                        if (grade !== 'A' && grade !== 'F') {
-                            dict[id++] = { [assessment.trim()]: grade.concat("+") };
-                        }
-                    }
-                    if (assessGradeLevelMap[assessment][grade]["def"] === 2) {
-                        dict[id++] = { [assessment.trim()]: grade };
-                    }
-                    else {
-                        dict[id++] = { [assessment.trim()]: grade };
-                    }
-                    if (assessGradeLevelMap[assessment][grade]["-"] === 2) {
-                        if (grade !== 'F') {
-                            dict[id++] = { [assessment.trim()]: grade.concat("-") };
-                        }
-                    }
-                    else {
-                        if (grade !== 'F') {
-                            dict[id++] = { [assessment.trim()]: grade.concat("-") };
-                        }
-                    }
+
                     break;
             }
 
@@ -278,7 +273,6 @@ function createNodes(newIds) {
  * */
 function createGrades(newIds) {
     dict = {};
-    console.log(newIds);
     for (const [key, value] of Object.entries(newIds)) {
         if (!dict[Object.keys(value)[0].trim()]) {
             dict[Object.keys(value)[0].trim()] = {}
@@ -315,12 +309,15 @@ function formatSankey() {
             }
             let grade = gradeScale(student[1][assessment]);
             let level = assessGradeLevelMap[assessment][grade]["level"];
-            if (level == 1) {
+            if (level === 1) {
                 grade = specificLetterScale(grade, student[1][assessment]);
             }
-            if (level == 2) {
+            if (level === 2) {
                 grade = specificLetterScale(grade, student[1][assessment]);
-                if (assessGradeLevelMap[assessment][grade[0]][grade[grade.length - 1]] == 2) {
+                if (grade.length === 1 && assessGradeLevelMap[assessment][grade]["def"] === 2) {
+                    grade = student[1][assessment];
+                }
+                else if (assessGradeLevelMap[assessment][grade[0]][grade[grade.length - 1]] === 2) {
                     grade = student[1][assessment];
                 }
             }
@@ -330,12 +327,22 @@ function formatSankey() {
 
             if (index < 3) {
                 let nextGrade = gradeScale(student[1][assessments[index + 1]]);
+                let copyNextGrade = student[1][assessments[index + 1]];
                 if (nextGrade == "") {
                     continue;
                 }
                 let level = assessGradeLevelMap[assessments[index + 1]][nextGrade]["level"];
                 if (level === 1) {
-                    nextGrade = specificLetterScale(nextGrade, student[1][assessment]);
+                    nextGrade = specificLetterScale(nextGrade, student[1][assessments[index + 1]]);
+                }
+                if (level === 2) {
+                    nextGrade = specificLetterScale(nextGrade, student[1][assessments[index + 1]]);
+                    if (nextGrade.length === 1 && assessGradeLevelMap[assessments[index + 1]][nextGrade]["def"] === 2) {
+                        nextGrade = copyNextGrade;
+                    }
+                    else if (assessGradeLevelMap[assessments[index + 1]][nextGrade[0]][nextGrade[nextGrade.length - 1]] === 2) {
+                        nextGrade = copyNextGrade;
+                    }
                 }
                 let source = output["grades"][assessment.trim()][grade]["id"]; // prev grade id
                 let target = output["grades"][assessments[index + 1].trim()]
@@ -384,11 +391,12 @@ function wanedilliams(node) {
         assessGradeLevelMap[stringToInput][locGrade[0]]["level"] = 2;
     }
     else {
-        assessGradeLevelMap[stringToInput][locGrade]["level"] += 1;
+        if (assessGradeLevelMap[stringToInput][locGrade]["level"] < 2) {
+            assessGradeLevelMap[stringToInput][locGrade]["level"] += 1;
+        }
         if (assessGradeLevelMap[stringToInput][locGrade]["level"] === 2) {
             assessGradeLevelMap[stringToInput][locGrade[0]]["def"] = 2;
         }
-        console.log(assessGradeLevelMap)
     }
 
     const newSankey = formatSankey();
