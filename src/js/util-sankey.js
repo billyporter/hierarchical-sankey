@@ -125,7 +125,6 @@ function createColorMap(i) {
  * */
 function createIDS() {
     let id = 0;
-    console.log(assessGradeLevelMap);
     dict = {} // dict to hold ids
     for (const [index, assessment] of assessments.entries()) {
         for ([jndex, grade] of grades.entries()) {
@@ -203,7 +202,6 @@ function createIDS() {
 
         }
     }
-    console.log(dict);
     return dict;
 }
 
@@ -296,7 +294,6 @@ function createGrades(newIds) {
  * object
  */
 function formatSankey() {
-    console.log(assessGradeLevelMap);
     newIds = createIDS();
     newLinks = createLinks(newIds);
     newNodes = createNodes(newIds);
