@@ -60,10 +60,8 @@ function domainScale(nodes, examName) {
         }
         else {
             /* Handle the case of number */
-            console.log(node);
-            domain.push(Math.floor(domain[domain.length - 1]) + 0.5);
-            console.log(Math.floor(domain[domain.length - 1]) + 1.5);
-            domain.push(Math.floor(domain[domain.length - 1]) + 1.5);
+            domain.push(parseInt(node) - 0.5);
+            domain.push(parseInt(node) + 0.5);
         }
     }
     return domain;
