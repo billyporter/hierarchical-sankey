@@ -13,9 +13,6 @@ function drawPC(sankeyData) {
     dimensions = ["Exam 1", "Exam 2", "Exam 3", "Final Exam"];
     for (const examName of dimensions) {
         const domainyWainy = domainScale(sankeyData["grades"][examName], examName);
-        if (examName === 'Exam 3') {
-            console.log(domainyWainy)
-        }
         const scaleyWaley = nodeValueToScale(sankeyData, examName);
         y[examName] = d3.scaleLinear()
             .domain(domainyWainy)
@@ -104,7 +101,6 @@ function drawPC(sankeyData) {
                 if (d["name"].length === 1) {
                     start += 4;
                     if (d["name"] === 'A') {
-                        console.log('here');
                         end = start + 7;
                     }
                     else {

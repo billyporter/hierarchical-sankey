@@ -118,7 +118,6 @@ const showLines = new Map(pcData.map(x => [x["id"], false])); // initialize map 
 
 
 function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAssessment) {
-
     /* Filter lines */
     const newData = pcData.filter(x => {
 
@@ -158,7 +157,7 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
         if (!targetRawLetter) {
             return false;
         }
-        if (assessGradeLevelMap[targetString][sourceRawLetter]["level"] === 2) {
+        if (assessGradeLevelMap[targetString][targetRawLetter]["level"] === 2) {
             const specificLetter = specificLetterScale(sourceRawLetter, x[targetString.trim()]);
             let newMapper = "def";
             if (specificLetter.length > 1) {
