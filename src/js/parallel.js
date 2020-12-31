@@ -86,15 +86,17 @@ function drawPC(sankeyData) {
         }
 
         /* Calculate end */
-        let end = start + 11;
+        let end = start + 10;
         if (d.name === 'F') // consider that F scale is of size 60 whereas other grades are of size 10
             end += 50;
+        if (d.name === 'A')
+            end += 1;
         let inc = 1;
 
 
         if (assessGradeLevelMap[assess][d.name[0]]["level"] === 1) {
             if (d["name"][d["name"].length - 1] === '-') {
-                end = start + 5;
+                end = start + 4;
             }
             if (d["name"].length === 1) {
                 start += 4;
@@ -102,12 +104,12 @@ function drawPC(sankeyData) {
                     console.log('here');
                     end = start + 7;
                 }
-                else {
-                    end = start + 4;
+                else{
+                    end = start + 3;
                 }
             }
             if (d["name"][d["name"].length - 1] === '+') {
-                end = start + 4;
+                end = start + 3;
             }
         }
 
@@ -115,7 +117,6 @@ function drawPC(sankeyData) {
         const size = d["y1"] - d["y0"];
         const points = end - start - 1;
 
-        /* For when points always equal 10 */
         if (size > 240) {
             inc = 1;
         } else if (size > 110) {
@@ -154,11 +155,3 @@ function drawPC(sankeyData) {
             .style("visibility", "hidden");
     });
 }
-
-
-
-
-
-
-
-
