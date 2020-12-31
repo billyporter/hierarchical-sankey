@@ -28,7 +28,6 @@ function nodeValueToScale(sankeyData, examName) {
  * Returns array of domain values according to map
  */
 function domainScale(nodes, examName) {
-    const letrs = new Set(["A", "B", "C", "D", "F"]);
     const domain = [0, 59];
     const nodesList = Object.entries(nodes).sort(function (a, b) {
         return b[1].id - a[1].id

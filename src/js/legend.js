@@ -10,7 +10,7 @@ function buildLegend(colorArray, rankedArray, filteredData) {
     const barHeight = 400;
     const barPadding = 15;
     const barWidth = 60;
-    const startingX = 850;
+    const startingX = 1050;
 
     /* Build domain for graph */
     domainY = []
