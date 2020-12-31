@@ -101,7 +101,7 @@ function drawPC(sankeyData) {
             if(d["name"].length === 1){
                 start += 4;
                 if(d["name"] === 'A'){
-                    end = start + 6;
+                    end = start + 7;
                 }
                 else{
                     end = start + 3;
