@@ -65,7 +65,7 @@ function drawNodes(graph) {
     /* Add in text */
     graphnode.append("text")
         .style("font-size", "16px")
-        .attr("x", function (d) { return d.x0 - 20; })
+        .attr("x", function (d) { return d.x0 - 30; })
         .attr("y", function (d) { return (d.y1 + d.y0) / 2; })
         .attr("dy", "0.35em")
         .text(function (d) { return d.name; });

@@ -70,7 +70,7 @@ function populateGradeLevelMap() {
     for ([index, assessment] of assessments.entries()) {
         assessGradeLevelMap[assessment] = {};
         for ([jndex, grade] of grades.entries()) {
-            assessGradeLevelMap[assessment][grade] = 0;
+            assessGradeLevelMap[assessment][grade] = { "level": 0, "+": 0, "-": 0, "def": 0 };
         }
     }
 }
@@ -130,7 +130,7 @@ function createIDS() {
         for ([jndex, grade] of grades.entries()) {
 
             /* Curr level = level of breakdown (0 = no breakdown) */
-            const currLevel = assessGradeLevelMap[assessment][grade];
+            const currLevel = assessGradeLevelMap[assessment][grade]["level"];
             switch (currLevel) {
                 case 0:
                     dict[id++] = { [assessment.trim()]: grade };
@@ -143,10 +143,61 @@ function createIDS() {
                         dict[id++] = { [assessment.trim()]: grade };
                         dict[id++] = { [assessment.trim()]: grade.concat("-") };
                     }
+                    else {
+                        dict[id++] = { [assessment.trim()]: "0-59" };
+                    }
                     break;
-                default:
-                    dict[id++] = { [assessment.trim()]: grade };
                 /* TODO: add case 2: (indiivual scores) */
+                case 2:
+                    /* Keep nodes that aren't level 2 */
+                    for (const subgrade of ["+", "def", "-"]) {
+                        const lev = assessGradeLevelMap[assessment][grade][subgrade]
+                        if (lev) {
+                            /* Seen set so don't have repeat nodes, also memoize */
+                            const seen = new Set();
+
+                            /* numbersArray stores nodes that are filtered right */
+                            const numbersArray = []
+                            for (const student of Object.entries(rawData)) {
+                                if (!student[1][assessment]) {
+                                    continue;
+                                }
+                                const currGrade = student[1][assessment];
+                                if (seen.has(currGrade)) {
+                                    continue;
+                                }
+                                seen.add(currGrade);
+                                currGradeLevel = specificLetterScale(gradeScale(currGrade), currGrade);
+                                let suffix = subgrade;
+                                if (suffix.localeCompare("def") === 0) {
+                                    suffix = "";
+                                }
+                                if (currGradeLevel === grade.concat(suffix)) {
+                                    numbersArray.push(currGrade);
+                                }
+                            }
+                            for (const num of numbersArray.sort(function (a, b) { return parseInt(b) - parseInt(a) })) {
+                                dict[id++] = { [assessment.trim()]: num };
+                            }
+                        } /* Proceed as normal if not in second level */
+                        else {
+                            if (subgrade.localeCompare("+") === 0) {
+                                if (grade !== 'A' && grade !== 'F') {
+                                    dict[id++] = { [assessment.trim()]: grade.concat(subgrade) };
+                                }
+                            }
+                            if (subgrade.localeCompare("-") === 0) {
+                                if (grade !== 'F') {
+                                    dict[id++] = { [assessment.trim()]: grade.concat(subgrade) };
+                                }
+                            }
+                            if (subgrade.localeCompare("def") === 0) {
+                                dict[id++] = { [assessment.trim()]: grade };
+                            }
+                        }
+                    }
+
+                    break;
             }
 
         }
@@ -260,9 +311,21 @@ function formatSankey() {
                 continue;
             }
             let grade = gradeScale(student[1][assessment]);
-            let level = assessGradeLevelMap[assessment][grade];
+            let level = assessGradeLevelMap[assessment][grade]["level"];
             if (level === 1) {
                 grade = specificLetterScale(grade, student[1][assessment]);
+                if (grade.localeCompare('F') === 0) {
+                    grade = "0-59";
+                }
+            }
+            if (level === 2) {
+                grade = specificLetterScale(grade, student[1][assessment]);
+                if (grade.length === 1 && assessGradeLevelMap[assessment][grade]["def"] === 2) {
+                    grade = student[1][assessment];
+                }
+                else if (assessGradeLevelMap[assessment][grade[0]][grade[grade.length - 1]] === 2) {
+                    grade = student[1][assessment];
+                }
             }
             output["grades"][assessment.trim()][grade]["count"]++;
             output["nodes"][output["grades"][assessment.trim()][grade]["id"]]["grades"]
@@ -270,12 +333,25 @@ function formatSankey() {
 
             if (index < 3) {
                 let nextGrade = gradeScale(student[1][assessments[index + 1]]);
+                let copyNextGrade = student[1][assessments[index + 1]];
                 if (nextGrade == "") {
                     continue;
                 }
-                let level = assessGradeLevelMap[assessments[index + 1]][nextGrade];
+                let level = assessGradeLevelMap[assessments[index + 1]][nextGrade]["level"];
                 if (level === 1) {
-                    nextGrade = specificLetterScale(nextGrade, student[1][assessment]);
+                    nextGrade = specificLetterScale(nextGrade, student[1][assessments[index + 1]]);
+                    if (nextGrade.localeCompare('F') === 0) {
+                        nextGrade = "0-59";
+                    }
+                }
+                if (level === 2) {
+                    nextGrade = specificLetterScale(nextGrade, student[1][assessments[index + 1]]);
+                    if (nextGrade.length === 1 && assessGradeLevelMap[assessments[index + 1]][nextGrade]["def"] === 2) {
+                        nextGrade = copyNextGrade;
+                    }
+                    else if (assessGradeLevelMap[assessments[index + 1]][nextGrade[0]][nextGrade[nextGrade.length - 1]] === 2) {
+                        nextGrade = copyNextGrade;
+                    }
                 }
                 let source = output["grades"][assessment.trim()][grade]["id"]; // prev grade id
                 let target = output["grades"][assessments[index + 1].trim()]
@@ -319,8 +395,20 @@ function wanedilliams(node) {
     if (locAs.localeCompare('Final Exam') === 0) {
         stringToInput = ' '.concat(locAs);
     }
-    if (locGrade.localeCompare('F') !== 0) {
-        assessGradeLevelMap[stringToInput][locGrade] = 1;
+    if (locGrade.length > 1) {
+        assessGradeLevelMap[stringToInput][locGrade[0]][locGrade[1]] = 2;
+        assessGradeLevelMap[stringToInput][locGrade[0]]["level"] = 2;
+    }
+    else {
+        if (assessGradeLevelMap[stringToInput][locGrade]["level"] < 2) {
+            assessGradeLevelMap[stringToInput][locGrade]["level"] += 1;
+        }
+        if (assessGradeLevelMap[stringToInput][locGrade]["level"] === 2) {
+            if (locGrade.localeCompare('F') === 0) {
+                assessGradeLevelMap[stringToInput][locGrade]["level"] = 1;
+            }
+            assessGradeLevelMap[stringToInput][locGrade[0]]["def"] = 2;
+        }
     }
 
     const newSankey = formatSankey();

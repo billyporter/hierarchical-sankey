@@ -94,13 +94,14 @@ function drawPC(sankeyData) {
         let inc = 1;
 
 
-        if (assessGradeLevelMap[assess][d.name[0]] === 1) {
+        if (assessGradeLevelMap[assess][d.name[0]]["level"] === 1) {
             if (d["name"][d["name"].length - 1] === '-') {
                 end = start + 4;
             }
-            if(d["name"].length === 1){
+            if (d["name"].length === 1) {
                 start += 4;
-                if(d["name"] === 'A'){
+                if (d["name"] === 'A') {
+                    console.log('here');
                     end = start + 7;
                 }
                 else{
@@ -111,7 +112,7 @@ function drawPC(sankeyData) {
                 end = start + 3;
             }
         }
-        
+
         /* Change number of points depending on size, A-D */
         const size = d["y1"] - d["y0"];
         const points = end - start - 1;
@@ -130,7 +131,7 @@ function drawPC(sankeyData) {
 
         /* Case for F grade (multiplies by 6 to remain proportional with A-D)*/
         if (d.name === 'F') {
-            if(inc != points){
+            if (inc != points) {
                 inc *= 6;
             }
         }
@@ -154,11 +155,3 @@ function drawPC(sankeyData) {
             .style("visibility", "hidden");
     });
 }
-
-
-
-
-
-
-
-

@@ -1,6 +1,6 @@
 
 const width = 700; //890;
-const height = 582; //740;
+const height = 782; //740;
 const legendWidth = 600;
 const legendHeight = 900;
 
