@@ -44,7 +44,7 @@ function drawPC(sankeyData) {
         .style("opacity", 0.6)
         .style("visibility", "hidden")
         .style("pointer-events", "visiblePainted")
-        .on("mouseover", function () {
+        .on("mouseover", function (d, i) {
             d3.select(this)
                 .style("stroke", "#000000")
                 .style("stroke-width", "4")
@@ -91,25 +91,27 @@ function drawPC(sankeyData) {
             end += 50;
         let inc = 1;
 
-
-        if (assessGradeLevelMap[assess][d.name[0]]["level"] === 1) {
-            if (d["name"][d["name"].length - 1] === '-') {
-                end = start + 5;
-            }
-            if (d["name"].length === 1) {
-                start += 4;
-                if (d["name"] === 'A') {
-                    console.log('here');
-                    end = start + 7;
-                }
-                else {
-                    end = start + 4;
-                }
-            }
-            if (d["name"][d["name"].length - 1] === '+') {
-                end = start + 4;
-            }
-        }
+        // if (parseInt(d.name) <= 100 && parseInt(d.name) >= 0) {
+        //     d.name = gradeScale(d.name);
+        // }
+        // if (assessGradeLevelMap[assess][d.name[0]]["level"] === 1) {
+        //     if (d["name"][d["name"].length - 1] === '-') {
+        //         end = start + 5;
+        //     }
+        //     if (d["name"].length === 1) {
+        //         start += 4;
+        //         if (d["name"] === 'A') {
+        //             console.log('here');
+        //             end = start + 7;
+        //         }
+        //         else {
+        //             end = start + 4;
+        //         }
+        //     }
+        //     if (d["name"][d["name"].length - 1] === '+') {
+        //         end = start + 4;
+        //     }
+        // }
 
         /* Change number of points depending on size, A-D */
         const size = d["y1"] - d["y0"];
