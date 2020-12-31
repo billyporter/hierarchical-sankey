@@ -158,16 +158,16 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
             return false;
         }
         if (assessGradeLevelMap[targetString][targetRawLetter]["level"] === 2) {
-            const specificLetter = specificLetterScale(sourceRawLetter, x[targetString.trim()]);
+            const specificLetter = specificLetterScale(targetRawLetter, x[targetString.trim()]);
             let newMapper = "def";
             if (specificLetter.length > 1) {
                 newMapper = specificLetter[1];
             }
-            if (assessGradeLevelMap[targetString][sourceRawLetter][newMapper]) {
+            if (assessGradeLevelMap[targetString][targetRawLetter][newMapper]) {
                 targetMatch = x[targetString.trim()] === targetGrade;
             }
             else {
-                targetMatch = specificLetterScale(sourceRawLetter, x[targetString.trim()]) === targetGrade
+                targetMatch = specificLetterScale(targetRawLetter, x[targetString.trim()]) === targetGrade
             }
         }
         else if (assessGradeLevelMap[targetString][targetRawLetter]["level"] === 1) {
