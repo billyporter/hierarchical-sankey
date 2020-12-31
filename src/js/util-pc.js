@@ -29,33 +29,43 @@ function nodeValueToScale(sankeyData, examName) {
  */
 function domainScale(nodes, examName) {
     const domain = [0, 59];
-    let nodeCounter = 0;
-    const nodesList = Object.entries(nodes).reverse();
+    const nodesList = Object.entries(nodes).sort(function (a, b) {
+        return b[1].id - a[1].id
+    });
     for (const [node, value] of nodesList) {
-        if (node.localeCompare('F') !== 0 && node.localeCompare('0-59') !== 0) {
-            /* Skip nodes accounted for by helper */
-            const previousNode = nodesList[nodeCounter - 1][0];
-            if (previousNode[previousNode.length - 1] !== '-' &&
-                node[node.length - 1] !== '+'){
-
-                /* Breakdown block */
-                if (node[node.length - 1].localeCompare('-') === 0) {
-                    domainScaleHelper(domain, node);
+        let isLetter = letrs.has(node[0])
+        /* Check to see if letter */
+        if (isLetter || node.localeCompare("0-59") === 0) {
+            if (node.localeCompare('F') !== 0 && node.localeCompare('0-59') !== 0) {
+                /* Get Level */
+                if (examName.localeCompare("Final Exam") === 0) {
+                    examName = " ".concat(examName);
                 }
-                else {
-                    domain.push(1 + domain[domain.length - 1]);
-                    if (node.localeCompare('A') !== 0) {
-                        domain.push(domain[domain.length - 1] + 9);
+                const level = assessGradeLevelMap[examName][node[0]]["level"];
+
+                /* Handle cases */
+                if (level === 0) {
+                    domain.push(Math.floor(domain[domain.length - 1]) + 1);
+                    if (node.localeCompare("A") === 0) {
+                        domain.push(Math.floor(domain[domain.length - 1]) + 1 + 9);
                     }
                     else {
-                        domain.push(100);
+                        domain.push(Math.floor(domain[domain.length - 1]) + 1 + 8);
                     }
+                }
+                else {
+                    domainScaleHelper(domain, node);
                 }
             }
         }
-        nodeCounter += 1;
+        else {
+            /* Handle the case of number */
+            console.log(node);
+            domain.push(Math.floor(domain[domain.length - 1]) + 0.5);
+            console.log(Math.floor(domain[domain.length - 1]) + 1.5);
+            domain.push(Math.floor(domain[domain.length - 1]) + 1.5);
+        }
     }
-
     return domain;
 }
 
@@ -63,16 +73,22 @@ function domainScale(nodes, examName) {
  * Helper to deal with C-, C, C+. etc.
  */
 function domainScaleHelper(domain, node) {
-    domain.push(1 + domain[domain.length - 1]);
-    domain.push(domain[domain.length - 1] + 3);
-    domain.push(1 + domain[domain.length - 1]);
-    if (node.localeCompare('A-') !== 0) {
-        domain.push(domain[domain.length - 1] + 2);
-        domain.push(domain[domain.length - 1] + 1);
-        domain.push(domain[domain.length - 1] + 2);
+    domain.push(Math.floor(domain[domain.length - 1]) + 1);
+    if (node.length > 1) {
+        if (node[1].localeCompare("-") === 0) {
+            domain.push(Math.floor(domain[domain.length - 1]) + 1 + 2);
+        }
+        else {
+            domain.push(Math.floor(domain[domain.length - 1]) + 1 + 1);
+        }
     }
     else {
-        domain.push(100);
+        if (node.localeCompare("A") === 0) {
+            domain.push(Math.floor(domain[domain.length - 1]) + 1 + 5);
+        }
+        else {
+            domain.push(Math.floor(domain[domain.length - 1]) + 1 + 1);
+        }
     }
 }
 
@@ -110,14 +126,24 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
 
         let sourceMatch = false
         const sourceRawLetter = gradeScale(x[sourceAssessment.trim()])
-
-
         if (!sourceRawLetter) {
             return false;
         }
-
         /* Check if source is broken down */
-        if (assessGradeLevelMap[sourceAssessment][sourceRawLetter]["level"] === 1) {
+        if (assessGradeLevelMap[sourceAssessment][sourceRawLetter]["level"] === 2) {
+            const specificLetter = specificLetterScale(sourceRawLetter, x[sourceAssessment.trim()]);
+            let letterMapper = "def";
+            if (specificLetter.length > 1) {
+                letterMapper = specificLetter[1];
+            }
+            if (assessGradeLevelMap[sourceAssessment][sourceRawLetter][letterMapper]) {
+                sourceMatch = x[sourceAssessment.trim()] === sourceGrade;
+            }
+            else {
+                sourceMatch = specificLetterScale(sourceRawLetter, x[sourceAssessment.trim()]) === sourceGrade
+            }
+        }
+        else if (assessGradeLevelMap[sourceAssessment][sourceRawLetter]["level"] === 1) {
             sourceMatch = specificLetterScale(sourceRawLetter, x[sourceAssessment.trim()]) === sourceGrade
         }
         else {
@@ -134,8 +160,21 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
         if (!targetRawLetter) {
             return false;
         }
-        if (assessGradeLevelMap[targetString][targetRawLetter]["level"] === 1) {
-            targetMatch = specificLetterScale(targetRawLetter, x[targetAssessment.trim()]) === targetGrade
+        if (assessGradeLevelMap[targetString][sourceRawLetter]["level"] === 2) {
+            const specificLetter = specificLetterScale(sourceRawLetter, x[targetString.trim()]);
+            let newMapper = "def";
+            if (specificLetter.length > 1) {
+                newMapper = specificLetter[1];
+            }
+            if (assessGradeLevelMap[targetString][sourceRawLetter][newMapper]) {
+                targetMatch = x[targetString.trim()] === targetGrade;
+            }
+            else {
+                targetMatch = specificLetterScale(sourceRawLetter, x[targetString.trim()]) === targetGrade
+            }
+        }
+        else if (assessGradeLevelMap[targetString][targetRawLetter]["level"] === 1) {
+            targetMatch = specificLetterScale(targetRawLetter, x[targetString.trim()]) === targetGrade
         }
         else {
             targetMatch = targetRawLetter === targetGrade

@@ -3,6 +3,8 @@
 /* Constants */
 const assessments = ["Exam 1", "Exam 2", "Exam 3", " Final Exam"];
 const grades = ["A", "B", "C", "D", "F"];
+
+const letrs = new Set(["A", "B", "C", "D", "F"]);
 const margin = { top: 10, right: 10, bottom: 10, left: 10 }
 const svgBackground = "#eff";
 const svgBorder = "1px solid #333";

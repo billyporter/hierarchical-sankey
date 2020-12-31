@@ -44,7 +44,7 @@ function drawPC(sankeyData) {
         .style("opacity", 0.6)
         .style("visibility", "hidden")
         .style("pointer-events", "visiblePainted")
-        .on("mouseover", function () {
+        .on("mouseover", function (d, i) {
             d3.select(this)
                 .style("stroke", "#000000")
                 .style("stroke-width", "4")
@@ -93,23 +93,24 @@ function drawPC(sankeyData) {
             end += 1;
         let inc = 1;
 
-
-        if (assessGradeLevelMap[assess][d.name[0]]["level"] === 1) {
-            if (d["name"][d["name"].length - 1] === '-') {
-                end = start + 4;
-            }
-            if (d["name"].length === 1) {
-                start += 4;
-                if (d["name"] === 'A') {
-                    console.log('here');
-                    end = start + 7;
+        if (gradeMap.has(d.name[0])) {
+            if (assessGradeLevelMap[assess][d.name[0]]["level"] === 1) {
+                if (d["name"][d["name"].length - 1] === '-') {
+                    end = start + 4;
                 }
-                else{
+                if (d["name"].length === 1) {
+                    start += 4;
+                    if (d["name"] === 'A') {
+                        console.log('here');
+                        end = start + 7;
+                    }
+                    else {
+                        end = start + 3;
+                    }
+                }
+                if (d["name"][d["name"].length - 1] === '+') {
                     end = start + 3;
                 }
-            }
-            if (d["name"][d["name"].length - 1] === '+') {
-                end = start + 3;
             }
         }
 
