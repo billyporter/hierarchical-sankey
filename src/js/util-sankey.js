@@ -40,7 +40,31 @@ function rgbToHex(rgb) {
     return "#" + r + g + b;
 }
 
-/* Gets color  */
+/* Gets color shade for + and - grades */
+function getShadePlusMinus(baseColor, sign){
+    color = hexToRgb(baseColor);
+
+    if (sign == '-') {
+        // 1/3 shade darker, maximum rgb value of 255
+        color.r = color.r * 2 / 3 < 255 ? parseInt(color.r * 2 / 3) : 255;
+        color.g = color.g * 2 / 3 < 255 ? parseInt(color.g * 2 / 3) : 255; 
+        color.b = color.b * 2 / 3 < 255 ? parseInt(color.b * 2 / 3) : 255;
+    } else if (sign == '+') {
+        // 1/3 shade brighter
+        color.r = color.r * 4 / 3 < 255 ? parseInt(color.r * 4 / 3) : 255;
+        color.g = color.g * 4 / 3 < 255 ? parseInt(color.g * 4 / 3) : 255; 
+        color.b = color.b * 4 / 3 < 255 ? parseInt(color.b * 4 / 3) : 255;
+    } else { // there is a bug if this case is reached
+        return baseColor;
+    }
+
+    return rgbToHex(color);
+}
+
+/* Gets color shade for number grades */
+function getShadeNumber(baseColor, name){
+
+}
 
 /* Returns corresponding letter grade */
 function gradeScale(score) {

@@ -54,6 +54,8 @@ function drawNodes(graph) {
                 return sankeyColor(d.name);
 
             /* case for + and - grade nodes */
+            if (letrs.has(d.name[0]))
+                return getShadePlusMinus(sankeyColor(d.name[0]), d.name[1]);
 
             /* case for number grade nodes */ 
 
