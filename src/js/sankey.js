@@ -52,28 +52,28 @@ function drawNodes(graph) {
             /* case for whole letter grade nodes */
             if (letrs.has(d.name))
                 return sankeyColor(d.name);
-
             /* case for + and - grade nodes */
             if (letrs.has(d.name[0]))
                 return getShadePlusMinus(sankeyColor(d.name[0]), d.name[1]);
-
-            /* case for number grade nodes */ 
+            /* case for number grade nodes */
             return getShadeNumber(sankeyColor(gradeScale(d.name)), d.name);
         })
         .attr("stroke", (d) => {
             /* case for whole letter grade nodes */
             if (letrs.has(d.name))
                 return d3.rgb(sankeyColor(d.name)).darker(0.6);
-
             /* case for + and - grade nodes */
             if (letrs.has(d.name[0]))
                 return d3.rgb(getShadePlusMinus(sankeyColor(d.name[0]), d.name[1])).darker(0.6);
-
             /* case for number grade nodes */
             return d3.rgb(getShadeNumber(sankeyColor(gradeScale(d.name)), d.name)).darker(0.6);
         })
         .on("click", function (d, i) {
-            wanedilliams(i);
+            hierarchSankeyRouter(i, true);
+        })
+        .on("contextmenu", function (d, i) {
+            d.preventDefault();
+            hierarchSankeyRouter(i, false);
         });
 
 
@@ -143,7 +143,7 @@ function drawLinks(graph) {
             if (letrs.has(d.source.name[0]))
                 return getShadePlusMinus(sankeyColor(d.source.name[0]), d.source.name[1]);
 
-            /* case for number grade nodes */ 
+            /* case for number grade nodes */
             return getShadeNumber(sankeyColor(gradeScale(d.source.name)), d.source.name);
         })
         .on("mouseover", (d, i) => {
