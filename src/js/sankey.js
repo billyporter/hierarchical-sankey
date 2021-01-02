@@ -49,10 +49,14 @@ function drawNodes(graph) {
         .attr("width", d => (d.x1 - d.x0))
         .attr("height", d => (d.y1 - d.y0))
         .style("fill", (d) => {
-            /* If a letter */
-            if (letrs.has(d.name[0])) {
-                return sankeyColor(d.name[0])
-            }
+            /* case for whole letter grade nodes */
+            if (letrs.has(d.name))
+                return sankeyColor(d.name)
+
+            /* case for + and - grade nodes */
+
+            /* case for number grade nodes */ 
+
             return sankeyColor(gradeScale(d.name));
         })
         .attr("stroke", (d) => {
