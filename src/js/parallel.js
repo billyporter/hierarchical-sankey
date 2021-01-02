@@ -122,22 +122,25 @@ function drawPC(sankeyData) {
             gap *= 6;
         }
 
-        let incs = [];
 
-        if (points === 10) {
-            incs = [2, 5, 10];
-        } else if (points === 9) {
-            incs = [3, 3, 9];
-        } else if (points === 59) {
-            incs = [59, 59, 59]
-        } else if (points === 6) {
-            incs = [2, 3, 6];
-        } else if (points === 3) {
-            incs = [3, 3, 3];
+        const incs = [];
+        
+        /* Potential increments other than 1 based on the range size */
+        if (points === 10){
+            incs.push(...[2, 5, 10]);
+        } else if (points === 9){
+            incs.push(...[3, 3, 9]);
+        } else if (points === 59){
+            incs.push(...[59, 59, 59]);
+        } else if (points === 6){
+            incs.push(...[2, 3, 6]);
+        } else if (points === 3){
+            incs.push(...[3, 3, 3]);
         } else {
-            incs = [2, 2, 2];
+            incs.push(...[2, 2, 2]);
         }
 
+        /* Pick axis increment size based on ratio of node size to axis range */
         if (gap > 15) {
             inc = 1;
         } else if (gap > 10) {
@@ -160,11 +163,22 @@ function drawPC(sankeyData) {
         for (let i = start; i < end; i += inc) {
             data.push(i);
         }
+
+        /* Add middle tick for percentages */
+        if(!isNaN(d.name)){
+            data.push(d.name);
+        }
+
         /* Create point scale */
         var scale = d3.scalePoint().domain(data).range([d["y1"], d["y0"]]);
 
         /* Add scale to axis */
-        var y_axis = d3.axisRight().scale(scale);
+        var y_axis = d3.axisRight().scale(scale)        
+
+        /* remove bracketing ticks from percentage nodes, and don't display the tick label */
+        if (!isNaN(d.name)){
+            y_axis.tickSizeOuter(0).tickFormat("");
+        }
 
         /* Append to svg */
         svg
@@ -173,5 +187,6 @@ function drawPC(sankeyData) {
             .attr("class", "axes")
             .call(y_axis)
             .style("visibility", "hidden");
+
     });
 }
