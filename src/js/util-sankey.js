@@ -41,18 +41,18 @@ function rgbToHex(rgb) {
 }
 
 /* Gets color shade for + and - grades */
-function getShadePlusMinus(baseColor, sign){
+function getShadePlusMinus(baseColor, sign) {
     color = hexToRgb(baseColor);
 
     if (sign == '-') {
         // 1/3 shade darker, maximum rgb value of 255
         color.r = color.r * 2 / 3 < 255 ? parseInt(color.r * 2 / 3) : 255;
-        color.g = color.g * 2 / 3 < 255 ? parseInt(color.g * 2 / 3) : 255; 
+        color.g = color.g * 2 / 3 < 255 ? parseInt(color.g * 2 / 3) : 255;
         color.b = color.b * 2 / 3 < 255 ? parseInt(color.b * 2 / 3) : 255;
     } else if (sign == '+') {
         // 1/3 shade brighter
         color.r = color.r * 4 / 3 < 255 ? parseInt(color.r * 4 / 3) : 255;
-        color.g = color.g * 4 / 3 < 255 ? parseInt(color.g * 4 / 3) : 255; 
+        color.g = color.g * 4 / 3 < 255 ? parseInt(color.g * 4 / 3) : 255;
         color.b = color.b * 4 / 3 < 255 ? parseInt(color.b * 4 / 3) : 255;
     } else { // there is a bug if this case is reached
         return baseColor;
@@ -62,14 +62,14 @@ function getShadePlusMinus(baseColor, sign){
 }
 
 /* Gets color shade for number grades */
-function getShadeNumber(baseColor, name){
+function getShadeNumber(baseColor, name) {
     color = hexToRgb(baseColor);
 
     //special case for 100
-    if (name == "100"){
-        color.r = color.r * (1 + 1/2) < 255 ? parseInt(color.r * (1 + 1/2)) : 255; 
-        color.g = color.g * (1 + 1/2) < 255 ? parseInt(color.g * (1 + 1/2)) : 255;
-        color.b = color.b * (1 + 1/2) < 255 ? parseInt(color.b * (1 + 1/2)) : 255;
+    if (name == "100") {
+        color.r = color.r * (1 + 1 / 2) < 255 ? parseInt(color.r * (1 + 1 / 2)) : 255;
+        color.g = color.g * (1 + 1 / 2) < 255 ? parseInt(color.g * (1 + 1 / 2)) : 255;
+        color.b = color.b * (1 + 1 / 2) < 255 ? parseInt(color.b * (1 + 1 / 2)) : 255;
         return rgbToHex(color);
     }
 
@@ -79,21 +79,21 @@ function getShadeNumber(baseColor, name){
         return baseColor;
 
     // 1's place 0-4 (darker)
-    for (i = 0; i < 5; i++){
-        if (n == i){
-            color.r = color.r * 1 / 2 * (1 + i / 5) < 255 ? parseInt(color.r * 1 / 2 * (1 + i / 5)) : 255; 
-            color.g = color.g * 1 / 2 * (1 + i / 5) < 255 ? parseInt(color.g * 1 / 2 * (1 + i / 5)) : 255; 
+    for (i = 0; i < 5; i++) {
+        if (n == i) {
+            color.r = color.r * 1 / 2 * (1 + i / 5) < 255 ? parseInt(color.r * 1 / 2 * (1 + i / 5)) : 255;
+            color.g = color.g * 1 / 2 * (1 + i / 5) < 255 ? parseInt(color.g * 1 / 2 * (1 + i / 5)) : 255;
             color.b = color.b * 1 / 2 * (1 + i / 5) < 255 ? parseInt(color.b * 1 / 2 * (1 + i / 5)) : 255;
             return rgbToHex(color);
         }
     }
 
     // 1's place 6-9 (brighter)
-    for (i = 6; i < 10; i++){
-        if (n == i){
-            color.r = color.r * (1 + 1/2 * (i-5)/5) < 255 ? parseInt(color.r * (1 + 1/2 * (i-5)/5)) : 255; 
-            color.g = color.g * (1 + 1/2 * (i-5)/5) < 255 ? parseInt(color.g * (1 + 1/2 * (i-5)/5)) : 255;
-            color.b = color.b * (1 + 1/2 * (i-5)/5) < 255 ? parseInt(color.b * (1 + 1/2 * (i-5)/5)) : 255;
+    for (i = 6; i < 10; i++) {
+        if (n == i) {
+            color.r = color.r * (1 + 1 / 2 * (i - 5) / 5) < 255 ? parseInt(color.r * (1 + 1 / 2 * (i - 5) / 5)) : 255;
+            color.g = color.g * (1 + 1 / 2 * (i - 5) / 5) < 255 ? parseInt(color.g * (1 + 1 / 2 * (i - 5) / 5)) : 255;
+            color.b = color.b * (1 + 1 / 2 * (i - 5) / 5) < 255 ? parseInt(color.b * (1 + 1 / 2 * (i - 5) / 5)) : 255;
             return rgbToHex(color);
         }
     }
@@ -470,29 +470,54 @@ function formatSankey() {
 /**
  * Routes from click behavior to create new data
  * and updates level of clicked node
+ * flag = true = breakdown
+ * flag = false = build up
  */
-function wanedilliams(node) {
+function hierarchSankeyRouter(node, flag) {
 
     /* Update Ids */
     const locAs = node['assessment'];
     const locGrade = node['name'];
+
+    /* Need to add space if final exam */
     let stringToInput = locAs;
-    if (locAs.localeCompare('Final Exam') === 0) {
+    if (locAs.localeCompare('Final Exam') === 0)
         stringToInput = ' '.concat(locAs);
-    }
-    if (locGrade.length > 1) {
-        assessGradeLevelMap[stringToInput][locGrade[0]][locGrade[1]] = 2;
-        assessGradeLevelMap[stringToInput][locGrade[0]]["level"] = 2;
-    }
-    else {
-        if (assessGradeLevelMap[stringToInput][locGrade]["level"] < 2) {
-            assessGradeLevelMap[stringToInput][locGrade]["level"] += 1;
+
+    /* Check if letter */
+    if (letrs.has(locGrade[0])) {
+        let currLevel = assessGradeLevelMap[stringToInput][locGrade[0]]["level"]
+        let newLevel = currLevel + (flag ? 1 : -1 * currLevel);
+
+        /* Keep new level in range 0-2 */
+        newLevel = newLevel > 2 ? 2 : newLevel;
+
+        assessGradeLevelMap[stringToInput][locGrade[0]]["level"] = newLevel;
+        /* Expand to percentages if level of 2 */
+        if (newLevel === 2) {
+            if (locGrade.length > 1)
+                assessGradeLevelMap[stringToInput][locGrade[0]][locGrade[1]] = 2;
+            else
+                assessGradeLevelMap[stringToInput][locGrade[0]]["def"] = 2;
         }
-        if (assessGradeLevelMap[stringToInput][locGrade]["level"] === 2) {
-            if (locGrade.localeCompare('F') === 0) {
-                assessGradeLevelMap[stringToInput][locGrade]["level"] = 1;
-            }
-            assessGradeLevelMap[stringToInput][locGrade[0]]["def"] = 2;
+        else {
+            assessGradeLevelMap[stringToInput][locGrade[0]]["+"] = 0;
+            assessGradeLevelMap[stringToInput][locGrade[0]]["def"] = 0;
+            assessGradeLevelMap[stringToInput][locGrade[0]]["-"] = 0;
+        }
+    }
+    else if (!flag) {
+        /* IF F set back to 0 */
+        if (locGrade.localeCompare("0-59") === 0) {
+            assessGradeLevelMap[stringToInput]["F"]["level"] = 0
+        }
+        /* If number, clear */
+        else {
+            const specLetter = specificLetterScale(gradeScale(locGrade), locGrade);
+            if (specLetter.length > 1)
+                assessGradeLevelMap[stringToInput][specLetter[0]][specLetter[1]] = 0;
+            else
+                assessGradeLevelMap[stringToInput][specLetter[0]]["def"] = 0;
         }
     }
 
