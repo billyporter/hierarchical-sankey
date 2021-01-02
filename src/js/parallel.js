@@ -114,16 +114,39 @@ function drawPC(sankeyData) {
         }
 
         /* Change number of points depending on size, A-D */
-        const size = d["y1"] - d["y0"];
+        const size = d["y1"] - d["y0"]; 
         const points = end - start - 1;
+        
+        let gap = size / points;
+        if (d.name === 'F'){
+            gap *= 6;
+        }
 
-        if (size > 240) {
+        let incs = [];
+        console.log(d.name)
+        console.log(gap)
+        
+        if (points === 10){
+            incs = [2, 5, 10];
+        } else if (points === 9){
+            incs = [3, 3, 9];
+        } else if (points === 59){
+            incs = [59, 59, 59]
+        } else if (points === 6){
+            incs = [2, 3, 6];
+        } else if (points === 3){
+            incs = [3, 3, 3];
+        } else {
+            incs = [2, 2, 2];
+        }
+
+        if (gap > 15) {
             inc = 1;
-        } else if (size > 110) {
-            inc = Math.floor(points / 5);
-        } else if (size > 65) {
-            inc = Math.floor(points / 2);
-        } else if (size > 15) {
+        } else if (gap > 10) {
+            inc = incs[0];
+        } else if (gap > 5) {
+            inc = incs[1];
+        } else if (gap > 2.5) {
             inc = points;
         } else {
             start = end;
@@ -139,7 +162,6 @@ function drawPC(sankeyData) {
         for (let i = start; i < end; i += inc) {
             data.push(i);
         }
-
         /* Create point scale */
         var scale = d3.scalePoint().domain(data).range([d["y1"], d["y0"]]);
 
