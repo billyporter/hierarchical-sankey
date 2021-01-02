@@ -194,15 +194,19 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
             if (currLevel === 2) {
                 const specGrade = specificLetterScale(generalGrade, line[assessment.trim()]);
                 if (specGrade.length > 1) {
-                    if (assessGradeLevelMap[assessment][generalGrade]["level"][specGrade[1]])
+                    if (assessGradeLevelMap[assessment][generalGrade][specGrade[1]]) {
+                        line[assessment.trim() + ' group'] = line[assessment.trim()];
+                    }
+                    else {
                         line[assessment.trim() + ' group'] = specGrade;
-                    else
-                        line[assessment.trim() + ' group'] = specificLetterScale(generalGrade, line[assessment.trim()]);
+                    }
                 }
-                if (assessGradeLevelMap[assessment][generalGrade]["level"]["def"])
+                else if (assessGradeLevelMap[assessment][generalGrade]["def"]) {
+                    line[assessment.trim() + ' group'] = line[assessment.trim()];
+                }
+                else {
                     line[assessment.trim() + ' group'] = specGrade;
-                else
-                    line[assessment.trim() + ' group'] = specificLetterScale(generalGrade, line[assessment.trim()]);
+                }
             }
             else if (currLevel === 1) {
                 line[assessment.trim() + ' group'] = specificLetterScale(generalGrade, line[assessment.trim()]);
@@ -218,7 +222,6 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
     for (let line of newData) {
         let allExams = ''
         for (let assessment of assessments) {
-            console.log(line[assessment.trim() + ' group']);
             allExams += line[assessment.trim() + ' group'];
         }
         line['concat'] = allExams;
