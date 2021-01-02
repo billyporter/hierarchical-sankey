@@ -63,7 +63,35 @@ function getShadePlusMinus(baseColor, sign){
 
 /* Gets color shade for number grades */
 function getShadeNumber(baseColor, name){
+    n = parseInt(name[1]); //examine the 1's column of the node name to determine shade
 
+    if (n == 5) // middle will take base color 
+        return baseColor;
+
+    color = hexToRgb(baseColor);
+
+    // 1's place 0-4 (darker)
+    for (i = 0; i < 5; i++){
+        if (n == i){
+            color.r = color.r * 1 / 2 * (1 + i / 5) < 255 ? parseInt(color.r * 1 / 2 * (1 + i / 5)) : 255; 
+            color.g = color.g * 1 / 2 * (1 + i / 5) < 255 ? parseInt(color.g * 1 / 2 * (1 + i / 5)) : 255; 
+            color.b = color.b * 1 / 2 * (1 + i / 5) < 255 ? parseInt(color.b * 1 / 2 * (1 + i / 5)) : 255;
+            return rgbToHex(color);
+        }
+    }
+
+    // 1's place 6-9 (brighter)
+    for (i = 6; i < 10; i++){
+        if (n == i){
+            color.r = color.r * (1 + 1/2 * (i-5)/5) < 255 ? parseInt(color.r * (1 + 1/2 * (i-5)/5)) : 255; 
+            color.g = color.g * (1 + 1/2 * (i-5)/5) < 255 ? parseInt(color.g * (1 + 1/2 * (i-5)/5)) : 255;
+            color.b = color.b * (1 + 1/2 * (i-5)/5) < 255 ? parseInt(color.b * (1 + 1/2 * (i-5)/5)) : 255;
+            return rgbToHex(color);
+        }
+    }
+
+    // bug if this case is reached
+    return baseColor;
 }
 
 /* Returns corresponding letter grade */

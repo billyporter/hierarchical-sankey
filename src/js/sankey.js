@@ -58,8 +58,7 @@ function drawNodes(graph) {
                 return getShadePlusMinus(sankeyColor(d.name[0]), d.name[1]);
 
             /* case for number grade nodes */ 
-
-            return sankeyColor(gradeScale(d.name));
+            return getShadeNumber(sankeyColor(gradeScale(d.name)), d.name);
         })
         .attr("stroke", (d) => {
             /* If a letter */
