@@ -51,7 +51,7 @@ function drawNodes(graph) {
         .style("fill", (d) => {
             /* case for whole letter grade nodes */
             if (letrs.has(d.name))
-                return sankeyColor(d.name)
+                return sankeyColor(d.name);
 
             /* case for + and - grade nodes */
 

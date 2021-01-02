@@ -19,16 +19,26 @@ const sankeyColor = d3.scaleOrdinal()
     .range(['#00ABA5', '#00A231', '#e2d000', '#E69200', '#DA1D02']);
 const assessGradeLevelMap = {};
 
-/* enables conversion from hex color code to rgb color code struct */
+/* converts from hex color code to rgb color code struct */
 function hexToRgb(hex) {
-  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? {
-    r: parseInt(result[1], 16),
-    g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16)
-  } : null;
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
 }
 
+/* converts from rgb color code struct to hex color code */
+function rgbToHex(rgb) {
+    hex = rgb.r.toString(16);
+    r = hex.length == 1 ? "0" + hex : hex;
+    hex = rgb.g.toString(16);
+    g = hex.length == 1 ? "0" + hex : hex;
+    hex = rgb.b.toString(16);
+    b = hex.length == 1 ? "0" + hex : hex;
+    return "#" + r + g + b;
+}
 
 /* Gets color  */
 
