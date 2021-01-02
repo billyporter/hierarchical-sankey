@@ -61,11 +61,16 @@ function drawNodes(graph) {
             return getShadeNumber(sankeyColor(gradeScale(d.name)), d.name);
         })
         .attr("stroke", (d) => {
-            /* If a letter */
-            if (letrs.has(d.name[0])) {
-                return d3.rgb(sankeyColor(d.name[0])).darker(0.6);
-            }
-            return d3.rgb(sankeyColor(gradeScale(d.name))).darker(0.6);
+            /* case for whole letter grade nodes */
+            if (letrs.has(d.name))
+                return d3.rgb(sankeyColor(d.name)).darker(0.6);
+
+            /* case for + and - grade nodes */
+            if (letrs.has(d.name[0]))
+                return d3.rgb(getShadePlusMinus(sankeyColor(d.name[0]), d.name[1])).darker(0.6);
+
+            /* case for number grade nodes */
+            return d3.rgb(getShadeNumber(sankeyColor(gradeScale(d.name)), d.name)).darker(0.6);
         })
         .on("click", function (d, i) {
             wanedilliams(i);
