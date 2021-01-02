@@ -114,13 +114,14 @@ function drawPC(sankeyData) {
         }
 
         /* Change number of points depending on size, A-D */
-        const size = d["y1"] - d["y0"]; 
+        const size = d["y1"] - d["y0"];
         const points = end - start - 1;
-        
+
         let gap = size / points;
-        if (d.name === 'F'){
+        if (d.name === 'F') {
             gap *= 6;
         }
+
 
         const incs = [];
         

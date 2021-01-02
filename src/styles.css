@@ -26,6 +26,10 @@ body {
     cursor: pointer;
 }
 
+.button:hover {
+    cursor: pointer;
+}
+
 .lines {
     z-index: -9999;
 }
