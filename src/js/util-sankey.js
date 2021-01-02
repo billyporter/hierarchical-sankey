@@ -521,8 +521,6 @@ function hierarchSankeyRouter(node, flag) {
         }
     }
 
-
-
     const newSankey = formatSankey();
     removePlots();
     drawSankey(newSankey);
