@@ -185,15 +185,30 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
      * Generate Groups
      */
 
-    /* Switch from number to letter Grade */
+    /* Assign group */
     for (let line of newData) {
         for (let assessment of assessments) {
-            const currGrade = gradeScale(line[assessment.trim()]);
-            if (assessGradeLevelMap[assessment][currGrade]["level"] === 1) {
-                line[assessment.trim() + ' letter'] = specificLetterScale(currGrade, line[assessment.trim()]);
+            /* Get level */
+            const generalGrade = gradeScale(line[assessment.trim()]);
+            const currLevel = assessGradeLevelMap[assessment][generalGrade]["level"];
+            if (currLevel === 2) {
+                const specGrade = specificLetterScale(generalGrade, line[assessment.trim()]);
+                if (specGrade.length > 1) {
+                    if (assessGradeLevelMap[assessment][generalGrade]["level"][specGrade[1]])
+                        line[assessment.trim() + ' group'] = specGrade;
+                    else
+                        line[assessment.trim() + ' group'] = specificLetterScale(generalGrade, line[assessment.trim()]);
+                }
+                if (assessGradeLevelMap[assessment][generalGrade]["level"]["def"])
+                    line[assessment.trim() + ' group'] = specGrade;
+                else
+                    line[assessment.trim() + ' group'] = specificLetterScale(generalGrade, line[assessment.trim()]);
+            }
+            else if (currLevel === 1) {
+                line[assessment.trim() + ' group'] = specificLetterScale(generalGrade, line[assessment.trim()]);
             }
             else {
-                line[assessment.trim() + ' letter'] = gradeScale(line[assessment.trim()]);
+                line[assessment.trim() + ' group'] = gradeScale(line[assessment.trim()]);
             }
         }
     }
@@ -203,7 +218,8 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
     for (let line of newData) {
         let allExams = ''
         for (let assessment of assessments) {
-            allExams += line[assessment.trim() + ' letter'];
+            console.log(line[assessment.trim() + ' group']);
+            allExams += line[assessment.trim() + ' group'];
         }
         line['concat'] = allExams;
         if (groupsMap.has(allExams)) {
