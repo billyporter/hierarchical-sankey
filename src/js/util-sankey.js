@@ -338,8 +338,6 @@ function createNodes(newIds) {
             "id": parseInt(key),
             "name": Object.values(value)[0],
             "assessment": Object.keys(value)[0],
-            "level": 0,
-            "grades": []
         });
     }
     return nodes
@@ -413,8 +411,6 @@ function formatSankey() {
                 }
             }
             output["grades"][assessment.trim()][grade]["count"]++;
-            output["nodes"][output["grades"][assessment.trim()][grade]["id"]]["grades"]
-                .push(student[1][assessment]);
 
             if (index < 3) {
                 let nextGrade = gradeScale(student[1][assessments[index + 1]]);
