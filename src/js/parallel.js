@@ -174,10 +174,9 @@ function drawPC(sankeyData) {
         /* Add scale to axis */
         var y_axis = d3.axisRight().scale(scale)        
 
-        /* remove bracketing ticks from percentage nodes */
+        /* remove bracketing ticks from percentage nodes, and don't display the tick label */
         if (!isNaN(d.name)){
-            y_axis.tickSizeOuter(0);
-            console.log('here')
+            y_axis.tickSizeOuter(0).tickFormat("");
         }
 
         /* Append to svg */
