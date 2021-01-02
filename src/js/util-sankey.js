@@ -63,12 +63,20 @@ function getShadePlusMinus(baseColor, sign){
 
 /* Gets color shade for number grades */
 function getShadeNumber(baseColor, name){
+    color = hexToRgb(baseColor);
+
+    //special case for 100
+    if (name == "100"){
+        color.r = color.r * (1 + 1/2) < 255 ? parseInt(color.r * (1 + 1/2)) : 255; 
+        color.g = color.g * (1 + 1/2) < 255 ? parseInt(color.g * (1 + 1/2)) : 255;
+        color.b = color.b * (1 + 1/2) < 255 ? parseInt(color.b * (1 + 1/2)) : 255;
+        return rgbToHex(color);
+    }
+
     n = parseInt(name[1]); //examine the 1's column of the node name to determine shade
 
     if (n == 5) // middle will take base color 
         return baseColor;
-
-    color = hexToRgb(baseColor);
 
     // 1's place 0-4 (darker)
     for (i = 0; i < 5; i++){
