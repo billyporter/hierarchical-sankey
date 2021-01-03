@@ -5,6 +5,11 @@
  * 
  */
 
+
+var pointStorageObj;
+
+
+
 /* Creates Sankey Object */
 const sankey = d3.sankey()
     .size([width, height])
@@ -17,9 +22,15 @@ const sankey = d3.sankey()
 /**
  * Top level Sankey drawing function
  */
-function drawSankey(sankeyData) {
+var graph;
+function drawSankey(sankeyData, changedNode) {
     /* Fomats Sankey */
-    const graph = sankey(sankeyData);
+    graph = sankey(sankeyData);
+
+    pointStorage = {};
+    /* Store new y0, y1 */
+    for (const [key, value] of Object.entries(graph.nodes)) {
+    }
 
     /* Calls functions */
     drawNodes(graph);
@@ -43,11 +54,14 @@ function drawNodes(graph) {
 
     /* Draws Node */
     graphnode.append("rect")
-        .classed("node", true)
+        .attr("class", "node")
         .attr("x", d => d.x0)
         .attr("y", d => d.y0)
         .attr("width", d => (d.x1 - d.x0))
-        .attr("height", d => (d.y1 - d.y0))
+        .attr("height", d => {
+            d.rectHeight = d.y1 - d.y0;
+            return (d.y1 - d.y0)
+        })
         .style("fill", (d) => {
             /* case for whole letter grade nodes */
             if (letrs.has(d.name))
@@ -70,6 +84,7 @@ function drawNodes(graph) {
         })
         .on("click", function (d, i) {
             hierarchSankeyRouter(i, true);
+            // movie(d);
         })
         .on("contextmenu", function (d, i) {
             d.preventDefault();
@@ -85,6 +100,7 @@ function drawNodes(graph) {
     /* Add in text */
     graphnode.append("text")
         .style("font-size", "16px")
+        .attr("class", "nodeText")
         .attr("x", function (d) { return d.x0 - 30; })
         .attr("y", function (d) { return (d.y1 + d.y0) / 2; })
         .attr("dy", "0.35em")
@@ -104,17 +120,18 @@ function drawNodes(graph) {
  * 
  * Function to draw Links of Sankey
  */
+var graphlink;
 function drawLinks(graph) {
 
     /* Creates Link */
-    const graphlink = svg
+    graphlink = svg
         .append("g")
         .attr("class", "links")
         .selectAll("path")
         .data(graph.links)
         .enter()
+        .append("path")
 
-    let nah = true
     document.addEventListener("click", function (event) {
         const target = event.target;
         if (!target.closest('.link')) {
@@ -129,7 +146,7 @@ function drawLinks(graph) {
     })
 
     /* Draws Link */
-    graphlink.append("path")
+    graphlink
         .attr("class", "link")
         .attr("d", d3.sankeyLinkHorizontal())
         .attr("fill", "none")
@@ -166,4 +183,27 @@ function drawLinks(graph) {
             }
         });
 
+}
+
+function movie(d) {
+    d3.selectAll('.node').each(function (d) {
+        d3.select(this)
+            .transition()
+            .attr('y', function (n) {
+                n.y0 += 100;
+                n.y1 = n.y0 + n.rectHeight;
+                return n.y0;
+            })
+    });
+    d3.selectAll('.nodeText').each(function (d) {
+        d3.select(this)
+            .transition()
+            .attr('y', function (n) {
+                return (n.y0 + n.y1) / 2;
+            });
+    });
+
+    sankey.update(graph);
+    console.log(graph);
+    graphlink.transition().attr('d', d3.sankeyLinkHorizontal());
 }
