@@ -14,7 +14,7 @@ body {
 }
 
 .link {
-    stroke-opacity: 0.3;
+    stroke-opacity: 0.4;
 }
 
 .link:hover {
@@ -27,7 +27,7 @@ body {
 }
 
 .node:hover {
-    opacity: 0.5;
+    opacity: 0.8;
 }
 
 .button:hover {

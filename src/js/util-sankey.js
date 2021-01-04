@@ -470,6 +470,7 @@ function formatSankey() {
  * flag = false = build up
  */
 function hierarchSankeyRouter(node, flag) {
+    const oldGraph = formatSankey();
 
     /* Update Ids */
     const locAs = node['assessment'];
@@ -519,7 +520,7 @@ function hierarchSankeyRouter(node, flag) {
 
     const newSankey = formatSankey();
     removePlots();
-    drawSankey(newSankey);
+    drawSankey(newSankey, false, flag, oldGraph);
 }
 
 function removePlots() {
@@ -566,11 +567,11 @@ function newNotInOld() {
     for (const [examName, examValue] of Object.entries(newGraphPoints)) {
         for (const [gradeName, node] of Object.entries(examValue)) {
             if (!(gradeName in oldGraphPoints[examName])) {
-                newNodes.add(node.id);
+                newNodes.add([examName, gradeName, node.value].toString());
                 // newNodes.add(gradeName);
             }
             else if (node.value !== oldGraphPoints[examName][gradeName]["value"]) {
-                newNodes.add(node.id);
+                newNodes.add([examName, gradeName, node.value].toString());
                 // newNodes.add(gradeName);
             }
         }
@@ -583,11 +584,11 @@ function oldNotInNew() {
     for (const [examName, examValue] of Object.entries(oldGraphPoints)) {
         for (const [gradeName, node] of Object.entries(examValue)) {
             if (!(gradeName in newGraphPoints[examName])) {
-                oldNodes.add(node.id);
+                oldNodes.add([examName, gradeName, node.value].toString());
                 // oldNodes.add(gradeName)
             }
             else if (node.value !== newGraphPoints[examName][gradeName]["value"]) {
-                oldNodes.add(node.id);
+                oldNodes.add([examName, gradeName, node.value].toString());
                 // oldNodes.add(gradeName)
             }
         }

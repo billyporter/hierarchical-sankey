@@ -24,14 +24,24 @@ const sankey = d3.sankey()
  * Top level Sankey drawing function
  */
 var graph;
-function drawSankey(sankeyData, flag) {
+var oldGraph;
+function drawSankey(sankeyData, isFirst, isBreakdown, oldData) {
 
     /* Fomats Sankey */
+    if (oldData) {
+        oldGraph = sankey(oldData);
+    }
     graph = sankey(sankeyData);
 
     /* If first time, add all points */
-    if (flag)
+    if (isFirst) {
         populatePointStorageObj(graph);
+
+        drawNodes(graph);
+        drawPC(sankeyData);
+        drawLinks(graph);
+    }
+
 
     /* Store new point in NGP */
     storeNewPoints(graph);
@@ -40,16 +50,42 @@ function drawSankey(sankeyData, flag) {
     newPointsNotInOldSet = newNotInOld();
     oldPointsNotInNewSet = oldNotInNew();
 
-    /* Store new y0, y1, rectHeight, name, assessment */
+    /**
+     * Transition Updating
+    */
+
+    /* For case of breaking down */
+    if (isBreakdown) {
+        for (const node of graph.nodes) {
+            let visualNode;
+            if (newPointsNotInOldSet.has([node.assessment, node.name, node.value].toString())) {
+                const searchNode = oldPointsNotInNewSet.keys().next().value.split(',');
+                visualNode = oldGraphPoints[searchNode[0]][searchNode[1]];
+            }
+            else {
+                visualNode = oldGraphPoints[node.assessment][node.name];
+            }
+            node.y0 = visualNode.y0;
+            node.y1 = visualNode.y1;
+        }
+        drawNodes(graph);
+        drawPC(sankeyData);
+        drawLinks(graph);
+        transitionToNewBreakdown();
+        d3.selectAll(".link").remove();
+        drawPC(sankeyData);
+        drawLinks(graph);
+    }
+    else if (!isFirst) { // Handle case of building up
+        console.log('here');
+        drawNodes(oldGraph);
+        drawLinks(oldGraph);
+        transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, sankeyData);
+    }
 
 
     /* Store new points in old points */
     oldGraphPoints = JSON.parse(JSON.stringify(newGraphPoints));
-
-    /* Calls functions */
-    drawNodes(graph);
-    drawPC(sankeyData);
-    drawLinks(graph);
 }
 
 
@@ -98,7 +134,6 @@ function drawNodes(graph) {
         })
         .on("click", function (d, i) {
             hierarchSankeyRouter(i, true);
-            // movie(d);
         })
         .on("contextmenu", function (d, i) {
             d.preventDefault();
@@ -199,14 +234,18 @@ function drawLinks(graph) {
 
 }
 
-function movie(d) {
+function transitionToNewBreakdown(d) {
     d3.selectAll('.node').each(function (d) {
         d3.select(this)
             .transition()
             .attr('y', function (n) {
-                n.y0 += 100;
-                n.y1 = n.y0 + n.rectHeight;
+                n.y0 = newGraphPoints[n.assessment][n.name]["y0"];
+                n.y1 = newGraphPoints[n.assessment][n.name]["y1"];
+                n.rectHeight = n.y1 - n.y0;
                 return n.y0;
+            })
+            .attr('height', function (n) {
+                return n.rectHeight;
             })
     });
     d3.selectAll('.nodeText').each(function (d) {
@@ -218,6 +257,54 @@ function movie(d) {
     });
 
     sankey.update(graph);
-    console.log(graph);
     graphlink.transition().attr('d', d3.sankeyLinkHorizontal());
+    d3.selectAll(".axes").remove();
+    d3.selectAll(".lines").remove();
+}
+
+function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, sankeyData) {
+    d3.selectAll('.node').each(function (d) {
+        d3.select(this)
+            .transition()
+            .attr('y', function (n) {
+                let visualNode;
+                if (oldPointsNotInNewSet.has([n.assessment, n.name, n.value].toString())) {
+                    const searchNode = newPointsNotInOldSet.keys().next().value.split(',');
+                    visualNode = newGraphPoints[searchNode[0]][searchNode[1]];
+                }
+                else {
+                    visualNode = newGraphPoints[n.assessment][n.name]
+                }
+                n.y0 = visualNode.y0;
+                n.y1 = visualNode.y1;
+                n.rectHeight = n.y1 - n.y0;
+                return n.y0;
+            })
+            .attr('height', function (n) {
+                return n.rectHeight;
+            })
+    });
+    d3.selectAll('.nodeText').each(function (d) {
+        console.log('here');
+        d3.select(this)
+            .transition()
+            .attr('y', function (n) {
+                return (n.y0 + n.y1) / 2;
+            });
+    });
+
+    sankey.update(oldGraph);
+    let soFar = 0;
+    let total = graphlink["_groups"][0].length;
+    graphlink.transition().attr('d', d3.sankeyLinkHorizontal()).on("end", function () {
+        soFar += 1;
+        if (soFar === total) {
+            removePlots();
+            drawNodes(graph);
+            drawPC(sankeyData);
+            drawLinks(graph);
+        }
+    });
+    d3.selectAll(".axes").remove();
+    d3.selectAll(".lines").remove();
 }
