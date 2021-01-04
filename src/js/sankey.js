@@ -69,15 +69,10 @@ function drawSankey(sankeyData, isFirst, isBreakdown, oldData) {
             node.y1 = visualNode.y1;
         }
         drawNodes(graph);
-        drawPC(sankeyData);
         drawLinks(graph);
-        transitionToNewBreakdown();
-        d3.selectAll(".link").remove();
-        drawPC(sankeyData);
-        drawLinks(graph);
+        transitionToNewBreakdown(sankeyData);
     }
     else if (!isFirst) { // Handle case of building up
-        console.log('here');
         drawNodes(oldGraph);
         drawLinks(oldGraph);
         transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, sankeyData);
@@ -234,7 +229,7 @@ function drawLinks(graph) {
 
 }
 
-function transitionToNewBreakdown(d) {
+function transitionToNewBreakdown(sankeyData) {
     d3.selectAll('.node').each(function (d) {
         d3.select(this)
             .transition()
@@ -257,7 +252,17 @@ function transitionToNewBreakdown(d) {
     });
 
     sankey.update(graph);
-    graphlink.transition().attr('d', d3.sankeyLinkHorizontal());
+    let soFar = 0;
+    let total = graphlink["_groups"][0].length;
+    graphlink.transition().attr('d', d3.sankeyLinkHorizontal()).on("end", function () {
+        soFar += 1;
+        if (soFar === total) {
+            removePlots();
+            drawNodes(graph);
+            drawPC(sankeyData);
+            drawLinks(graph);
+        }
+    });
     d3.selectAll(".axes").remove();
     d3.selectAll(".lines").remove();
 }
@@ -285,7 +290,6 @@ function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, sank
             })
     });
     d3.selectAll('.nodeText').each(function (d) {
-        console.log('here');
         d3.select(this)
             .transition()
             .attr('y', function (n) {
