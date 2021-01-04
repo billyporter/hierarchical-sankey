@@ -6,7 +6,8 @@
  */
 
 
-var pointStorageObj;
+var oldGraphPoints = {};
+var newGraphPoints = {};
 
 
 
@@ -23,14 +24,27 @@ const sankey = d3.sankey()
  * Top level Sankey drawing function
  */
 var graph;
-function drawSankey(sankeyData, changedNode) {
+function drawSankey(sankeyData, flag) {
+
     /* Fomats Sankey */
     graph = sankey(sankeyData);
 
-    pointStorage = {};
-    /* Store new y0, y1 */
-    for (const [key, value] of Object.entries(graph.nodes)) {
-    }
+    /* If first time, add all points */
+    if (flag)
+        populatePointStorageObj(graph);
+
+    /* Store new point in NGP */
+    storeNewPoints(graph);
+
+    /* Get necessary objects */
+    newPointsNotInOldSet = newNotInOld();
+    oldPointsNotInNewSet = oldNotInNew();
+
+    /* Store new y0, y1, rectHeight, name, assessment */
+
+
+    /* Store new points in old points */
+    oldGraphPoints = JSON.parse(JSON.stringify(newGraphPoints));
 
     /* Calls functions */
     drawNodes(graph);

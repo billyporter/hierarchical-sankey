@@ -528,3 +528,69 @@ function removePlots() {
     d3.selectAll(".axes").remove();
     d3.selectAll(".lines").remove();
 }
+
+function populatePointStorageObj(graph) {
+    for (const node of graph.nodes) {
+        if (!(node.assessment in oldGraphPoints)) {
+            oldGraphPoints[node.assessment] = {}
+        }
+        oldGraphPoints[node.assessment][node.name] =
+        {
+            "y0": node.y0,
+            "y1": node.y1,
+            "rectHeight": node.rectHeight,
+            "value": node.value
+        }
+    }
+}
+
+function storeNewPoints(graph) {
+    newGraphPoints = {};
+    for (const node of graph.nodes) {
+        if (!(node.assessment in newGraphPoints)) {
+            newGraphPoints[node.assessment] = {}
+        }
+        newGraphPoints[node.assessment][node.name] =
+        {
+            "y0": node.y0,
+            "y1": node.y1,
+            "rectHeight": node.y1 - node.y0,
+            "value": node.value,
+            "id": node.id
+        }
+    }
+}
+
+function newNotInOld() {
+    newNodes = new Set();
+    for (const [examName, examValue] of Object.entries(newGraphPoints)) {
+        for (const [gradeName, node] of Object.entries(examValue)) {
+            if (!(gradeName in oldGraphPoints[examName])) {
+                newNodes.add(node.id);
+                // newNodes.add(gradeName);
+            }
+            else if (node.value !== oldGraphPoints[examName][gradeName]["value"]) {
+                newNodes.add(node.id);
+                // newNodes.add(gradeName);
+            }
+        }
+    }
+    return newNodes
+}
+
+function oldNotInNew() {
+    oldNodes = new Set();
+    for (const [examName, examValue] of Object.entries(oldGraphPoints)) {
+        for (const [gradeName, node] of Object.entries(examValue)) {
+            if (!(gradeName in newGraphPoints[examName])) {
+                oldNodes.add(node.id);
+                // oldNodes.add(gradeName)
+            }
+            else if (node.value !== newGraphPoints[examName][gradeName]["value"]) {
+                oldNodes.add(node.id);
+                // oldNodes.add(gradeName)
+            }
+        }
+    }
+    return oldNodes
+}
