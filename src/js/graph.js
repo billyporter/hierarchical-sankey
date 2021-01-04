@@ -37,20 +37,51 @@ svg.append("text")
     .style("text-anchor", "middle")
     .text("Final Exam");
 
-/* Adds reset button */
+
+
 var button = svg.append("rect")
     .attr("x", width / 2 - 100)
     .attr("y", height + 75)
     .attr("width", 200)
     .attr("height", 50)
-    .style("fill", '#FFFFFF')
-    .style("stroke", '#000000')
+    .attr("class", "resetButton")
+    .style("fill", "#FFFFFF")
+    .style("stroke", "#000000")
+    .style("stroke-width", "2")
+    .style("fill-opacity", 0.0)
+    .style("rx", "12")
+    .style("ry", "12")
     .classed("button", true)
+    .on("mouseover", function(d) {
+        d3.select(this)
+            .style("fill", "#DEDEDE")
+            .style("fill-opacity", 0.7);
+    })
+    .on("mouseout", function(d) {
+        d3.select(this)
+            .style("fill", "#000000")
+            .style("fill-opacity", 0.0);
+    })
     .on("click", () => resetGraph());
 
+
+/* Adds reset button */
 svg.append("text")
     .attr("x", width / 2 - 25)
     .attr("y", height + 105)
     .classed("button", true)
-    .text("Reset")
+    .text("RESET")
+    .style("fill", "#000000")
+    .style("font-weight", "bold")
+    .style("opacity", 1.0)
+    .on("mouseover", function(d) {
+        d3.select(".resetButton")
+            .style("fill", "#DEDEDE")
+            .style("fill-opacity", 0.7);
+    })
+    .on("mouseout", function(d) {
+        d3.select(".resetButton")
+            .style("fill", "#000000")
+            .style("fill-opacity", 0.0);
+    })
     .on("click", () => resetGraph());
