@@ -80,7 +80,13 @@ function buildLegend(colorArray, rankedArray, filteredData) {
             return startingX - 70;
         })
         .text(function (d) {
-            return d.Exam;
+            path = "";
+            for (i = 0; i < d.Exam.length; i++){
+                
+                path += d.Exam[i];
+
+            }
+            return path;
         })
         .style("fill", "black")
 }
