@@ -599,6 +599,8 @@ function oldNotInNew() {
 
 
 function populateLinkStorageObj(graph) {
+    oldLinks = {};
+    oldLinksMap = new Map();
     for (const link of graph.links) {
         const sourceA = link.source.assessment;
         const sourceG = link.source.name;
