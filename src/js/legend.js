@@ -10,7 +10,7 @@ function buildLegend(colorArray, rankedArray, filteredData) {
     const barHeight = 400;
     const barPadding = 15;
     const barWidth = 60;
-    const startingX = 1100;
+    const startingX = 1050;
 
     /* builds y axis */
     var y = d3.scaleOrdinal()
@@ -30,12 +30,12 @@ function buildLegend(colorArray, rankedArray, filteredData) {
         .domain([0, Math.max(...Object.keys(barData).map(x => barData[x].Students))])
         .range([0,2*Math.max(...Object.keys(barData).map(x => barData[x].Students))]);
     
-    var xAxis = d3.axisTop()
+    var xAxis = d3.axisBottom()
         .scale(x);
 
     svg.append("g")
         .attr("class", "legendXAxis")
-        .attr("transform", "translate(" + (startingX) + ", 90)")
+        .attr("transform", "translate(" + (startingX) + ", " + (100 + 50 * numBars) + ")")
         .call(xAxis);
 
     /* Build domain for graph */
