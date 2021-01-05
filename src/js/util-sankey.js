@@ -626,6 +626,7 @@ function populateLinkStorageObj(graph) {
             "width": link.width,
             "value": link.value
         });
+
     }
 }
 
@@ -702,7 +703,7 @@ function oldLinkNotinNewSet(brokeExam, brokeGrade) {
 
 //(sec === brokeExam && secG === brokeGrade) || (first === brokeExam && firstG === brokeGrade)
 
-function newLinkNotinOldSet(brokeExam) {
+function newLinkNotinOldSet(brokeExam, brokeGrade) {
     newLinksSet = new Set();
     newLinksObj = {}
     newLinksObj['right'] = {}
@@ -727,6 +728,15 @@ function newLinkNotinOldSet(brokeExam) {
                 newLinksObj['left'][firstG] = newLinks[first][firstG][sec][secG]
             }
         }
+        else if ((sec === brokeExam && secG[0] === brokeGrade[0]) || (first === brokeExam && firstG[0] === brokeGrade[0])) {
+            newLinksSet.add(key);
+            if (brokeExam.localeCompare(first) === 0) {
+                newLinksObj['right'][secG] = newLinks[first][firstG][sec][secG]
+            }
+            else {
+                newLinksObj['left'][firstG] = newLinks[first][firstG][sec][secG]
+            }
+        }
     }
     return [newLinksSet, newLinksObj];
 }
@@ -741,4 +751,8 @@ function getNodeColor(nodeName) {
         return getShadePlusMinus(sankeyColor(nodeName[0]), nodeName[1]);
     /* case for number grade nodes */
     return getShadeNumber(sankeyColor(gradeScale(nodeName)), nodeName);
+}
+
+function isNumber(name) {
+    return parseInt(name) >= 0 && parseInt(name) <= 100
 }

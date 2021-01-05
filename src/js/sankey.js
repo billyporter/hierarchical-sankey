@@ -57,7 +57,10 @@ function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeG
     oldPointsNotInNewSet = oldNotInNew();
 
     [oldLinkSet, oldLinksObj] = oldLinkNotinNewSet(brokeExam, brokeGrade);
-    [newLinkSet, newLinksObj] = newLinkNotinOldSet(brokeExam);
+    [newLinkSet, newLinksObj] = newLinkNotinOldSet(brokeExam, brokeGrade);
+    // console.log(oldLinkSet);
+    // console.log(newLinkSet);
+    // console.log(newLinksObj);
 
 
     /**
@@ -98,12 +101,12 @@ function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeG
         }
         drawNodes(graph);
         drawLinks(graph);
-        transitionToNewBreakdown(sankeyData);
+        transitionToNewBreakdown(sankeyData, newPointsNotInOldSet, oldPointsNotInNewSet, newLinkSet, brokeExam);
     }
     else if (!isFirst) { // Handle case of building up
         drawNodes(oldGraph);
         drawLinks(oldGraph);
-        transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, sankeyData);
+        transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldLinkSet, newLinkSet, newLinksObj, sankeyData, brokeExam);
     }
 
 
@@ -236,7 +239,60 @@ function drawLinks(graph) {
 
 }
 
-function transitionToNewBreakdown(sankeyData) {
+function transitionToNewBreakdown(sankeyData, newPointsNotInOldSet, oldPointsNotInNewSet, newLinkSet, brokeExam) {
+
+    seen = {}
+    seen['left'] = {}
+    seen['right'] = {}
+    graphlink.style("stroke-opacity", function (link) {
+        if (newLinkSet.has(
+            [link.source.assessment, link.source.name, link.target.assessment, link.target.name]
+                .toString()
+        )
+        ) {
+            const direction = link.source.assessment.localeCompare(brokeExam) ? "left" : "right";
+            const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
+            if (gradeToInput in seen[direction]) {
+                return 0.0;
+            }
+            else {
+                seen[direction][gradeToInput] = true;
+            }
+        }
+        return 0.4;
+    }).style("stroke", function (link) {
+        if (newLinkSet.has([link.source.assessment, link.source.name, link.target.assessment, link.target.name]
+            .toString()
+        )) {
+            const direction = link.source.assessment.localeCompare(brokeExam) ? "left" : "right";
+            const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
+            if (direction.localeCompare('left') === 0) {
+                return getNodeColor(link.source.name);
+            }
+            if (isNumber(link.source.name)) {
+                return getNodeColor(specificLetterScale(gradeScale(link.source.name), link.source.name));
+            }
+            return getNodeColor(link.source.name[0])
+        }
+        return getNodeColor(link.source.name);
+    });
+
+    d3.selectAll('.node').each(function (d) {
+        d3.select(this)
+            .style('fill', function (node) {
+                if (newPointsNotInOldSet.has([node.assessment, node.name, node.value].toString())) {
+                    const searchNode = oldPointsNotInNewSet.keys().next().value.split(',');
+                    return getNodeColor(searchNode[1]);
+                }
+                return getNodeColor(node.name);
+            }).style("stroke", function (node) {
+                if (newPointsNotInOldSet.has([node.assessment, node.name, node.value].toString())) {
+                    const searchNode = oldPointsNotInNewSet.keys().next().value.split(',');
+                    return d3.rgb(getNodeColor(searchNode[1])).darker(0.6);
+                }
+                return d3.rgb(getNodeColor(node.name)).darker(0.6);
+            })
+    });
 
     /* Animate nodes */
     d3.selectAll('.node').each(function (d) {
@@ -250,6 +306,12 @@ function transitionToNewBreakdown(sankeyData) {
             })
             .attr('height', function (n) {
                 return n.rectHeight;
+            })
+            .style("fill", function (node) {
+                return getNodeColor(node.name);
+            })
+            .style("stroke", function (d) {
+                return d3.rgb(getNodeColor(d.name)).darker(0.6);
             })
     });
     d3.selectAll('.nodeText').each(function (d) {
@@ -269,10 +331,11 @@ function transitionToNewBreakdown(sankeyData) {
         link.width = visualNode.width;
     }
     let soFar = 0;
-    let total = graphlink["_groups"][0].length;
-    graphlink.transition().attr('d', d3.sankeyLinkHorizontal()).style("stroke-width", function (n) {
-        let visualNode = newLinks[n.source.assessment][n.source.name][n.target.assessment][n.target.name];
-        return visualNode.width;
+    const total = graphlink["_groups"][0].length;
+    graphlink.transition().attr('d', d3.sankeyLinkHorizontal()).style("stroke-opacity", 0.4).style("stroke-width", function (n) {
+        return n.width;
+    }).style("stroke", function (link) {
+        return getNodeColor(link.source.name);
     }).on("end", function () {
         soFar += 1;
         if (soFar === total) {
@@ -286,7 +349,8 @@ function transitionToNewBreakdown(sankeyData) {
     d3.selectAll(".lines").remove();
 }
 
-function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, sankeyData) {
+function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldLinkSet, newLinkSet, newLinksObj, sankeyData, brokeExam) {
+
 
     /* Animate nodes */
     d3.selectAll('.node').each(function (d) {
@@ -309,6 +373,19 @@ function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, sank
             .attr('height', function (n) {
                 return n.rectHeight;
             })
+            .style('fill', function (node) {
+                if (oldPointsNotInNewSet.has([node.assessment, node.name, node.value].toString())) {
+                    const searchNode = newPointsNotInOldSet.keys().next().value.split(',');
+                    return getNodeColor(searchNode[1]);
+                }
+                return getNodeColor(node.name);
+            }).style("stroke", function (node) {
+                if (oldPointsNotInNewSet.has([node.assessment, node.name, node.value].toString())) {
+                    const searchNode = newPointsNotInOldSet.keys().next().value.split(',');
+                    return d3.rgb(getNodeColor(searchNode[1])).darker(0.6);
+                }
+                return d3.rgb(getNodeColor(node.name)).darker(0.6);
+            });
     });
     d3.selectAll('.nodeText').each(function (d) {
         d3.select(this)
@@ -317,11 +394,62 @@ function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, sank
                 return (n.y0 + n.y1) / 2;
             });
     });
-
-    sankey.update(oldGraph);
+    for (const link of oldGraph.links) {
+        let visualLink;
+        if (oldLinkSet.has([link.source.assessment, link.source.name, link.target.assessment, link.target.name]
+            .toString()
+        )
+        ) {
+            const direction = link.source.assessment.localeCompare(brokeExam) ? "left" : "right";
+            const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
+            visualLink = newLinksObj[direction][gradeToInput]
+        }
+        else {
+            visualLink = newLinks[link.source.assessment][link.source.name][link.target.assessment][link.target.name];
+        }
+        link.y0 = visualLink.y0;
+        link.y1 = visualLink.y1;
+        link.width = visualLink.width;
+    }
     let soFar = 0;
+    let counter = 0;
     let total = graphlink["_groups"][0].length;
-    graphlink.transition().attr('d', d3.sankeyLinkHorizontal()).on("end", function () {
+    seen = {}
+    seen['left'] = {}
+    seen['right'] = {}
+    graphlink.transition().attr('d', d3.sankeyLinkHorizontal()).style("stroke", function (link) {
+        if (oldLinkSet.has([link.source.assessment, link.source.name, link.target.assessment, link.target.name]
+            .toString()
+        )) {
+            const direction = link.source.assessment.localeCompare(brokeExam) ? "left" : "right";
+            const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
+            if (direction.localeCompare('left') === 0) {
+                return getNodeColor(link.source.name);
+            }
+            if (isNumber(link.source.name)) {
+                return getNodeColor(specificLetterScale(gradeScale(link.source.name), link.source.name));
+            }
+            return getNodeColor(link.source.name[0])
+        }
+        return getNodeColor(link.source.name);
+    }).style("stroke-width", function (n) {
+        return n.width;
+    }).style("stroke-opacity", function (link) {
+        console.log(link);
+        if (oldLinkSet.has([link.source.assessment, link.source.name, link.target.assessment, link.target.name]
+            .toString()
+        )) {
+            const direction = link.source.assessment.localeCompare(brokeExam) ? "left" : "right";
+            const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
+            if (gradeToInput in seen[direction]) {
+                return 0.0;
+            }
+            else {
+                seen[direction][gradeToInput] = true;
+            }
+        }
+        return 0.4;
+    }).on("end", function () {
         soFar += 1;
         if (soFar === total) {
             removePlots();
