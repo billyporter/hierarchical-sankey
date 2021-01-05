@@ -10,7 +10,7 @@ function buildLegend(colorArray, rankedArray, filteredData) {
     const barHeight = 400;
     const barPadding = 15;
     const barWidth = 60;
-    const startingX = 1050;
+    const startingX = 1100;
 
     /* Build domain for graph */
     domainY = []
@@ -77,16 +77,10 @@ function buildLegend(colorArray, rankedArray, filteredData) {
         })
         //x position is 3 pixels to the right of the bar
         .attr("x", function (d) {
-            return startingX - 70;
+            return startingX - 120;
         })
         .text(function (d) {
-            path = "";
-            for (i = 0; i < d.Exam.length; i++){
-                
-                path += d.Exam[i];
-
-            }
-            return path;
+            return d.Exam;
         })
         .style("fill", "black")
 }

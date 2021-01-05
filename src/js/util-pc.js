@@ -237,7 +237,6 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
             groupsMap.set(allExams, 1);
         }
     }
-    console.log(groupsMap);
 
     /* Rank the groups */
     let rankedArray = [];
