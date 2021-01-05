@@ -110,7 +110,6 @@ function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeG
     /* Store new points in old points */
     oldGraphPoints = JSON.parse(JSON.stringify(newGraphPoints));
     oldLinks = JSON.parse(JSON.stringify(newLinks));
-    // updateOldLinksMap();
     oldLinksMap = new Map(newLinksMap);
 }
 
@@ -139,24 +138,10 @@ function drawNodes(graph) {
             return (d.y1 - d.y0)
         })
         .style("fill", (d) => {
-            /* case for whole letter grade nodes */
-            if (letrs.has(d.name))
-                return sankeyColor(d.name);
-            /* case for + and - grade nodes */
-            if (letrs.has(d.name[0]))
-                return getShadePlusMinus(sankeyColor(d.name[0]), d.name[1]);
-            /* case for number grade nodes */
-            return getShadeNumber(sankeyColor(gradeScale(d.name)), d.name);
+            return getNodeColor(d.name)
         })
         .attr("stroke", (d) => {
-            /* case for whole letter grade nodes */
-            if (letrs.has(d.name))
-                return d3.rgb(sankeyColor(d.name)).darker(0.6);
-            /* case for + and - grade nodes */
-            if (letrs.has(d.name[0]))
-                return d3.rgb(getShadePlusMinus(sankeyColor(d.name[0]), d.name[1])).darker(0.6);
-            /* case for number grade nodes */
-            return d3.rgb(getShadeNumber(sankeyColor(gradeScale(d.name)), d.name)).darker(0.6);
+            return d3.rgb(getNodeColor(d.name)).darker(0.6);
         })
         .on("click", function (d, i) {
             hierarchSankeyRouter(i, true);
@@ -227,16 +212,7 @@ function drawLinks(graph) {
         .attr("fill", "none")
         .style("stroke-width", d => d.width)
         .style("stroke", d => {
-            /* case for whole letter grade nodes */
-            if (letrs.has(d.source.name))
-                return sankeyColor(d.source.name);
-
-            /* case for + and - grade nodes */
-            if (letrs.has(d.source.name[0]))
-                return getShadePlusMinus(sankeyColor(d.source.name[0]), d.source.name[1]);
-
-            /* case for number grade nodes */
-            return getShadeNumber(sankeyColor(gradeScale(d.source.name)), d.source.name);
+            return getNodeColor(d.source.name);
         })
         .on("mouseover", (d, i) => {
             if (!isActive) {

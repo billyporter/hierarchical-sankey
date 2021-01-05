@@ -632,7 +632,6 @@ function populateLinkStorageObj(graph) {
 function storeNewLinks(graph) {
     newLinks = {};
     newLinksMap = new Map();
-    console.log(newLinksMap);
     for (const link of graph.links) {
         const sourceA = link.source.assessment;
         const sourceG = link.source.name;
@@ -661,8 +660,6 @@ function storeNewLinks(graph) {
             "value": link.value
         });
     }
-
-    console.log(newLinksMap);
 }
 
 function oldLinkNotinNewSet(brokeExam, brokeGrade) {
@@ -732,4 +729,16 @@ function newLinkNotinOldSet(brokeExam) {
         }
     }
     return [newLinksSet, newLinksObj];
+}
+
+
+function getNodeColor(nodeName) {
+    /* case for whole letter grade nodes */
+    if (letrs.has(nodeName))
+        return sankeyColor(nodeName);
+    /* case for + and - grade nodes */
+    if (letrs.has(nodeName[0]))
+        return getShadePlusMinus(sankeyColor(nodeName[0]), nodeName[1]);
+    /* case for number grade nodes */
+    return getShadeNumber(sankeyColor(gradeScale(nodeName)), nodeName);
 }
