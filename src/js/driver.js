@@ -9,5 +9,5 @@ function resetGraph() {
     removePlots();
     populateGradeLevelMap();
     const starterData = formatSankey()
-    drawSankey(starterData);
+    drawSankey(starterData, true);
 }
