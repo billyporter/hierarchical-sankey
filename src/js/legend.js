@@ -12,6 +12,32 @@ function buildLegend(colorArray, rankedArray, filteredData) {
     const barWidth = 60;
     const startingX = 1100;
 
+    /* builds y axis */
+    var y = d3.scaleOrdinal()
+        .domain(Object.keys(barData).map(x => barData[x].Exam))
+        .range(Object.keys(barData).map(x => x*50));
+    
+    var yAxis = d3.axisLeft()
+        .scale(y);
+
+    svg.append("g")
+        .attr("class", "legendYAxis")
+        .attr("transform", "translate(" + (startingX - 10) + ", 123)")
+        .call(yAxis);
+
+    /* builds x axis */
+    var x = d3.scaleLinear()
+        .domain([0, Math.max(...Object.keys(barData).map(x => barData[x].Students))])
+        .range([0,2*Math.max(...Object.keys(barData).map(x => barData[x].Students))]);
+    
+    var xAxis = d3.axisTop()
+        .scale(x);
+
+    svg.append("g")
+        .attr("class", "legendXAxis")
+        .attr("transform", "translate(" + (startingX) + ", 90)")
+        .call(xAxis);
+
     /* Build domain for graph */
     domainY = []
     for (let i = 0; i < 9; i++) {
@@ -64,25 +90,6 @@ function buildLegend(colorArray, rankedArray, filteredData) {
             return d.Students;
         })
         .style("fill", "black")
-
-    /* Draw Labels to left of bar */
-    const examLabel = svg.selectAll(".exam").data(barData)
-    examLabel
-        .enter()
-        .append("text")
-        .attr("class", "label")
-        //y position of the label is halfway down the bar
-        .attr("y", function (d, i) {
-            return bar_y(i) + 130;
-        })
-        //x position is 3 pixels to the right of the bar
-        .attr("x", function (d) {
-            return startingX - 120;
-        })
-        .text(function (d) {
-            return d.Exam;
-        })
-        .style("fill", "black")
 }
 
 /**
@@ -92,6 +99,8 @@ function clearPrevLegend() {
     d3.selectAll(".bar").remove();
     d3.selectAll(".label").remove();
     d3.selectAll(".exam").remove();
+    d3.selectAll(".legendYAxis").remove();
+    d3.selectAll(".legendXAxis").remove();
 }
 
 /**
