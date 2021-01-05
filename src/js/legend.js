@@ -10,7 +10,7 @@ function buildLegend(colorArray, rankedArray, filteredData) {
     const barHeight = 400;
     const barPadding = 15;
     const barWidth = 60;
-    const startingX = 1050;
+    const startingX = 1100;
 
     /* builds y axis */
     var y = d3.scaleOrdinal()
@@ -37,6 +37,18 @@ function buildLegend(colorArray, rankedArray, filteredData) {
         .attr("class", "legendXAxis")
         .attr("transform", "translate(" + (startingX) + ", " + (100 + 50 * numBars) + ")")
         .call(xAxis);
+
+    
+
+    /* title */
+    svg.append("text")
+        .attr("x", startingX + Math.max(...Object.keys(barData).map(x => barData[x].Students)))             
+        .attr("y", 85)
+        .attr("class", "legendTitle")
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("font-weight", "600")
+        .text("Pathway Counts");
 
     /* Build domain for graph */
     domainY = []
@@ -101,6 +113,7 @@ function clearPrevLegend() {
     d3.selectAll(".exam").remove();
     d3.selectAll(".legendYAxis").remove();
     d3.selectAll(".legendXAxis").remove();
+    d3.selectAll(".legendTitle").remove();
 }
 
 /**
