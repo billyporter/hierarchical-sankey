@@ -6,6 +6,7 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
 
     /* Constants needed to build graph */
     const barData = buildBarGraphData(rankedArray, colorArray);
+    const axisData = buildAxisData(barData);
     const numBars = rankedArray.length < 8 ? rankedArray.length : 8;
     const barHeight = 400;
     const barPadding = 15;
@@ -14,16 +15,34 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
 
     /* builds y axis */
     var y = d3.scaleOrdinal()
-        .domain(Object.keys(barData).map(x => barData[x].Exam))
-        .range(Object.keys(barData).map(x => x*50));
+        .domain(Object.keys(axisData).map(x => axisData[x].Exam))
+        .range(Object.keys(axisData).map(x => x*25));
     
     var yAxis = d3.axisLeft()
-        .scale(y);
+        .scale(y)
+        .tickFormat(d => {
+            if (isNaN(d) && d.localeCompare("dummy") !== 0){
+                return d;
+            }
+        })
+        .tickSizeOuter(0);
 
     svg.append("g")
         .attr("class", "legendYAxis")
-        .attr("transform", "translate(" + (startingX - 10) + ", 123)")
-        .call(yAxis);
+        .attr("transform", "translate(" + (startingX - 10) + ", 100)")
+        .call(yAxis)
+        .call(g => g.selectAll(".tick line")
+            .filter(d => {
+                return d.localeCompare("dummy") === 0;
+            })
+            .attr("x2", barPadding + 2*Math.max(...Object.keys(barData).map(x => barData[x].Students))) 
+        )
+        .call(g => g.selectAll(".tick")
+            .filter(function(d){
+                return !isNaN(d);
+            })
+            .remove()
+        );
 
     /* builds x axis */
     var x = d3.scaleLinear()
@@ -36,7 +55,9 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
     svg.append("g")
         .attr("class", "legendXAxis")
         .attr("transform", "translate(" + (startingX) + ", " + (100 + 50 * numBars) + ")")
-        .call(xAxis);
+        .call(xAxis)
+        .call(g => g.select('.domain')
+            .remove());
 
     /* y axis label */
     svg.append("text")
@@ -79,7 +100,6 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
         .text(function (d) {
             title = "Grade " + source_targets[0] + " on " + source_targets[2]
                     + " and Grade " + source_targets[1] + " on " + source_targets[3];
-            console.log(source_targets);
             return title;
         });
 
@@ -170,6 +190,24 @@ function buildBarGraphData(rankedArray, colorArray) {
     }
     return barData;
 }
+
+/**
+ * Returns dummy data inserted in the barGraph array to properly scale and style the y-axis 
+ */
+function buildAxisData(barData){
+    const axisData = [{"Exam": "0"}];
+    for (let [i, exam] of barData.entries()) {
+        axisData.push(exam);
+        if (i < barData.length -1){
+            axisData.push({"Exam":"" + (1 + i)});
+        }
+    }
+
+    axisData.push({"Exam":"dummy"});
+
+    return axisData;
+}
+
 
 
 /**
