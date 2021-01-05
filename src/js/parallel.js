@@ -94,7 +94,8 @@ function drawPC(sankeyData) {
         let inc = 1;
 
         if (gradeMap.has(d.name[0])) {
-            if (assessGradeLevelMap[assess][d.name[0]]["level"] === 1) {
+            const level = assessGradeLevelMap[assess][d.name[0]]["level"];
+            if (level > 0) { // if node is unexpanded we don't need to adjust beyond a start = 90 b start = 80, etc.
                 if (d["name"][d["name"].length - 1] === '-') {
                     end = start + 4;
                 }
