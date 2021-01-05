@@ -10,9 +10,18 @@
 function drawPC(sankeyData) {
     /* Builds the custom y-Scale and x-scale */
     var y = {}
-    dimensions = ["Exam 1", "Exam 2", "Exam 3", "Final Exam"];
+    const dimensions = ["Exam 1", "Exam 2", "Exam 3", "Final Exam"];
+
+    /* Create Map for grades */
+    const gradeMap = new Map();
+    gradeMap.set('A', 90);
+    gradeMap.set('B', 80);
+    gradeMap.set('C', 70);
+    gradeMap.set('D', 60);
+    gradeMap.set('F', 0);
+
     for (const examName of dimensions) {
-        const domainyWainy = domainScale(sankeyData["grades"][examName], examName);
+        const domainyWainy = domainScale(sankeyData["grades"][examName], examName, gradeMap);
         const scaleyWaley = nodeValueToScale(sankeyData, examName);
         y[examName] = d3.scaleLinear()
             .domain(domainyWainy)
@@ -62,13 +71,6 @@ function drawPC(sankeyData) {
      * Draws Axes
      */
 
-    /* Create Map for grades */
-    const gradeMap = new Map();
-    gradeMap.set('A', 90);
-    gradeMap.set('B', 80);
-    gradeMap.set('C', 70);
-    gradeMap.set('D', 60);
-    gradeMap.set('F', 0);
 
     /**
      * Loop through nodes and draw axes
