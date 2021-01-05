@@ -8,6 +8,10 @@
 
 var oldGraphPoints = {};
 var newGraphPoints = {};
+var oldLinks = {}
+var newLinks = {}
+var oldLinksMap = new Map();
+var newLinksMap = new Map();
 
 
 
@@ -25,7 +29,7 @@ const sankey = d3.sankey()
  */
 var graph;
 var oldGraph;
-function drawSankey(sankeyData, isFirst, isBreakdown, oldData) {
+function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeGrade) {
 
     /* Fomats Sankey */
     if (oldData) {
@@ -36,6 +40,7 @@ function drawSankey(sankeyData, isFirst, isBreakdown, oldData) {
     /* If first time, add all points */
     if (isFirst) {
         populatePointStorageObj(graph);
+        populateLinkStorageObj(graph);
 
         drawNodes(graph);
         drawPC(sankeyData);
@@ -45,10 +50,15 @@ function drawSankey(sankeyData, isFirst, isBreakdown, oldData) {
 
     /* Store new point in NGP */
     storeNewPoints(graph);
+    storeNewLinks(graph);
 
     /* Get necessary objects */
     newPointsNotInOldSet = newNotInOld();
     oldPointsNotInNewSet = oldNotInNew();
+
+    [oldLinkSet, oldLinksObj] = oldLinkNotinNewSet(brokeExam, brokeGrade);
+    [newLinkSet, newLinksObj] = newLinkNotinOldSet(brokeExam);
+
 
     /**
      * Transition Updating
@@ -68,6 +78,24 @@ function drawSankey(sankeyData, isFirst, isBreakdown, oldData) {
             node.y0 = visualNode.y0;
             node.y1 = visualNode.y1;
         }
+        for (const link of graph.links) {
+            let visualLink;
+            if (newLinkSet.has(
+                [link.source.assessment, link.source.name, link.target.assessment, link.target.name]
+                    .toString()
+            )
+            ) {
+                const direction = link.source.assessment.localeCompare(brokeExam) ? "left" : "right";
+                const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
+                visualLink = oldLinksObj[direction][gradeToInput];
+            }
+            else {
+                visualLink = oldLinks[link.source.assessment][link.source.name][link.target.assessment][link.target.name];
+            }
+            link.y0 = visualLink.y0;
+            link.y1 = visualLink.y1;
+            link.width = visualLink.width;
+        }
         drawNodes(graph);
         drawLinks(graph);
         transitionToNewBreakdown(sankeyData);
@@ -81,6 +109,9 @@ function drawSankey(sankeyData, isFirst, isBreakdown, oldData) {
 
     /* Store new points in old points */
     oldGraphPoints = JSON.parse(JSON.stringify(newGraphPoints));
+    oldLinks = JSON.parse(JSON.stringify(newLinks));
+    // updateOldLinksMap();
+    oldLinksMap = new Map(newLinksMap);
 }
 
 
@@ -230,6 +261,8 @@ function drawLinks(graph) {
 }
 
 function transitionToNewBreakdown(sankeyData) {
+
+    /* Animate nodes */
     d3.selectAll('.node').each(function (d) {
         d3.select(this)
             .transition()
@@ -251,10 +284,20 @@ function transitionToNewBreakdown(sankeyData) {
             });
     });
 
-    sankey.update(graph);
+    /* Animate links */
+    /* Set new link location */
+    for (const link of graph.links) {
+        let visualNode = newLinks[link.source.assessment][link.source.name][link.target.assessment][link.target.name];
+        link.y0 = visualNode.y0;
+        link.y1 = visualNode.y1;
+        link.width = visualNode.width;
+    }
     let soFar = 0;
     let total = graphlink["_groups"][0].length;
-    graphlink.transition().attr('d', d3.sankeyLinkHorizontal()).on("end", function () {
+    graphlink.transition().attr('d', d3.sankeyLinkHorizontal()).style("stroke-width", function (n) {
+        let visualNode = newLinks[n.source.assessment][n.source.name][n.target.assessment][n.target.name];
+        return visualNode.width;
+    }).on("end", function () {
         soFar += 1;
         if (soFar === total) {
             removePlots();
@@ -268,6 +311,8 @@ function transitionToNewBreakdown(sankeyData) {
 }
 
 function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, sankeyData) {
+
+    /* Animate nodes */
     d3.selectAll('.node').each(function (d) {
         d3.select(this)
             .transition()
