@@ -38,7 +38,15 @@ function buildLegend(colorArray, rankedArray, filteredData) {
         .attr("transform", "translate(" + (startingX) + ", " + (100 + 50 * numBars) + ")")
         .call(xAxis);
 
-    
+    /* y axis label */
+    svg.append("text")
+        .attr("x", 0)
+        .attr("y",  0)
+        .attr("class", "legendYAxisLabel")
+        .attr("transform", "translate(" + (startingX - 90) + "," + (80 + 30 * numBars) + ") rotate(-90)")
+        .style("text-anchor", "middle")
+        .style("font-weight", "600")
+        .text("Date");
 
     /* title */
     svg.append("text")
@@ -114,6 +122,7 @@ function clearPrevLegend() {
     d3.selectAll(".legendYAxis").remove();
     d3.selectAll(".legendXAxis").remove();
     d3.selectAll(".legendTitle").remove();
+    d3.selectAll(".legendYAxisLabel").remove();
 }
 
 /**
