@@ -27,7 +27,7 @@ function nodeValueToScale(sankeyData, examName) {
 /**
  * Returns array of domain values according to map
  */
-function domainScale(nodes, examName) {
+function domainScale(nodes, examName, gradeMap) {
     const domain = [0, 59];
     const nodesList = Object.entries(nodes).sort(function (a, b) {
         return b[1].id - a[1].id
@@ -45,16 +45,16 @@ function domainScale(nodes, examName) {
 
                 /* Handle cases */
                 if (level === 0) {
-                    domain.push(Math.floor(domain[domain.length - 1]) + 1);
+                    domain.push(gradeMap.get(node));
                     if (node.localeCompare("A") === 0) {
-                        domain.push(Math.floor(domain[domain.length - 1]) + 1 + 9);
+                        domain.push(domain[domain.length - 1] + 1 + 9);
                     }
                     else {
-                        domain.push(Math.floor(domain[domain.length - 1]) + 1 + 8);
+                        domain.push(domain[domain.length - 1] + 1 + 8);
                     }
                 }
                 else {
-                    domainScaleHelper(domain, node);
+                    domainScaleHelper(domain, node, gradeMap);
                 }
             }
         }
@@ -70,22 +70,25 @@ function domainScale(nodes, examName) {
 /**
  * Helper to deal with C-, C, C+. etc.
  */
-function domainScaleHelper(domain, node) {
-    domain.push(Math.floor(domain[domain.length - 1]) + 1);
+function domainScaleHelper(domain, node, gradeMap) {
+    const start = gradeMap.get(node[0]);
     if (node.length > 1) {
         if (node[1].localeCompare("-") === 0) {
-            domain.push(Math.floor(domain[domain.length - 1]) + 1 + 2);
+            domain.push(start);
+            domain.push(domain[domain.length - 1] + 1 + 2);
         }
         else {
-            domain.push(Math.floor(domain[domain.length - 1]) + 1 + 1);
+            domain.push(start+7);
+            domain.push(domain[domain.length - 1] + 1 + 1);
         }
     }
     else {
+        domain.push(start + 4);
         if (node.localeCompare("A") === 0) {
-            domain.push(Math.floor(domain[domain.length - 1]) + 1 + 5);
+            domain.push(domain[domain.length - 1] + 1 + 5);
         }
         else {
-            domain.push(Math.floor(domain[domain.length - 1]) + 1 + 1);
+            domain.push(domain[domain.length - 1] + 1 + 1);
         }
     }
 }
