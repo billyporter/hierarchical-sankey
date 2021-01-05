@@ -260,5 +260,7 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
         line['group'] = rankedMap.get(line['concat']);
     }
 
-    return [newData, i, rankedArray];
+    source_targets = [sourceGrade, targetGrade, sourceAssessment, targetAssessment];
+    
+    return [newData, i, rankedArray, source_targets];
 }

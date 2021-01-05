@@ -180,7 +180,7 @@ function hoverBehavior(i, flag) {
             .style("opacity", 0.6);
     });
     if (flag) {
-        buildLegend(colorArray, filteredReturn[2], filteredData);
+        buildLegend(colorArray, filteredReturn[2], filteredData, filteredReturn[3]);
     }
 }
 

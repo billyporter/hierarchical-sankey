@@ -2,7 +2,7 @@
 /**
  * Build Bar Graph Legend For plot
  */
-function buildLegend(colorArray, rankedArray, filteredData) {
+function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
 
     /* Constants needed to build graph */
     const barData = buildBarGraphData(rankedArray, colorArray);
@@ -59,8 +59,16 @@ function buildLegend(colorArray, rankedArray, filteredData) {
         .style("font-size", "14px") 
         .text("Students");
 
-
     /* title */
+    svg.append("text")
+        .attr("x", startingX + Math.max(...Object.keys(barData).map(x => barData[x].Students)))             
+        .attr("y", 65)
+        .attr("class", "legendTitle")
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("font-weight", "600")
+        .text("Counts of Pathways Passing Through");
+
     svg.append("text")
         .attr("x", startingX + Math.max(...Object.keys(barData).map(x => barData[x].Students)))             
         .attr("y", 85)
@@ -68,7 +76,12 @@ function buildLegend(colorArray, rankedArray, filteredData) {
         .attr("text-anchor", "middle")  
         .style("font-size", "16px") 
         .style("font-weight", "600")
-        .text("Pathway Counts");
+        .text(function (d) {
+            title = "Grade " + source_targets[0] + " on " + source_targets[2]
+                    + " and Grade " + source_targets[1] + " on " + source_targets[3];
+            console.log(source_targets);
+            return title;
+        });
 
     /* Build domain for graph */
     domainY = []
