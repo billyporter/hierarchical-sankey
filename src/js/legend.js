@@ -24,8 +24,8 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
             if (isNaN(d) && d.localeCompare("dummy") !== 0){
                 return d;
             }
-        })
-        .tickSizeOuter(0);
+        }) 
+        .tickSizeOuter(0); // remove axis brackets
 
     svg.append("g")
         .attr("class", "legendYAxis")
@@ -35,14 +35,15 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
             .filter(d => {
                 return d.localeCompare("dummy") === 0;
             })
-            .attr("x2", barPadding + 2*Math.max(...Object.keys(barData).map(x => barData[x].Students))) 
+            .attr("x2", barPadding + 2*Math.max(...Object.keys(barData).map(x => barData[x].Students))) // extend the y=0 line to form a joined y and x axis
         )
         .call(g => g.selectAll(".tick")
             .filter(function(d){
-                return !isNaN(d);
+                return !isNaN(d); // remove the dummy data (0, 1, 2, ...) to leave spaced out ticks in the middle of the data
             })
             .remove()
-        );
+        )
+        .style("font-size", "12px");
 
     /* builds x axis */
     var x = d3.scaleLinear()
@@ -50,7 +51,8 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
         .range([0,2*Math.max(...Object.keys(barData).map(x => barData[x].Students))]);
     
     var xAxis = d3.axisBottom()
-        .scale(x);
+        .scale(x)
+        .ticks(x.domain()[1] / 10);
 
     svg.append("g")
         .attr("class", "legendXAxis")
@@ -64,10 +66,10 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
         .attr("x", 0)
         .attr("y",  0)
         .attr("class", "legendYAxisLabel")
-        .attr("transform", "translate(" + (startingX - 90) + "," + (80 + 30 * numBars) + ") rotate(-90)")
+        .attr("transform", "translate(" + (startingX - 100) + "," + (80 + 30 * numBars) + ") rotate(-90)")
         .style("text-anchor", "middle")
         .style("font-weight", "600")
-        .style("font-size", "14px") 
+        .style("font-size", "14px")
         .text("Pathway");
 
     /* x axis label */
@@ -207,8 +209,6 @@ function buildAxisData(barData){
 
     return axisData;
 }
-
-
 
 /**
  * When hovering over bar, highlights appropriate lines
