@@ -526,6 +526,9 @@ function hierarchSankeyRouter(node, flag) {
     drawSankey(newSankey, false, flag, oldGraph, stringToInput, locGrade);
 }
 
+/**
+ * Function to remove svg
+ */
 function removePlots() {
     d3.selectAll(".nodes").remove();
     d3.selectAll(".link").remove();
@@ -533,6 +536,10 @@ function removePlots() {
     d3.selectAll(".lines").remove();
 }
 
+/**
+ * Takes in a graph and puts all points into
+ * object
+ */
 function populatePointStorageObj(graph) {
     for (const node of graph.nodes) {
         if (!(node.assessment in oldGraphPoints)) {
@@ -548,6 +555,10 @@ function populatePointStorageObj(graph) {
     }
 }
 
+/**
+ * Takes in a new graph and stores points
+ * in objects
+ */
 function storeNewPoints(graph) {
     newGraphPoints = {};
     for (const node of graph.nodes) {
@@ -565,34 +576,38 @@ function storeNewPoints(graph) {
     }
 }
 
+/**
+ * Checks to see which nodes are in the new graph
+ * but are not in the old graph
+ */
 function newNotInOld() {
     newNodes = new Set();
     for (const [examName, examValue] of Object.entries(newGraphPoints)) {
         for (const [gradeName, node] of Object.entries(examValue)) {
             if (!(gradeName in oldGraphPoints[examName])) {
                 newNodes.add([examName, gradeName, node.value].toString());
-                // newNodes.add(gradeName);
             }
             else if (node.value !== oldGraphPoints[examName][gradeName]["value"]) {
                 newNodes.add([examName, gradeName, node.value].toString());
-                // newNodes.add(gradeName);
             }
         }
     }
     return newNodes
 }
 
+/**
+ * Checks to see which nodes are in old graph but
+ * not in new graph
+ */
 function oldNotInNew() {
     oldNodes = new Set();
     for (const [examName, examValue] of Object.entries(oldGraphPoints)) {
         for (const [gradeName, node] of Object.entries(examValue)) {
             if (!(gradeName in newGraphPoints[examName])) {
                 oldNodes.add([examName, gradeName, node.value].toString());
-                // oldNodes.add(gradeName)
             }
             else if (node.value !== newGraphPoints[examName][gradeName]["value"]) {
                 oldNodes.add([examName, gradeName, node.value].toString());
-                // oldNodes.add(gradeName)
             }
         }
     }
@@ -600,7 +615,10 @@ function oldNotInNew() {
 }
 
 
-
+/**
+ * Function to fill the old link storage
+ * object with data
+ */
 function populateLinkStorageObj(graph) {
     oldLinks = {};
     oldLinksMap = new Map();
@@ -635,6 +653,9 @@ function populateLinkStorageObj(graph) {
     }
 }
 
+/** 
+ * Stores new links in a new links object
+ */
 function storeNewLinks(graph) {
     newLinks = {};
     newLinksMap = new Map();
@@ -668,6 +689,12 @@ function storeNewLinks(graph) {
     }
 }
 
+/**
+ * Checks to see which links are in old graph 
+ * that are not in new graph
+ * @param {*} brokeExam --> broken down exam
+ * @param {*} brokeGrade --> broken down grade
+ */
 function oldLinkNotinNewSet(brokeExam, brokeGrade) {
     oldLinksSet = new Set();
     oldLinksObj = {};
@@ -706,9 +733,13 @@ function oldLinkNotinNewSet(brokeExam, brokeGrade) {
     return [oldLinksSet, oldLinksObj];
 }
 
-//(sec === brokeExam && secG === brokeGrade) || (first === brokeExam && firstG === brokeGrade)
-
-function newLinkNotinOldSet(brokeExam, brokeGrade) {
+/**
+ * Checks to see which links are in new graph 
+ * that are not in old graph
+ * @param {*} brokeExam --> broken down exam
+ * @param {*} brokeGrade --> broken down grade
+ */
+function newLinkNotinOldSet(brokeExam, brokeGrade, isBreakdown) {
     newLinksSet = new Set();
     newLinksObj = {}
     newLinksObj['right'] = {}
@@ -733,7 +764,16 @@ function newLinkNotinOldSet(brokeExam, brokeGrade) {
                 newLinksObj['left'][firstG] = newLinks[first][firstG][sec][secG]
             }
         }
-        else if ((sec === brokeExam && secG[0] === brokeGrade[0]) || (first === brokeExam && firstG[0] === brokeGrade[0])) {
+        else if (!isBreakdown && ((sec === brokeExam && secG[0] === brokeGrade[0]) || (first === brokeExam && firstG[0] === brokeGrade[0]))) {
+            newLinksSet.add(key);
+            if (brokeExam.localeCompare(first) === 0) {
+                newLinksObj['right'][secG] = newLinks[first][firstG][sec][secG]
+            }
+            else {
+                newLinksObj['left'][firstG] = newLinks[first][firstG][sec][secG]
+            }
+        }
+        else if (isBreakdown && (sec === brokeExam && secG === brokeGrade) || (first === brokeExam && firstG === brokeGrade)) {
             newLinksSet.add(key);
             if (brokeExam.localeCompare(first) === 0) {
                 newLinksObj['right'][secG] = newLinks[first][firstG][sec][secG]
@@ -746,7 +786,10 @@ function newLinkNotinOldSet(brokeExam, brokeGrade) {
     return [newLinksSet, newLinksObj];
 }
 
-
+/**
+ * Function to return the color for a node
+ * based on its name
+ */
 function getNodeColor(nodeName) {
     /* case for whole letter grade nodes */
     if (letrs.has(nodeName))
@@ -758,6 +801,9 @@ function getNodeColor(nodeName) {
     return getShadeNumber(sankeyColor(gradeScale(nodeName)), nodeName);
 }
 
+/**
+ * Checks to see if a node name is a number
+ */
 function isNumber(name) {
     return parseInt(name) >= 0 && parseInt(name) <= 100
 }
