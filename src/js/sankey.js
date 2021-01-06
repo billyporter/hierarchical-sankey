@@ -29,7 +29,7 @@ const sankey = d3.sankey()
 /**
  * Top level Sankey drawing function
  */
-function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeGrade) {
+function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeGrade, newLevel) {
 
     /* Keep copy of old graph for animation purposes */
     if (oldData) {
@@ -113,7 +113,7 @@ function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeG
         /* Handles case of building up */
         drawNodes(oldGraph);
         drawLinks(oldGraph);
-        transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldLinkSet, newLinkSet, newLinksObj, sankeyData, brokeExam);
+        transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldLinkSet, newLinkSet, newLinksObj, sankeyData, brokeExam, newLevel);
     }
 
     /* Store new points in old points */
@@ -395,7 +395,7 @@ function transitionToNewBreakdown(sankeyData, newPointsNotInOldSet, oldPointsNot
  * @param {*} sankeyData --> sankey data
  * @param {*} brokeExam 
  */
-function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldLinkSet, newLinkSet, newLinksObj, sankeyData, brokeExam) {
+function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldLinkSet, newLinkSet, newLinksObj, sankeyData, brokeExam, newLevel) {
 
     /**
      * Animate nodes
@@ -476,6 +476,9 @@ function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldL
             const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
             if (direction.localeCompare('left') === 0) {
                 return getNodeColor(link.source.name);
+            }
+            if (isNumber(link.source.name) && newLevel === 0) {
+                return getNodeColor(gradeScale(link.source.name));
             }
             if (isNumber(link.source.name)) {
                 return getNodeColor(specificLetterScale(gradeScale(link.source.name), link.source.name));
