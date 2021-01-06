@@ -16,12 +16,12 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
     /* builds y axis */
     var y = d3.scaleOrdinal()
         .domain(Object.keys(axisData).map(x => axisData[x].Exam))
-        .range(Object.keys(axisData).map(x => x*25));
-    
+        .range(Object.keys(axisData).map(x => x * 25));
+
     var yAxis = d3.axisLeft()
         .scale(y)
         .tickFormat(d => {
-            if (isNaN(d) && d.localeCompare("dummy") !== 0){
+            if (isNaN(d) && d.localeCompare("dummy") !== 0) {
                 return d;
             }
         })
@@ -35,10 +35,10 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
             .filter(d => {
                 return d.localeCompare("dummy") === 0;
             })
-            .attr("x2", barPadding + 2*Math.max(...Object.keys(barData).map(x => barData[x].Students))) 
+            .attr("x2", barPadding + 2 * Math.max(...Object.keys(barData).map(x => barData[x].Students)))
         )
         .call(g => g.selectAll(".tick")
-            .filter(function(d){
+            .filter(function (d) {
                 return !isNaN(d);
             })
             .remove()
@@ -47,8 +47,8 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
     /* builds x axis */
     var x = d3.scaleLinear()
         .domain([0, Math.max(...Object.keys(barData).map(x => barData[x].Students))])
-        .range([0,2*Math.max(...Object.keys(barData).map(x => barData[x].Students))]);
-    
+        .range([0, 2 * Math.max(...Object.keys(barData).map(x => barData[x].Students))]);
+
     var xAxis = d3.axisBottom()
         .scale(x);
 
@@ -62,44 +62,44 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
     /* y axis label */
     svg.append("text")
         .attr("x", 0)
-        .attr("y",  0)
+        .attr("y", 0)
         .attr("class", "legendYAxisLabel")
         .attr("transform", "translate(" + (startingX - 90) + "," + (80 + 30 * numBars) + ") rotate(-90)")
         .style("text-anchor", "middle")
         .style("font-weight", "600")
-        .style("font-size", "14px") 
+        .style("font-size", "14px")
         .text("Pathway");
 
     /* x axis label */
     svg.append("text")
         .attr("x", startingX + Math.max(...Object.keys(barData).map(x => barData[x].Students)))
-        .attr("y",  140 + 50 * numBars)
+        .attr("y", 140 + 50 * numBars)
         .attr("class", "legendXAxisLabel")
         .style("text-anchor", "middle")
         .style("font-weight", "600")
-        .style("font-size", "14px") 
+        .style("font-size", "14px")
         .text("Students");
 
     /* title */
     svg.append("text")
-        .attr("x", startingX + Math.max(...Object.keys(barData).map(x => barData[x].Students)))             
+        .attr("x", startingX + Math.max(...Object.keys(barData).map(x => barData[x].Students)))
         .attr("y", 65)
         .attr("class", "legendTitle")
-        .attr("text-anchor", "middle")  
-        .style("font-size", "16px") 
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
         .style("font-weight", "600")
         .text("Counts of Pathways Passing Through");
 
     svg.append("text")
-        .attr("x", startingX + Math.max(...Object.keys(barData).map(x => barData[x].Students)))             
+        .attr("x", startingX + Math.max(...Object.keys(barData).map(x => barData[x].Students)))
         .attr("y", 85)
         .attr("class", "legendTitle")
-        .attr("text-anchor", "middle")  
-        .style("font-size", "16px") 
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
         .style("font-weight", "600")
         .text(function (d) {
             title = "Grade " + source_targets[0] + " on " + source_targets[2]
-                    + " and Grade " + source_targets[1] + " on " + source_targets[3];
+                + " and Grade " + source_targets[1] + " on " + source_targets[3];
             return title;
         });
 
@@ -135,7 +135,7 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
             d3.select(this).style('opacity', 0.5);
         })
         .on('mouseout', function (d, i) {
-            highlightGroup(colorArray, filteredData, '');
+            setDefaults();
             d3.select(this).style('opacity', 1.0);
         })
 
@@ -194,16 +194,16 @@ function buildBarGraphData(rankedArray, colorArray) {
 /**
  * Returns dummy data inserted in the barGraph array to properly scale and style the y-axis 
  */
-function buildAxisData(barData){
-    const axisData = [{"Exam": "0"}];
+function buildAxisData(barData) {
+    const axisData = [{ "Exam": "0" }];
     for (let [i, exam] of barData.entries()) {
         axisData.push(exam);
-        if (i < barData.length -1){
-            axisData.push({"Exam":"" + (1 + i)});
+        if (i < barData.length - 1) {
+            axisData.push({ "Exam": "" + (1 + i) });
         }
     }
 
-    axisData.push({"Exam":"dummy"});
+    axisData.push({ "Exam": "dummy" });
 
     return axisData;
 }
@@ -220,7 +220,25 @@ function highlightGroup(colorArray, filteredData, group) {
                 return d['concat'] === group ? colorArray[d['group']] : deflineColor;
             })
             .style("opacity", () => {
-                return d['concat'] === group ? 1 : 0.6;
+                return d['concat'] === group ? 1 : 0.5;
+            })
+            .style("stroke-width", () => {
+                return d['concat'] === group ? 2.5 : 1.0;
+            });
+    });
+}
+
+function setDefaults() {
+    d3.selectAll(".lines").each(function (d) {
+        d3.select(this)
+            .style("stroke", () => {
+                return deflineColor;
+            })
+            .style("opacity", () => {
+                return 0.6;
+            })
+            .style("stroke-width", () => {
+                return 1.5;
             });
     });
 }
