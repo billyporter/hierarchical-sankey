@@ -769,7 +769,16 @@ function newLinkNotinOldSet(brokeExam, brokeGrade, isBreakdown) {
                 newLinksObj['left'][firstG] = newLinks[first][firstG][sec][secG]
             }
         }
-        else if (!isBreakdown && ((sec === brokeExam && secG[0] === brokeGrade[0]) || (first === brokeExam && firstG[0] === brokeGrade[0]))) {
+        else if (!isBreakdown && (!isNumber(brokeGrade)) && ((sec === brokeExam && secG[0] === brokeGrade[0]) || (first === brokeExam && firstG[0] === brokeGrade[0]))) {
+            newLinksSet.add(key);
+            if (brokeExam.localeCompare(first) === 0) {
+                newLinksObj['right'][secG] = newLinks[first][firstG][sec][secG]
+            }
+            else {
+                newLinksObj['left'][firstG] = newLinks[first][firstG][sec][secG]
+            }
+        }
+        else if (!isBreakdown && (isNumber(brokeGrade)) && ((sec === brokeExam && secG === brokeGrade) || (first === brokeExam && firstG === brokeGrade))) {
             newLinksSet.add(key);
             if (brokeExam.localeCompare(first) === 0) {
                 newLinksObj['right'][secG] = newLinks[first][firstG][sec][secG]
