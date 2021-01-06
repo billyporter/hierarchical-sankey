@@ -485,9 +485,11 @@ function hierarchSankeyRouter(node, flag) {
         stringToInput = ' '.concat(locAs);
 
     /* Check if letter */
+    let currLevel;
+    let newLevel;
     if (letrs.has(locGrade[0])) {
-        let currLevel = assessGradeLevelMap[stringToInput][locGrade[0]]["level"]
-        let newLevel = currLevel + (flag ? 1 : -1 * currLevel);
+        currLevel = assessGradeLevelMap[stringToInput][locGrade[0]]["level"]
+        newLevel = currLevel + (flag ? 1 : -1 * currLevel);
 
         /* Keep new level in range 0-2 */
         newLevel = newLevel > 2 ? 2 : newLevel;
@@ -522,8 +524,11 @@ function hierarchSankeyRouter(node, flag) {
     }
 
     const newSankey = formatSankey();
+    if (newLevel == undefined) {
+        newLevel = -1;
+    }
     removePlots();
-    drawSankey(newSankey, false, flag, oldGraph, stringToInput, locGrade);
+    drawSankey(newSankey, false, flag, oldGraph, stringToInput, locGrade, newLevel);
 }
 
 /**
