@@ -18,7 +18,7 @@ var oldGraph;
 
 
 /* Creates Sankey Object */
-const sankey = d3.sankey()
+let sankey = d3.sankey()
     .size([width, height])
     .nodeId(d => d.id)
     .nodeWidth(nodeWdt)
@@ -30,6 +30,9 @@ const sankey = d3.sankey()
  * Top level Sankey drawing function
  */
 function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeGrade, newLevel) {
+
+    /* Check for padding issues */
+    setNewPadding(sankeyData);
 
     /* Keep copy of old graph for animation purposes */
     if (oldData) {

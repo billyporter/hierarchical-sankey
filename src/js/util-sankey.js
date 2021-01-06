@@ -8,7 +8,7 @@ const letrs = new Set(["A", "B", "C", "D", "F"]);
 const margin = { top: 10, right: 10, bottom: 10, left: 10 }
 const svgBackground = "#eff";
 const svgBorder = "1px solid #333";
-const padding = 40;
+let padding = 40;
 const nodeWdt = 36;
 const deflineColor = "#90A4AE";
 let isActive = false;
@@ -820,4 +820,42 @@ function getNodeColor(nodeName) {
  */
 function isNumber(name) {
     return parseInt(name) >= 0 && parseInt(name) <= 100
+}
+
+/**
+ * Function to variable set correct padding
+ * based on number of nodes
+ */
+function setNewPadding(sankeyData) {
+    columnMap = new Map();
+    for (const [key, value] of Object.entries(sankeyData.nodes)) {
+        if (columnMap.has(value.assessment)) {
+            columnMap.set(value.assessment, columnMap.get(value.assessment) + 1)
+        }
+        else {
+            columnMap.set(value.assessment, 1);
+        }
+    }
+    let highestValue = 0;
+    for (let value of columnMap.values()) {
+        if (highestValue < value) {
+            highestValue = value
+        }
+    }
+    if (highestValue > 16) {
+        padding = 20;
+    }
+    else if (highestValue > 10) {
+        padding = 30;
+    }
+    else {
+        padding = 40;
+    }
+    sankey = d3.sankey()
+        .size([width, height])
+        .nodeId(d => d.id)
+        .nodeWidth(nodeWdt)
+        .nodePadding(padding)
+        .nodeAlign(d3.sankeyCenter)
+        .nodeSort(null);
 }
