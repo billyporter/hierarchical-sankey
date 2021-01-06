@@ -224,9 +224,11 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
     let groupsMap = new Map();
     for (let line of newData) {
         let allExams = ''
-        for (let assessment of assessments) {
-            allExams += line[assessment.trim() + ' group'];
+        for (let assessment of assessments.slice(0,-1)) {
+            allExams += line[assessment.trim() + " group"];
+            allExams += "\u2192";
         }
+        allExams += line[assessments[assessments.length-1].trim() + " group"]; //add last element to string
         line['concat'] = allExams;
         if (groupsMap.has(allExams)) {
             groupsMap.set(allExams, groupsMap.get(allExams) + 1);
@@ -258,5 +260,7 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
         line['group'] = rankedMap.get(line['concat']);
     }
 
-    return [newData, i, rankedArray];
+    source_targets = [sourceGrade, targetGrade, sourceAssessment, targetAssessment];
+    
+    return [newData, i, rankedArray, source_targets];
 }
