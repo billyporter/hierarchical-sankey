@@ -55,7 +55,7 @@ function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeG
     newPointsNotInOldSet = newNotInOld();
     oldPointsNotInNewSet = oldNotInNew();
     [oldLinkSet, oldLinksObj] = oldLinkNotinNewSet(brokeExam, brokeGrade);
-    [newLinkSet, newLinksObj] = newLinkNotinOldSet(brokeExam, brokeGrade);
+    [newLinkSet, newLinksObj] = newLinkNotinOldSet(brokeExam, brokeGrade, isBreakdown);
 
     /**
      * Transition Updating
