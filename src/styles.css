@@ -18,7 +18,7 @@ body {
 }
 
 .link:hover {
-    stroke-opacity: 0.6;
+    stroke-opacity: 0.8;
     cursor: pointer;
 }
 
