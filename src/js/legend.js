@@ -106,14 +106,11 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
         });
 
     /* Build domain for graph */
-    domainY = []
-    for (let i = 0; i < 9; i++) {
-        domainY.push(i);
-    }
+    const domainY = d3.range(0, 9);
 
     var bar_y = d3.scalePoint()
-        .range([0, barHeight])
-        .domain(domainY);
+        .domain(domainY)
+        .range([0, barHeight]);
 
     /* Draw Bars */
     const bars = svg.selectAll(".bar").data(barData);

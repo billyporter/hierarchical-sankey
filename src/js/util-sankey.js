@@ -107,40 +107,19 @@ function gradeScale(score) {
     if (!score) {
         return "";
     }
-    if (score >= 90) {
-        return "A";
-    } else if (score >= 80) {
-        return "B";
-    } else if (score >= 70) {
-        return "C";
-    } else if (score >= 60) {
-        return "D";
-    } else {
-        return "F";
-    }
+    const scale = d3.scaleThreshold()
+        .domain([60, 70, 80, 90])
+        .range(["F", "D", "C", "B", "A"]);
+
+    return scale(score);
 }
 
 /** Returns specific letter */
-function specificLetterScale(letter, number) {
-    const secondDigit = parseInt(number.toString()[number.toString().length - 1]);
-    if (letter.localeCompare("A") == 0) {
-        if (number >= 94) {
-            return 'A'
-        }
-        return 'A-'
-    }
-    else if (letter.localeCompare("F") == 0) {
-        return letter;
-    }
-    else if (secondDigit >= 7) {
-        return letter.concat("+");
-    }
-    else if (secondDigit >= 4) {
-        return letter
-    }
-    else {
-        return letter.concat("-");
-    }
+function specificLetterScale(number) {
+    const scale = d3.scaleThreshold()
+        .domain([60, 64, 67, 70, 74, 77, 80, 84, 87, 90, 94])
+        .range(["F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A"]);
+    return scale(number);
 }
 
 /**
@@ -255,7 +234,7 @@ function createIDS() {
                                     continue;
                                 }
                                 seen.add(currGrade);
-                                currGradeLevel = specificLetterScale(gradeScale(currGrade), currGrade);
+                                currGradeLevel = specificLetterScale(currGrade);
                                 let suffix = subgrade;
                                 if (suffix.localeCompare("def") === 0) {
                                     suffix = "";
@@ -399,13 +378,13 @@ function formatSankey() {
             let grade = gradeScale(student[1][assessment]);
             let level = assessGradeLevelMap[assessment][grade]["level"];
             if (level === 1) {
-                grade = specificLetterScale(grade, student[1][assessment]);
+                grade = specificLetterScale(student[1][assessment]);
                 if (grade.localeCompare('F') === 0) {
                     grade = "0-59";
                 }
             }
             if (level === 2) {
-                grade = specificLetterScale(grade, student[1][assessment]);
+                grade = specificLetterScale(student[1][assessment]);
                 if (grade.length === 1 && assessGradeLevelMap[assessment][grade]["def"] === 2) {
                     grade = student[1][assessment];
                 }
@@ -423,13 +402,13 @@ function formatSankey() {
                 }
                 let level = assessGradeLevelMap[assessments[index + 1]][nextGrade]["level"];
                 if (level === 1) {
-                    nextGrade = specificLetterScale(nextGrade, student[1][assessments[index + 1]]);
+                    nextGrade = specificLetterScale(student[1][assessments[index + 1]]);
                     if (nextGrade.localeCompare('F') === 0) {
                         nextGrade = "0-59";
                     }
                 }
                 if (level === 2) {
-                    nextGrade = specificLetterScale(nextGrade, student[1][assessments[index + 1]]);
+                    nextGrade = specificLetterScale(student[1][assessments[index + 1]]);
                     if (nextGrade.length === 1 && assessGradeLevelMap[assessments[index + 1]][nextGrade]["def"] === 2) {
                         nextGrade = copyNextGrade;
                     }
@@ -515,7 +494,7 @@ function hierarchSankeyRouter(node, flag) {
         }
         /* If number, clear */
         else {
-            const specLetter = specificLetterScale(gradeScale(locGrade), locGrade);
+            const specLetter = specificLetterScale(locGrade);
             if (specLetter.length > 1)
                 assessGradeLevelMap[stringToInput][specLetter[0]][specLetter[1]] = 0;
             else

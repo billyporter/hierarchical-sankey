@@ -28,9 +28,9 @@ function drawPC(sankeyData) {
             .range(scaleyWaley)
     }
     x = d3.scalePoint()
+        .domain(dimensions)
         .range([nodeWdt, width])
-        .padding(0)
-        .domain(dimensions);
+        .padding(0);
 
     /* 
         The path function take a row of the csv as input
@@ -77,44 +77,55 @@ function drawPC(sankeyData) {
      */
     svg.selectAll('.node').each(function (d, i) {
         /* Variables */
-        const data = [];
-        let start = gradeMap.get(d["name"][0]);
-        if (d["name"][d["name"].length - 1] === '+') {
-            start += 7;
-        }
-        let assess = d.assessment;
-        if (assess.localeCompare('Final Exam') === 0) {
-            assess = ' '.concat(assess);
-        }
+        // let start = gradeMap.get(d["name"][0]);
+        // if (d["name"][d["name"].length - 1] === '+') {
+        //     start += 7;
+        // }
+       
 
-        /* Calculate end */
+        // /* Calculate end */
+        // let end = start + 10;
+        // if (d.name === 'F') // consider that F scale is of size 60 whereas other grades are of size 10
+        //     end += 50;
+        // if (d.name === 'A')
+        //     end += 1;
+        // let inc = 1;
+
+        let start = gradeMap.get(d["name"][0]);
         let end = start + 10;
-        if (d.name === 'F') // consider that F scale is of size 60 whereas other grades are of size 10
-            end += 50;
-        if (d.name === 'A')
-            end += 1;
-        let inc = 1;
 
         if (gradeMap.has(d.name[0])) {
-            const level = assessGradeLevelMap[assess][d.name[0]]["level"];
-            if (level > 0) { // if node is unexpanded we don't need to adjust beyond a start = 90 b start = 80, etc.
-                if (d["name"][d["name"].length - 1] === '-') {
-                    end = start + 4;
-                }
-                if (d["name"].length === 1) {
-                    start += 4;
-                    if (d["name"] === 'A') {
-                        end = start + 7;
-                    }
-                    else {
-                        end = start + 3;
-                    }
-                }
-                if (d["name"][d["name"].length - 1] === '+') {
-                    end = start + 3;
-                }
+
+            let assess = d.assessment;
+            if (assess.localeCompare('Final Exam') === 0) {
+                assess = ' '.concat(assess);
             }
+            
+            const level = assessGradeLevelMap[assess][d.name[0]]["level"];
+            const domainValues = startAndEnd(d.name, level);
+
+            start = domainValues[0];
+            end = domainValues[1];
+        //     const level = assessGradeLevelMap[assess][d.name[0]]["level"];
+        //     if (level > 0) { // if node is unexpanded we don't need to adjust beyond a start = 90 b start = 80, etc.
+        //         if (d["name"][d["name"].length - 1] === '-') {
+        //             end = start + 4;
+        //         }
+        //         if (d["name"].length === 1) {
+        //             start += 4;
+        //             if (d["name"] === 'A') {
+        //                 end = start + 7;
+        //             }
+        //             else {
+        //                 end = start + 3;
+        //             }
+        //         }
+        //         if (d["name"][d["name"].length - 1] === '+') {
+        //             end = start + 3;
+        //         }
+        //     }
         }
+        
 
         /* Change number of points depending on size, A-D */
         const size = d["y1"] - d["y0"];
@@ -163,17 +174,12 @@ function drawPC(sankeyData) {
             }
         }
 
-        for (let i = start; i < end; i += inc) {
-            data.push(i);
-        }
-
-        /* Add middle tick for percentages */
-        if(!isNaN(d.name)){
-            data.push(d.name);
-        }
+        /* Generate array representing the axis domain (percentage nodes only get a single tick representing the value)*/
+        const axisDomain = isNaN(d.name) ? d3.range(start, end, inc) : [d.name];  
+        console.log(d.name + " " + axisDomain)
 
         /* Create point scale */
-        var scale = d3.scalePoint().domain(data).range([d["y1"], d["y0"]]);
+        var scale = d3.scalePoint().domain(axisDomain).range([d["y1"], d["y0"]]);
 
         /* Add scale to axis */
         var y_axis = d3.axisRight().scale(scale)        

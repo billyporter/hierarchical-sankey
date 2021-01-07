@@ -264,3 +264,20 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
     
     return [newData, i, rankedArray, source_targets];
 }
+
+/**
+ * Generate a start and end value for the domain of any given grade beyond first level
+ */
+function startAndEnd(grade, level){
+    const rangeScale = d3.scaleOrdinal()
+    if(level > 0){
+        rangeScale
+            .domain(["F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A"])
+            .range([[0, 60], [60, 64], [64, 67], [67, 70], [70, 74], [74, 77], [77, 80], [80, 84], [84, 87], [87, 90], [90, 94], [94, 101]]);
+    } else {
+        rangeScale
+            .domain(["F", "D", "C", "B", "A"])
+            .range([[0, 60], [60, 70], [70, 80], [80, 90], [90, 101]])
+    }
+    return rangeScale(grade);
+}
