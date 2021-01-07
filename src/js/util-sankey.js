@@ -107,11 +107,17 @@ function gradeScale(score) {
     if (!score) {
         return "";
     }
-    const scale = d3.scaleThreshold()
-        .domain([60, 70, 80, 90])
-        .range(["F", "D", "C", "B", "A"]);
-
-    return scale(score);
+    if (score >= 90) {
+        return "A";
+    } else if (score >= 80) {
+        return "B";
+    } else if (score >= 70) {
+        return "C";
+    } else if (score >= 60) {
+        return "D";
+    } else {
+        return "F";
+    }
 }
 
 /** Returns specific letter */
