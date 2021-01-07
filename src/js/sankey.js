@@ -45,8 +45,8 @@ function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeG
         populatePointStorageObj(graph);
         populateLinkStorageObj(graph);
         drawNodes(graph);
-        drawPC(sankeyData);
         drawLinks(graph);
+        drawPC(sankeyData);
     }
 
 
@@ -214,6 +214,7 @@ function drawLinks(graph) {
             d3.selectAll(".axes")
                 .style("visibility", "hidden");
             clearPrevLegend();
+            d3.selectAll(".lines").style('pointer-events', 'none');
         }
     })
 
@@ -238,6 +239,7 @@ function drawLinks(graph) {
             hoverBehavior(i, true);
             d3.selectAll(".link").style('pointer-events', 'none');
             d3.selectAll(".axes").style("visibility", "visible");
+            d3.selectAll(".lines").style('pointer-events', 'visiblePained');
         })
         .on("mouseout", () => {
             if (!isActive) {
@@ -381,8 +383,8 @@ function transitionToNewBreakdown(sankeyData, newPointsNotInOldSet, oldPointsNot
         if (soFar === total) {
             removePlots();
             drawNodes(graph);
-            drawPC(sankeyData);
             drawLinks(graph);
+            drawPC(sankeyData);
         }
     });
 }
@@ -510,8 +512,8 @@ function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldL
         if (soFar === total) {
             removePlots();
             drawNodes(graph);
-            drawPC(sankeyData);
             drawLinks(graph);
+            drawPC(sankeyData);
         }
     });
 }
