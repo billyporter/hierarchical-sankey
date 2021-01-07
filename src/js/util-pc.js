@@ -78,7 +78,7 @@ function domainScaleHelper(domain, node, gradeMap) {
             domain.push(domain[domain.length - 1] + 1 + 2);
         }
         else {
-            domain.push(start+7);
+            domain.push(start + 7);
             domain.push(domain[domain.length - 1] + 1 + 1);
         }
     }
@@ -121,6 +121,12 @@ const showLines = new Map(pcData.map(x => [x["id"], false])); // initialize map 
 
 
 function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAssessment) {
+    if (sourceGrade.localeCompare("0-59") === 0) {
+        sourceGrade = "F"
+    }
+    if (targetGrade.localeCompare("0-59") === 0) {
+        targetGrade = "F"
+    }
     /* Filter lines */
     const newData = pcData.filter(x => {
 
@@ -224,11 +230,11 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
     let groupsMap = new Map();
     for (let line of newData) {
         let allExams = ''
-        for (let assessment of assessments.slice(0,-1)) {
+        for (let assessment of assessments.slice(0, -1)) {
             allExams += line[assessment.trim() + " group"];
             allExams += "\u2192";
         }
-        allExams += line[assessments[assessments.length-1].trim() + " group"]; //add last element to string
+        allExams += line[assessments[assessments.length - 1].trim() + " group"]; //add last element to string
         line['concat'] = allExams;
         if (groupsMap.has(allExams)) {
             groupsMap.set(allExams, groupsMap.get(allExams) + 1);
@@ -261,6 +267,6 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
     }
 
     source_targets = [sourceGrade, targetGrade, sourceAssessment, targetAssessment];
-    
+
     return [newData, i, rankedArray, source_targets];
 }
