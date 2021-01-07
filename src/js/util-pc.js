@@ -195,7 +195,7 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
             const generalGrade = gradeScale(line[assessment.trim()]);
             const currLevel = assessGradeLevelMap[assessment][generalGrade]["level"];
             if (currLevel === 2) {
-                const specGrade = specificLetterScale(generalGrade, line[assessment.trim()]);
+                const specGrade = specificLetterScale(line[assessment.trim()]);
                 if (specGrade.length > 1) {
                     if (assessGradeLevelMap[assessment][generalGrade][specGrade[1]]) {
                         line[assessment.trim() + ' group'] = line[assessment.trim()];
@@ -212,7 +212,7 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
                 }
             }
             else if (currLevel === 1) {
-                line[assessment.trim() + ' group'] = specificLetterScale(generalGrade, line[assessment.trim()]);
+                line[assessment.trim() + ' group'] = specificLetterScale(line[assessment.trim()]);
             }
             else {
                 line[assessment.trim() + ' group'] = gradeScale(line[assessment.trim()]);
@@ -277,7 +277,7 @@ function startAndEnd(grade, level){
     } else {
         rangeScale
             .domain(["F", "D", "C", "B", "A"])
-            .range([[0, 60], [60, 70], [70, 80], [80, 90], [90, 101]])
+            .range([[0, 60], [60, 70], [70, 80], [80, 90], [90, 10]])
     }
     return rangeScale(grade);
 }
