@@ -52,7 +52,7 @@ function drawPC(sankeyData) {
         .style("stroke-width", "1.5")
         .style("opacity", 0.6)
         .style("visibility", "hidden")
-        .style("pointer-events", "none")
+        .style("pointer-events", "visiblePainted")
         .on("mouseover", function (d, i) {
             d3.select(this)
                 .style("stroke", "#000000")
@@ -127,17 +127,17 @@ function drawPC(sankeyData) {
 
 
         const incs = [];
-
+        
         /* Potential increments other than 1 based on the range size */
-        if (points === 10) {
+        if (points === 10){
             incs.push(...[2, 5, 10]);
-        } else if (points === 9) {
+        } else if (points === 9){
             incs.push(...[3, 3, 9]);
-        } else if (points === 59) {
+        } else if (points === 59){
             incs.push(...[59, 59, 59]);
-        } else if (points === 6) {
+        } else if (points === 6){
             incs.push(...[2, 3, 6]);
-        } else if (points === 3) {
+        } else if (points === 3){
             incs.push(...[3, 3, 3]);
         } else {
             incs.push(...[2, 2, 2]);
@@ -168,7 +168,7 @@ function drawPC(sankeyData) {
         }
 
         /* Add middle tick for percentages */
-        if (!isNaN(d.name)) {
+        if(!isNaN(d.name)){
             data.push(d.name);
         }
 
@@ -176,10 +176,10 @@ function drawPC(sankeyData) {
         var scale = d3.scalePoint().domain(data).range([d["y1"], d["y0"]]);
 
         /* Add scale to axis */
-        var y_axis = d3.axisRight().scale(scale)
+        var y_axis = d3.axisRight().scale(scale)        
 
         /* remove bracketing ticks from percentage nodes, and don't display the tick label */
-        if (!isNaN(d.name)) {
+        if (!isNaN(d.name)){
             y_axis.tickSizeOuter(0).tickFormat("");
         }
 
