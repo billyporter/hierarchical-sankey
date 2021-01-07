@@ -24,7 +24,7 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
             if (isNaN(d) && d.localeCompare("dummy") !== 0) {
                 return d;
             }
-        }) 
+        })
         .tickSizeOuter(0); // remove axis brackets
 
     svg.append("g")
@@ -35,10 +35,10 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
             .filter(d => {
                 return d.localeCompare("dummy") === 0;
             })
-            .attr("x2", barPadding + 2*Math.max(...Object.keys(barData).map(x => barData[x].Students))) // extend the y=0 line to form a joined y and x axis
+            .attr("x2", barPadding + 2 * Math.max(...Object.keys(barData).map(x => barData[x].Students))) // extend the y=0 line to form a joined y and x axis
         )
         .call(g => g.selectAll(".tick")
-            .filter(function(d){
+            .filter(function (d) {
                 return !isNaN(d); // remove the dummy data (0, 1, 2, ...) to leave spaced out ticks in the middle of the data
             })
             .remove()
@@ -61,12 +61,23 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
         .call(g => g.select('.domain')
             .remove());
 
+
+
+    /* Get padding for pathway label */
+    let longestLength = 0;
+    for (const currLabel of rankedArray) {
+        if (currLabel[0].length > longestLength) {
+            longestLength = currLabel[0].length
+        }
+    }
+    let pathwayPadding = 3 * longestLength;
+
     /* y axis label */
     svg.append("text")
         .attr("x", 0)
         .attr("y", 0)
         .attr("class", "legendYAxisLabel")
-        .attr("transform", "translate(" + (startingX - 100) + "," + (80 + 30 * numBars) + ") rotate(-90)")
+        .attr("transform", "translate(" + (startingX - 88 - pathwayPadding) + "," + (80 + 30 * numBars) + ") rotate(-90)")
         .style("text-anchor", "middle")
         .style("font-weight", "600")
         .style("font-size", "14px")
