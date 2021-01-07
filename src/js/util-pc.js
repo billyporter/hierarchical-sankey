@@ -277,7 +277,7 @@ function startAndEnd(grade, level){
     } else {
         rangeScale
             .domain(["F", "D", "C", "B", "A"])
-            .range([[0, 60], [60, 70], [70, 80], [80, 90], [90, 10]])
+            .range([[0, 60], [60, 70], [70, 80], [80, 90], [90, 101]])
     }
     return rangeScale(grade);
 }
