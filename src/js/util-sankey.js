@@ -859,3 +859,16 @@ function setNewPadding(sankeyData) {
         .nodeAlign(d3.sankeyCenter)
         .nodeSort(null);
 }
+
+function highlightLink(i, wasClicked) {
+    d3.selectAll(".link").each(function (d) {
+        d3.select(this).style("stroke-opacity", function (d) {
+            if (d === i)
+                if (wasClicked)
+                    return 0.8
+                else
+                    return 0.8;
+            return 0.4;
+        })
+    });
+}
