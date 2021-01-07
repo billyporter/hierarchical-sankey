@@ -28,9 +28,9 @@ function drawPC(sankeyData) {
             .range(scaleyWaley)
     }
     x = d3.scalePoint()
+        .domain(dimensions)
         .range([nodeWdt, width])
-        .padding(0)
-        .domain(dimensions);
+        .padding(0);
 
     /* 
         The path function take a row of the csv as input
