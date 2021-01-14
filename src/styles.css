@@ -2,34 +2,27 @@ body {
     background-color: #ecf0f1;
 }
 
-.graphic {
-    width: 100%;
-}
-
-.graphic svg {
-    display: block;
-    margin-top: 50px;
+.flex-container {
+    display: flex;
+    flex-direction: column;
     margin-left: auto;
     margin-right: auto;
+    font-size: 25px;
+    height: 500px;
+    width: 50%;
+    justify-content: space-evenly;
+    align-items: center;
 }
 
-.link {
-    stroke-opacity: 0.4;
+a {
+    border-style: solid;
+    border-radius: 10px;
+    border-color: blue;
+    color: blue;
+    text-decoration: none;
+    padding: 14px 25px;
 }
 
-.link:hover {
-    stroke-opacity: 0.8;
-    cursor: pointer;
-}
-
-.nodes:hover {
-    cursor: pointer;
-}
-
-.button:hover {
-    cursor: pointer;
-}
-
-.lines {
-    z-index: -9999;
+a:hover {
+    background-color: lightblue;
 }
