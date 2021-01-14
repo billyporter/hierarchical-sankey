@@ -1,0 +1,35 @@
+body {
+    background-color: #ecf0f1;
+}
+
+.graphic {
+    width: 100%;
+}
+
+.graphic svg {
+    display: block;
+    margin-top: 50px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.link {
+    stroke-opacity: 0.4;
+}
+
+.link:hover {
+    stroke-opacity: 0.8;
+    cursor: pointer;
+}
+
+.nodes:hover {
+    cursor: pointer;
+}
+
+.button:hover {
+    cursor: pointer;
+}
+
+.lines {
+    z-index: -9999;
+}
