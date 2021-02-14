@@ -19,6 +19,48 @@ const sankeyColor = d3.scaleOrdinal()
     .range(['#00ABA5', '#00A231', '#e2d000', '#E69200', '#DA1D02']);
 const assessGradeLevelMap = {};
 
+
+/* convert from rgb to hsl */
+function rgbToHsl(rgb) {
+    scaled = [rgb.r / 255, rgb.g / 255, rgb.b / 255];
+    min = Math.min.apply(Math, scaled);
+    max = Math.max.apply(Math, scaled);
+
+    // get L
+    luminance = (max + min) / 2;
+    luminance = Math.round(100 * luminance) / 100 //round to 2 decimals
+
+    // get s
+    saturation = 0
+    if (min !== max) {
+        if (luminance <= 0.5){
+            saturation = (max - min) / (max + min);
+        } else {
+            saturation = (max - min) / (2.0 - max - min);
+        }
+    }
+    saturation = Math.round(100 * saturation) / 100 //round to 2 decimals
+
+    // get h
+    hue = 0
+    if (max == scaled[0]) { //red is max
+        hue = (scaled[1] - scaled[2]) / (max - min);
+    } else if (max == scaled[1]) { //green is max
+        hue = 2.0 + (scaled[2] - scaled[0]) / (max - min);
+    } else { //blue is max
+        hue = 4.0 + (scaled[0] - scaled[1]) / (max - min);
+    }
+    hue *= 60; //convert to degrees
+    hue = Math.round(hue); //round to nearest degree
+
+    return {h: hue, s: saturation, l: luminance};
+}
+
+/* convert from hsl to rgb */
+function hslToRgb(hsv) {
+
+}
+
 /* converts from hex color code to rgb color code struct */
 function hexToRgb(hex) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
