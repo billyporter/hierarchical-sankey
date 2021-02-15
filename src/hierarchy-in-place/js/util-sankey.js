@@ -32,7 +32,7 @@ function rgbToHsl(rgb) {
 
     // get s
     saturation = 0
-    if (min !== max) {
+    if (min != max) {
         if (luminance <= 0.5){
             saturation = (max - min) / (max + min);
         } else {
@@ -57,8 +57,86 @@ function rgbToHsl(rgb) {
 }
 
 /* convert from hsl to rgb */
-function hslToRgb(hsv) {
+function hslToRgb(hsl) {
 
+    r = 0;
+    g = 0;
+    b = 0;
+
+    if (hsl.s == 0){
+        r = hsl.l * 255;
+        g = hsl.l * 255;
+        b = hsl.l * 255;
+    } else {
+        if (hsl.l < 0.5) {
+            temp = hsl.l * (1+hsl.s);
+        } else {
+            temp = hsl.l + hsl.s - hsl.l * hsl.s;
+        }
+        temp2 = 2 * hsl.l - temp;
+        hue = hsl.h / 360;
+        tempR = hue + 0.333;
+        tempG = hue;
+        tempB = hue - 0.333;
+        
+        if (tempR < 0){
+            tempR += 1;
+        }
+        if (tempR > 1) {
+            tempR -= 1;
+        }
+        if (tempG < 0){
+            tempG += 1;
+        }
+        if (tempG > 1) {
+            tempG -= 1;
+        }
+        if (tempB < 0){
+            tempB += 1;
+        }
+        if (tempB > 1) {
+            tempB -= 1;
+        }
+
+        if (6 * tempR < 1){
+            r = temp2 + (temp - temp2) * 6 * tempR;
+        } else if (2 * tempR < 1){
+            r = temp;
+        } else if (3 * tempR < 2){
+            r = temp2 + (temp - temp2) * (0.666 - tempR) * 6;
+        } else {
+            r = temp2;
+        }
+       
+        if (6 * tempG < 1){
+            g = temp2 + (temp - temp2) * 6 * tempG;
+        } else if (2 * tempG < 1){
+            g = temp;
+        } else if (3 * tempG < 2){
+            g = temp2 + (temp - temp2) * (0.666 - tempG) * 6;
+        } else {
+            g = temp2;
+        }
+
+        if (6 * tempB < 1){
+            b = temp2 + (temp - temp2) * 6 * tempB;
+        } else if (2 * tempB < 1){
+            b = temp;
+        } else if (3 * tempB < 2){
+            b = temp2 + (temp - temp2) * (0.666 - tempB) * 6;
+        } else {
+            b = temp2;
+        }
+    }
+    console.log(r, g, b);
+    r *= 255;
+    r = Math.round(r);
+    g *= 255;
+    g = Math.round(g);
+    b *= 255;
+    b = Math.round(b);
+
+    return {r: r, g: g, b: b};
 }
 
 /* converts from hex color code to rgb color code struct */
