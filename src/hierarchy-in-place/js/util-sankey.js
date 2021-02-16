@@ -128,7 +128,7 @@ function hslToRgb(hsl) {
             b = temp2;
         }
     }
-    console.log(r, g, b);
+
     r *= 255;
     r = Math.round(r);
     g *= 255;
@@ -162,35 +162,29 @@ function rgbToHex(rgb) {
 
 /* Gets color shade for + and - grades */
 function getShadePlusMinus(baseColor, sign) {
-    color = hexToRgb(baseColor);
+    color = rgbToHsl(hexToRgb(baseColor));
 
     if (sign == '-') {
         // 1/3 shade darker, maximum rgb value of 255
-        color.r = color.r * 2 / 3 < 255 ? parseInt(color.r * 2 / 3) : 255;
-        color.g = color.g * 2 / 3 < 255 ? parseInt(color.g * 2 / 3) : 255;
-        color.b = color.b * 2 / 3 < 255 ? parseInt(color.b * 2 / 3) : 255;
+        color.l *= 0.7;
     } else if (sign == '+') {
         // 1/3 shade brighter
-        color.r = color.r * 4 / 3 < 255 ? parseInt(color.r * 4 / 3) : 255;
-        color.g = color.g * 4 / 3 < 255 ? parseInt(color.g * 4 / 3) : 255;
-        color.b = color.b * 4 / 3 < 255 ? parseInt(color.b * 4 / 3) : 255;
+        color.l *= 1.3;
     } else { // there is a bug if this case is reached
         return baseColor;
     }
 
-    return rgbToHex(color);
+    return rgbToHex(hslToRgb(color));
 }
 
 /* Gets color shade for number grades */
 function getShadeNumber(baseColor, name) {
-    color = hexToRgb(baseColor);
+    color = rgbToHsl(hexToRgb(baseColor));
 
     //special case for 100
     if (name == "100") {
-        color.r = color.r * (1 + 1 / 2) < 255 ? parseInt(color.r * (1 + 1 / 2)) : 255;
-        color.g = color.g * (1 + 1 / 2) < 255 ? parseInt(color.g * (1 + 1 / 2)) : 255;
-        color.b = color.b * (1 + 1 / 2) < 255 ? parseInt(color.b * (1 + 1 / 2)) : 255;
-        return rgbToHex(color);
+        color.l *= 1.5;
+        return rgbToHex(hslToRgb(color));
     }
 
     n = parseInt(name[1]); //examine the 1's column of the node name to determine shade
@@ -201,24 +195,19 @@ function getShadeNumber(baseColor, name) {
     // 1's place 0-4 (darker)
     for (i = 0; i < 5; i++) {
         if (n == i) {
-            color.r = color.r * 1 / 2 * (1 + i / 5) < 255 ? parseInt(color.r * 1 / 2 * (1 + i / 5)) : 255;
-            color.g = color.g * 1 / 2 * (1 + i / 5) < 255 ? parseInt(color.g * 1 / 2 * (1 + i / 5)) : 255;
-            color.b = color.b * 1 / 2 * (1 + i / 5) < 255 ? parseInt(color.b * 1 / 2 * (1 + i / 5)) : 255;
-            return rgbToHex(color);
+            color.l *= (0.5 + 0.1 * i); 
+            return rgbToHex(hslToRgb(color));
         }
     }
 
     // 1's place 6-9 (brighter)
     for (i = 6; i < 10; i++) {
         if (n == i) {
-            color.r = color.r * (1 + 1 / 2 * (i - 5) / 5) < 255 ? parseInt(color.r * (1 + 1 / 2 * (i - 5) / 5)) : 255;
-            color.g = color.g * (1 + 1 / 2 * (i - 5) / 5) < 255 ? parseInt(color.g * (1 + 1 / 2 * (i - 5) / 5)) : 255;
-            color.b = color.b * (1 + 1 / 2 * (i - 5) / 5) < 255 ? parseInt(color.b * (1 + 1 / 2 * (i - 5) / 5)) : 255;
-            return rgbToHex(color);
+            color.l *= (0.5 + 0.1 * i);
+            return rgbToHex(hslToRgb(color));
         }
     }
 
-    // bug if this case is reached
     return baseColor;
 }
 
