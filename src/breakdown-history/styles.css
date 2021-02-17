@@ -17,6 +17,10 @@ body {
     stroke-opacity: 0.4;
 }
 
+.button:hover {
+    cursor: pointer;
+}
+
 .nodes:hover {
     cursor: pointer;
 }

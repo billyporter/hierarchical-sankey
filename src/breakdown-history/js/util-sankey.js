@@ -348,14 +348,19 @@ function formatSankey() {
 function hierarchSankeyRouter(node, flag) {
     /* Update Ids */
     const locAs = node['assessment'];
-    const locGrade = node['name'];
+    const locGrade = node['name'][0];
 
-    if (flag) {
-        assessGradeLevelMap[locAs][locGrade] = 1
+    if (locAs.localeCompare('Exam 1') !== 0) {
+        if (flag) {
+            assessGradeLevelMap[locAs][locGrade] = 1
+        }
+        else {
+            assessGradeLevelMap[locAs][locGrade] = 0
+        }
+        const newSankey = formatSankey();
+        removePlots();
+        drawSankey(newSankey)
     }
-    const newSankey = formatSankey();
-    removePlots();
-    drawSankey(newSankey)
 }
 
 /**
@@ -364,4 +369,42 @@ function hierarchSankeyRouter(node, flag) {
 function removePlots() {
     d3.selectAll(".nodes").remove();
     d3.selectAll(".link").remove();
+}
+
+/**
+ * Function to variable set correct padding
+ * based on number of nodes
+ */
+function setNewPadding(sankeyData) {
+    columnMap = new Map();
+    for (const [key, value] of Object.entries(sankeyData.nodes)) {
+        if (columnMap.has(value.assessment)) {
+            columnMap.set(value.assessment, columnMap.get(value.assessment) + 1)
+        }
+        else {
+            columnMap.set(value.assessment, 1);
+        }
+    }
+    let highestValue = 0;
+    for (let value of columnMap.values()) {
+        if (highestValue < value) {
+            highestValue = value
+        }
+    }
+    if (highestValue > 16) {
+        padding = 20;
+    }
+    else if (highestValue > 10) {
+        padding = 30;
+    }
+    else {
+        padding = 40;
+    }
+    sankey = d3.sankey()
+        .size([width, height])
+        .nodeId(d => d.id)
+        .nodeWidth(nodeWdt)
+        .nodePadding(padding)
+        .nodeAlign(d3.sankeyCenter)
+        .nodeSort(null);
 }

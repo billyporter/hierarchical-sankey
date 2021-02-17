@@ -21,6 +21,9 @@ let sankey = d3.sankey()
  * Top level Sankey drawing function
  */
 function drawSankey(sankeyData) {
+    /* Check for padding issues */
+    setNewPadding(sankeyData);
+
     graph = sankey(sankeyData);
     /* First draw nodes and draw links according to these old values */
     drawNodes(graph);
@@ -61,15 +64,9 @@ function drawNodes(graph) {
             hierarchSankeyRouter(i, true);
         })
         .on("contextmenu", function (d, i) {
-            // d.preventDefault();
-            // hierarchSankeyRouter(i, false);
+            d.preventDefault();
+            hierarchSankeyRouter(i, false);
         });
-
-
-    /* Add in title */
-    // graphnode.append("title")
-    //     .text((d) => d.name[0] + "\n" + " Students")
-
 
     /* Add in text */
     graphnode.append("text")
