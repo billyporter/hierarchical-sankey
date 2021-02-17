@@ -1,4 +1,4 @@
 /** Driver Function */
-// populateGradeLevelMap();
+populateGradeLevelMap();
 const starterData = formatSankey()
 drawSankey(starterData);

@@ -25,7 +25,6 @@ function drawSankey(sankeyData) {
     /* First draw nodes and draw links according to these old values */
     drawNodes(graph);
     drawLinks(graph);
-    console.log(graph);
 }
 
 
@@ -53,13 +52,13 @@ function drawNodes(graph) {
             return (d.y1 - d.y0)
         })
         .style("fill", (d) => {
-            return sankeyColor(d.name)
+            return sankeyColor(d.name[0])
         })
         .attr("stroke", (d) => {
-            return d3.rgb(sankeyColor(d.name)).darker(0.6);
+            return d3.rgb(sankeyColor(d.name[0])).darker(0.6);
         })
         .on("click", function (d, i) {
-            // hierarchSankeyRouter(i, true);
+            hierarchSankeyRouter(i, true);
         })
         .on("contextmenu", function (d, i) {
             // d.preventDefault();
@@ -68,8 +67,8 @@ function drawNodes(graph) {
 
 
     /* Add in title */
-    graphnode.append("title")
-        .text((d) => d.name + "\n" + " Students")
+    // graphnode.append("title")
+    //     .text((d) => d.name[0] + "\n" + " Students")
 
 
     /* Add in text */
@@ -79,7 +78,7 @@ function drawNodes(graph) {
         .attr("x", function (d) { return d.x0 - 30; })
         .attr("y", function (d) { return (d.y1 + d.y0) / 2; })
         .attr("dy", "0.35em")
-        .text(function (d) { return d.name; });
+        .text(function (d) { return d.name[0]; });
 
 }
 
@@ -114,6 +113,6 @@ function drawLinks(graph) {
         .attr("fill", "none")
         .style("stroke-width", d => d.width)
         .style("stroke", d => {
-            return sankeyColor(d.source.name);
+            return sankeyColor(d.source.name[0]);
         });
 }

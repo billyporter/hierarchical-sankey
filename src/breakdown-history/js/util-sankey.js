@@ -130,9 +130,9 @@ function gradeScale(score) {
 function populateGradeLevelMap() {
     let id = 0;
     for ([index, assessment] of assessments.entries()) {
-        assessGradeLevelMap[assessment] = {};
+        assessGradeLevelMap[assessment.trim()] = {};
         for ([jndex, grade] of grades.entries()) {
-            assessGradeLevelMap[assessment][grade] = { "level": 0, "+": 0, "-": 0, "def": 0 };
+            assessGradeLevelMap[assessment.trim()][grade] = 0;
         }
     }
 }
@@ -155,7 +155,30 @@ function createIDS() {
     dict = {} // dict to hold ids
     for (const [index, assessment] of assessments.entries()) {
         for ([jndex, grade] of grades.entries()) {
-            dict[id++] = { [assessment.trim()]: grade };
+            const currLevel = assessGradeLevelMap[assessment.trim()][grade];
+            if (currLevel === 1) {
+                const seen = new Set();
+                for (const student of Object.entries(rawData)) {
+                    if (!student[1][assessments[index]] || !student[1][assessments[index - 1]]) {
+                        continue;
+                    }
+                    const currGrade = gradeScale(student[1][assessments[index]]);
+                    const prevGrade = gradeScale(student[1][assessments[index - 1]]);
+                    if (currGrade.localeCompare(grade) === 0) {
+                        seen.add(prevGrade);
+                    }
+                }
+                const gradesArray = Array.from(seen);
+                gradesArray.sort();
+                console.log("here");
+                for (const gr of gradesArray) {
+                    console.log(gr);
+                    dict[id++] = { [assessment.trim()]: grade + gr };
+                }
+            }
+            else {
+                dict[id++] = { [assessment.trim()]: grade };
+            }
         }
     }
     return dict;
@@ -234,11 +257,14 @@ function createGrades(newIds) {
         if (!dict[Object.keys(value)[0].trim()]) {
             dict[Object.keys(value)[0].trim()] = {}
         }
-        dict[Object.keys(value)[0].trim()][Object.values(value)[0]] = {
+        const currExam = Object.keys(value)[0].trim()
+        const currGrade = Object.values(value)[0]
+        dict[currExam][currGrade] = {
             "id": parseInt(key),
             "count": 0
         }
     }
+    console.log(dict);
     return dict
 }
 
@@ -265,16 +291,28 @@ function formatSankey() {
                 continue;
             }
             let grade = gradeScale(student[1][assessment]);
-            output["grades"][assessment.trim()][grade]["count"]++;
+            let sourceNodeName = grade;
+            let sourceLevel = assessGradeLevelMap[assessment.trim()][grade];
+            if (sourceLevel === 1) {
+                let previousGrade = gradeScale(student[1][assessments[index - 1]]);
+                sourceNodeName = grade + previousGrade;
+            }
+            output["grades"][assessment.trim()][sourceNodeName]["count"]++;
 
             if (index < 3) {
                 let nextGrade = gradeScale(student[1][assessments[index + 1]]);
                 if (nextGrade == "") {
                     continue;
                 }
-                let source = output["grades"][assessment.trim()][grade]["id"]; // prev grade id
+                let targetLevel = assessGradeLevelMap[assessments[index + 1].trim()][nextGrade];
+                let targetNodeName = nextGrade
+                if (targetLevel === 1) {
+                    targetNodeName = nextGrade + grade;
+                }
+
+                let source = output["grades"][assessment.trim()][sourceNodeName]["id"]; // prev grade id
                 let target = output["grades"][assessments[index + 1].trim()]
-                [nextGrade]["id"]; // next grade id
+                [targetNodeName]["id"]; // next grade id
 
                 for (const [index, link] of output["links"].entries()) {
                     if (JSON.stringify(link["source"]) == source && JSON.stringify(link["target"]) == target) {
@@ -284,7 +322,6 @@ function formatSankey() {
             }
         }
     }
-    console.log(output)
     return output;
 }
 
@@ -309,7 +346,16 @@ function formatSankey() {
  * flag = false = build up
  */
 function hierarchSankeyRouter(node, flag) {
-    // drawSankey(newSankey, false, flag, oldGraph, stringToInput, locGrade, newLevel);
+    /* Update Ids */
+    const locAs = node['assessment'];
+    const locGrade = node['name'];
+
+    if (flag) {
+        assessGradeLevelMap[locAs][locGrade] = 1
+    }
+    const newSankey = formatSankey();
+    removePlots();
+    drawSankey(newSankey)
 }
 
 /**
