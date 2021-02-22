@@ -1,7 +1,7 @@
 /** Driver Function */
 populateGradeLevelMap();
 const starterData = formatSankey()
-drawSankey(starterData);
+drawSankey(starterData, true);
 
 /* Reset Function */
 function resetGraph() {
