@@ -14,7 +14,7 @@ var oldLinksMap = new Map();
 var newLinksMap = new Map();
 var graph;
 var oldGraph;
-
+var transitionDuration = 400;
 
 
 /* Creates Sankey Object */
@@ -332,7 +332,7 @@ function transitionToNewBreakdown(sankeyData, newPointsNotInOldSet, oldPointsNot
      */
     d3.selectAll('.node').each(function (d) {
         d3.select(this)
-            .transition()
+            .transition().duration(transitionDuration)
             .attr('y', function (n) {
                 n.y0 = newGraphPoints[n.assessment][n.name]["y0"];
                 n.y1 = newGraphPoints[n.assessment][n.name]["y1"];
@@ -351,7 +351,7 @@ function transitionToNewBreakdown(sankeyData, newPointsNotInOldSet, oldPointsNot
     });
     d3.selectAll('.nodeText').each(function (d) {
         d3.select(this)
-            .transition()
+            .transition().duration(transitionDuration)
             .attr('y', function (n) {
                 return (n.y0 + n.y1) / 2;
             });
@@ -374,7 +374,7 @@ function transitionToNewBreakdown(sankeyData, newPointsNotInOldSet, oldPointsNot
     const total = graphlink["_groups"][0].length;
 
     /* Animate link */
-    graphlink.transition().attr('d', d3.sankeyLinkHorizontal()).style("stroke-opacity", 0.4).style("stroke-width", function (n) {
+    graphlink.transition().duration(transitionDuration).attr('d', d3.sankeyLinkHorizontal()).style("stroke-opacity", 0.4).style("stroke-width", function (n) {
         return n.width;
     }).style("stroke", function (link) {
         return getNodeColor(link.source.name);
@@ -407,7 +407,7 @@ function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldL
      */
     d3.selectAll('.node').each(function (d) {
         d3.select(this)
-            .transition()
+            .transition().duration(transitionDuration)
             .attr('y', function (n) {
                 /* Set node to new point */
                 let visualNode;
@@ -444,7 +444,7 @@ function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldL
     /* Animate node text */
     d3.selectAll('.nodeText').each(function (d) {
         d3.select(this)
-            .transition()
+            .transition().duration(transitionDuration)
             .attr('y', function (n) {
                 return (n.y0 + n.y1) / 2;
             });
@@ -473,7 +473,7 @@ function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldL
     const seen = {}
     seen['left'] = {}
     seen['right'] = {}
-    graphlink.transition().attr('d', d3.sankeyLinkHorizontal()).style("stroke", function (link) {
+    graphlink.transition().duration(transitionDuration).attr('d', d3.sankeyLinkHorizontal()).style("stroke", function (link) {
         if (oldLinkSet.has([link.source.assessment, link.source.name, link.target.assessment, link.target.name]
             .toString()
         )) {

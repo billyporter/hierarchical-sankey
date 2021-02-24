@@ -13,6 +13,7 @@ var oldLinksMap = new Map();
 var newLinksMap = new Map();
 var graph;
 var oldGraph;
+var transitionDuration = 400;
 
 /* Creates Sankey Object */
 let sankey = d3.sankey()
@@ -80,6 +81,10 @@ function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeG
         /* Set link value to old graph point to begin animation */
         for (const link of graph.links) {
             let visualLink;
+
+            /* Broke Node : Node corresponding to broke exam */
+            let brokeNode = brokeExam.trim().localeCompare(link.source.assessment) === 0 ? link.source.name : link.target.name;
+            let cleanNode = brokeExam.trim().localeCompare(link.target.assessment) === 0 ? link.source.name : link.target.name;
             if (newLinkSet.has(
                 [link.source.assessment, link.source.name, link.target.assessment, link.target.name]
                     .toString()
@@ -89,9 +94,15 @@ function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeG
                 * all to the point of the original
                 * node 
                 */
-                const direction = link.source.assessment.localeCompare(brokeExam) ? "left" : "right";
-                const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
-                visualLink = oldLinksObj[direction][gradeToInput];
+                /* We don't want all the links on all the nodes, just the specific letter one */
+                if (cleanNode.localeCompare(link.source.name) === 0 && cleanNode[0].localeCompare(brokeNode[1]) !== 0) {
+                    visualLink = link;
+                }
+                else {
+                    const direction = link.source.assessment.localeCompare(brokeExam) ? "left" : "right";
+                    const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
+                    visualLink = oldLinksObj[direction][gradeToInput];
+                }
             }
             else {
                 visualLink = oldLinks[link.source.assessment][link.source.name][link.target.assessment][link.target.name];
@@ -234,6 +245,11 @@ function transitionToNewBreakdown(sankeyData, newPointsNotInOldSet, oldPointsNot
                     .toString()
             )
             ) {
+                let brokeNode = brokeExam.trim().localeCompare(link.source.assessment) === 0 ? link.source.name : link.target.name;
+                let cleanNode = brokeExam.trim().localeCompare(link.target.assessment) === 0 ? link.source.name : link.target.name;
+                if (cleanNode.localeCompare(link.source.name) === 0 && cleanNode[0].localeCompare(brokeNode[1]) !== 0) {
+                    return 0.4
+                }
                 const direction = link.source.assessment.localeCompare(brokeExam) ? "left" : "right";
                 const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
                 if (gradeToInput in seen[direction]) {
@@ -245,48 +261,13 @@ function transitionToNewBreakdown(sankeyData, newPointsNotInOldSet, oldPointsNot
             }
             return 0.4;
         })
-        /* Set the stroke color to the old link color*/
-        .style("stroke", function (link) {
-            if (newLinkSet.has([link.source.assessment, link.source.name, link.target.assessment, link.target.name]
-                .toString()
-            )) {
-                const direction = link.source.assessment.localeCompare(brokeExam) ? "left" : "right";
-                const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
-                if (direction.localeCompare('left') === 0) {
-                    return getNodeColor(link.source.name);
-                }
-                if (isNumber(link.source.name)) {
-                    return getNodeColor(specificLetterScale(gradeScale(link.source.name), link.source.name));
-                }
-                return getNodeColor(link.source.name[0])
-            }
-            return getNodeColor(link.source.name);
-        });
-
-    /* Set the new nodes to the original color */
-    d3.selectAll('.node').each(function (d) {
-        d3.select(this)
-            .style('fill', function (node) {
-                if (newPointsNotInOldSet.has([node.assessment, node.name, node.value].toString())) {
-                    const searchNode = oldPointsNotInNewSet.keys().next().value.split(',');
-                    return getNodeColor(searchNode[1]);
-                }
-                return getNodeColor(node.name);
-            }).style("stroke", function (node) {
-                if (newPointsNotInOldSet.has([node.assessment, node.name, node.value].toString())) {
-                    const searchNode = oldPointsNotInNewSet.keys().next().value.split(',');
-                    return d3.rgb(getNodeColor(searchNode[1])).darker(0.6);
-                }
-                return d3.rgb(getNodeColor(node.name)).darker(0.6);
-            })
-    });
 
     /**
      * Animate Nodes
      */
     d3.selectAll('.node').each(function (d) {
         d3.select(this)
-            .transition()
+            .transition().ease(d3.easeCubic).duration(transitionDuration)
             .attr('y', function (n) {
                 n.y0 = newGraphPoints[n.assessment][n.name]["y0"];
                 n.y1 = newGraphPoints[n.assessment][n.name]["y1"];
@@ -295,17 +276,11 @@ function transitionToNewBreakdown(sankeyData, newPointsNotInOldSet, oldPointsNot
             })
             .attr('height', function (n) {
                 return n.rectHeight;
-            })
-            .style("fill", function (node) {
-                return getNodeColor(node.name);
-            })
-            .style("stroke", function (d) {
-                return d3.rgb(getNodeColor(d.name)).darker(0.6);
-            })
+            });
     });
     d3.selectAll('.nodeText').each(function (d) {
         d3.select(this)
-            .transition()
+            .transition().ease(d3.easeCubic).duration(transitionDuration)
             .attr('y', function (n) {
                 return (n.y0 + n.y1) / 2;
             });
@@ -328,18 +303,23 @@ function transitionToNewBreakdown(sankeyData, newPointsNotInOldSet, oldPointsNot
     const total = graphlink["_groups"][0].length;
 
     /* Animate link */
-    graphlink.transition().attr('d', d3.sankeyLinkHorizontal()).style("stroke-opacity", 0.4).style("stroke-width", function (n) {
-        return n.width;
-    }).style("stroke", function (link) {
-        return getNodeColor(link.source.name);
-    }).on("end", function () {
-        soFar += 1;
-        if (soFar === total) {
-            removePlots();
-            drawNodes(graph);
-            drawLinks(graph);
-        }
-    });
+    graphlink
+        .transition()
+        .ease(d3.easeCubic)
+        .duration(transitionDuration)
+        .attr('d', d3.sankeyLinkHorizontal())
+        .style("stroke-opacity", 0.4)
+        .style("stroke-width", function (n) {
+            return n.width;
+        })
+        .on("end", function () {
+            soFar += 1;
+            if (soFar === total) {
+                removePlots();
+                drawNodes(graph);
+                drawLinks(graph);
+            }
+        });
 }
 
 /**
@@ -361,6 +341,7 @@ function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldL
     d3.selectAll('.node').each(function (d) {
         d3.select(this)
             .transition()
+            .duration(transitionDuration)
             .attr('y', function (n) {
                 /* Set node to new point */
                 let visualNode;
@@ -378,19 +359,6 @@ function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldL
             })
             .attr('height', function (n) { // Node size
                 return n.rectHeight;
-            })
-            .style('fill', function (node) { // Node color
-                if (oldPointsNotInNewSet.has([node.assessment, node.name, node.value].toString())) {
-                    const searchNode = newPointsNotInOldSet.keys().next().value.split(',');
-                    return getNodeColor(searchNode[1]);
-                }
-                return getNodeColor(node.name);
-            }).style("stroke", function (node) { // Node Stroke
-                if (oldPointsNotInNewSet.has([node.assessment, node.name, node.value].toString())) {
-                    const searchNode = newPointsNotInOldSet.keys().next().value.split(',');
-                    return d3.rgb(getNodeColor(searchNode[1])).darker(0.6);
-                }
-                return d3.rgb(getNodeColor(node.name)).darker(0.6);
             });
     });
 
@@ -398,6 +366,7 @@ function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldL
     d3.selectAll('.nodeText').each(function (d) {
         d3.select(this)
             .transition()
+            .duration(transitionDuration)
             .attr('y', function (n) {
                 return (n.y0 + n.y1) / 2;
             });
@@ -406,13 +375,20 @@ function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldL
     /* Set links to new position */
     for (const link of oldGraph.links) {
         let visualLink;
+        let brokeNode = brokeExam.trim().localeCompare(link.source.assessment) === 0 ? link.source.name : link.target.name;
+        let cleanNode = brokeExam.trim().localeCompare(link.target.assessment) === 0 ? link.source.name : link.target.name;
         if (oldLinkSet.has([link.source.assessment, link.source.name, link.target.assessment, link.target.name]
             .toString()
         )
         ) {
-            const direction = link.source.assessment.localeCompare(brokeExam) ? "left" : "right";
-            const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
-            visualLink = newLinksObj[direction][gradeToInput]
+            if (cleanNode.localeCompare(link.source.name) === 0 && cleanNode[0].localeCompare(brokeNode[1]) !== 0) {
+                visualLink = link;
+            }
+            else {
+                const direction = link.source.assessment.localeCompare(brokeExam) ? "left" : "right";
+                const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
+                visualLink = newLinksObj[direction][gradeToInput]
+            }
         }
         else {
             visualLink = newLinks[link.source.assessment][link.source.name][link.target.assessment][link.target.name];
@@ -426,40 +402,36 @@ function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldL
     const seen = {}
     seen['left'] = {}
     seen['right'] = {}
-    graphlink.transition().attr('d', d3.sankeyLinkHorizontal()).style("stroke", function (link) {
-        if (oldLinkSet.has([link.source.assessment, link.source.name, link.target.assessment, link.target.name]
-            .toString()
-        )) {
-            const direction = link.source.assessment.localeCompare(brokeExam) ? "left" : "right";
-            const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
-            if (direction.localeCompare('left') === 0) {
-                return getNodeColor(link.source.name);
+    graphlink
+        .transition()
+        .duration(transitionDuration)
+        .attr('d', d3.sankeyLinkHorizontal()).style("stroke-width", function (n) {
+            return n.width;
+        }).style("stroke-opacity", function (link) {
+            if (oldLinkSet.has([link.source.assessment, link.source.name, link.target.assessment, link.target.name]
+                .toString()
+            )) {
+                let brokeNode = brokeExam.trim().localeCompare(link.source.assessment) === 0 ? link.source.name : link.target.name;
+                let cleanNode = brokeExam.trim().localeCompare(link.target.assessment) === 0 ? link.source.name : link.target.name;
+                if (cleanNode.localeCompare(link.source.name) === 0 && cleanNode[0].localeCompare(brokeNode[1]) !== 0) {
+                    return 0.4
+                }
+                const direction = link.source.assessment.localeCompare(brokeExam) ? "left" : "right";
+                const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
+                if (gradeToInput in seen[direction]) {
+                    return 0.0;
+                }
+                else {
+                    seen[direction][gradeToInput] = true;
+                }
             }
-            return getNodeColor(link.source.name[0])
-        }
-        return getNodeColor(link.source.name);
-    }).style("stroke-width", function (n) {
-        return n.width;
-    }).style("stroke-opacity", function (link) {
-        if (oldLinkSet.has([link.source.assessment, link.source.name, link.target.assessment, link.target.name]
-            .toString()
-        )) {
-            const direction = link.source.assessment.localeCompare(brokeExam) ? "left" : "right";
-            const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
-            if (gradeToInput in seen[direction]) {
-                return 0.0;
+            return 0.4;
+        }).on("end", function () {
+            soFar += 1;
+            if (soFar === total) {
+                removePlots();
+                drawNodes(graph);
+                drawLinks(graph);
             }
-            else {
-                seen[direction][gradeToInput] = true;
-            }
-        }
-        return 0.4;
-    }).on("end", function () {
-        soFar += 1;
-        if (soFar === total) {
-            removePlots();
-            drawNodes(graph);
-            drawLinks(graph);
-        }
-    });
+        });
 }
