@@ -16,199 +16,46 @@ let activeLink = -1;
 const gradeCountDict = {};
 const sankeyColor = d3.scaleOrdinal()
     .domain(['A', 'B', 'C', 'D', 'F'])
-    .range([d3.hsv(178, 1, 0.67), d3.hsv(138, 1, 0.64), d3.hsv(55, 1, 0.89), d3.hsv(38, 1, 0.9), d3.hsv(8, 1, 0.85)]);
+    .range([d3.hsv(178, 0.75, 0.67), d3.hsv(138, 0.75, 0.64), d3.hsv(55, 0.75, 0.89), d3.hsv(38, 0.75, 0.9), d3.hsv(8, 0.75, 0.85)]);
 const assessGradeLevelMap = {};
 
 
-/* convert from rgb to hsl */
-function rgbToHsl(rgb) {
-    scaled = [rgb.r / 255, rgb.g / 255, rgb.b / 255];
-    min = Math.min.apply(Math, scaled);
-    max = Math.max.apply(Math, scaled);
-
-    // get L
-    luminance = (max + min) / 2;
-    luminance = Math.round(100 * luminance) / 100 //round to 2 decimals
-
-    // get s
-    saturation = 0
-    if (min != max) {
-        if (luminance <= 0.5){
-            saturation = (max - min) / (max + min);
-        } else {
-            saturation = (max - min) / (2.0 - max - min);
-        }
-    }
-    saturation = Math.round(100 * saturation) / 100 //round to 2 decimals
-
-    // get h
-    hue = 0
-    if (max == scaled[0]) { //red is max
-        hue = (scaled[1] - scaled[2]) / (max - min);
-    } else if (max == scaled[1]) { //green is max
-        hue = 2.0 + (scaled[2] - scaled[0]) / (max - min);
-    } else { //blue is max
-        hue = 4.0 + (scaled[0] - scaled[1]) / (max - min);
-    }
-    hue *= 60; //convert to degrees
-    hue = Math.round(hue); //round to nearest degree
-
-    return {h: hue, s: saturation, l: luminance};
-}
-
-/* convert from hsl to rgb */
-function hslToRgb(hsl) {
-
-    r = 0;
-    g = 0;
-    b = 0;
-
-    if (hsl.s == 0){
-        r = hsl.l * 255;
-        g = hsl.l * 255;
-        b = hsl.l * 255;
-    } else {
-        if (hsl.l < 0.5) {
-            temp = hsl.l * (1+hsl.s);
-        } else {
-            temp = hsl.l + hsl.s - hsl.l * hsl.s;
-        }
-        temp2 = 2 * hsl.l - temp;
-        hue = hsl.h / 360;
-        tempR = hue + 0.333;
-        tempG = hue;
-        tempB = hue - 0.333;
-        
-        if (tempR < 0){
-            tempR += 1;
-        }
-        if (tempR > 1) {
-            tempR -= 1;
-        }
-        if (tempG < 0){
-            tempG += 1;
-        }
-        if (tempG > 1) {
-            tempG -= 1;
-        }
-        if (tempB < 0){
-            tempB += 1;
-        }
-        if (tempB > 1) {
-            tempB -= 1;
-        }
-
-        if (6 * tempR < 1){
-            r = temp2 + (temp - temp2) * 6 * tempR;
-        } else if (2 * tempR < 1){
-            r = temp;
-        } else if (3 * tempR < 2){
-            r = temp2 + (temp - temp2) * (0.666 - tempR) * 6;
-        } else {
-            r = temp2;
-        }
-       
-        if (6 * tempG < 1){
-            g = temp2 + (temp - temp2) * 6 * tempG;
-        } else if (2 * tempG < 1){
-            g = temp;
-        } else if (3 * tempG < 2){
-            g = temp2 + (temp - temp2) * (0.666 - tempG) * 6;
-        } else {
-            g = temp2;
-        }
-
-        if (6 * tempB < 1){
-            b = temp2 + (temp - temp2) * 6 * tempB;
-        } else if (2 * tempB < 1){
-            b = temp;
-        } else if (3 * tempB < 2){
-            b = temp2 + (temp - temp2) * (0.666 - tempB) * 6;
-        } else {
-            b = temp2;
-        }
-    }
-
-    r *= 255;
-    r = Math.round(r);
-    g *= 255;
-    g = Math.round(g);
-    b *= 255;
-    b = Math.round(b);
-
-    return {r: r, g: g, b: b};
-}
-
-/* converts from hex color code to rgb color code struct */
-function hexToRgb(hex) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-    } : null;
-}
-
-/* converts from rgb color code struct to hex color code */
-function rgbToHex(rgb) {
-    hex = rgb.r.toString(16);
-    r = hex.length == 1 ? "0" + hex : hex;
-    hex = rgb.g.toString(16);
-    g = hex.length == 1 ? "0" + hex : hex;
-    hex = rgb.b.toString(16);
-    b = hex.length == 1 ? "0" + hex : hex;
-    return "#" + r + g + b;
-}
-
 /* Gets color shade for + and - grades */
 function getShadePlusMinus(baseColor, sign) {
-    color = rgbToHsl(hexToRgb(baseColor));
-
+    color = d3.hsv(baseColor.h, baseColor.s, baseColor.v);
     if (sign == '-') {
         // 1/3 shade darker, maximum rgb value of 255
-        color.l *= 0.7;
+        color.s -= 0.25;
     } else if (sign == '+') {
         // 1/3 shade brighter
-        color.l *= 1.3;
+        color.s += 0.25;
     } else { // there is a bug if this case is reached
         return baseColor;
     }
-
-    return rgbToHex(hslToRgb(color));
+    return color;
 }
 
 /* Gets color shade for number grades */
 function getShadeNumber(baseColor, name) {
-    color = rgbToHsl(hexToRgb(baseColor));
+    color = d3.hsv(baseColor.h, baseColor.s, baseColor.v);
+
+    //special case for 
 
     //special case for 100
     if (name == "100") {
-        color.l *= 1.5;
-        return rgbToHex(hslToRgb(color));
+        color.s += 0.5;
+        return color;
     }
 
     n = parseInt(name[1]); //examine the 1's column of the node name to determine shade
 
-    if (n == 5) // middle will take base color 
-        return baseColor;
+    // special case for F
+    if (isNaN(n))
+        return color;
 
-    // 1's place 0-4 (darker)
-    for (i = 0; i < 5; i++) {
-        if (n == i) {
-            color.l *= (0.5 + 0.1 * i); 
-            return rgbToHex(hslToRgb(color));
-        }
-    }
+    color.s += 0.08*(n-5);
 
-    // 1's place 6-9 (brighter)
-    for (i = 6; i < 10; i++) {
-        if (n == i) {
-            color.l *= (0.5 + 0.1 * i);
-            return rgbToHex(hslToRgb(color));
-        }
-    }
-
-    return baseColor;
+    return color;
 }
 
 /* Returns corresponding letter grade */
@@ -915,7 +762,6 @@ function newLinkNotinOldSet(brokeExam, brokeGrade, isBreakdown) {
  */
 function getNodeColor(nodeName) {
     /* case for whole letter grade nodes */
-    console.log(sankeyColor(nodeName));
     if (letrs.has(nodeName))
         return sankeyColor(nodeName);
     /* case for + and - grade nodes */
