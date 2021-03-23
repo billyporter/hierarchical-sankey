@@ -188,9 +188,7 @@ function hoverBehavior(i, flag) {
  * Function to create color mapping based on size of input
  */
 function createColorMap(i) {
-    //const priority = ["#ff79c6", "#ff5555", "#ffb86c", "#f1fa8c", "#50fa7b", "#8be9fd", "#bd93f9", "#6272a4", "#44475a"]; //dracula standard
-    //const priority = ["#f088bd", "#F29A85", "#F7CB8B", "#FBFE92", "#50fa7b", "#A5FC8F", "#9FFCEA", "#9183F7", "#44475a"]; //dracula pro
-    const priority = ["#ff79c6", "#ff5555", "#f5b042", "#f5dd42", "#50fa7b", "#8be9fd", "#a442f5", "#44475a"]; //modified dracula
+    const priority = ["#3c3c3c", "#525252", "#696969", "#8f8f8f", "#adadad", "#c7c7c7", "#d9d9d9", "#ededed"]; //nice
 
     for (let j = priority.length; j <= i; j++) {
         priority.push("#AA00FF");
