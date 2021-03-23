@@ -16,7 +16,7 @@ let activeLink = -1;
 const gradeCountDict = {};
 const sankeyColor = d3.scaleOrdinal()
     .domain(['A', 'B', 'C', 'D', 'F'])
-    .range(['#00ABA5', '#00A231', '#e2d000', '#E69200', '#DA1D02']);
+    .range([d3.hsv(178, 1, 0.67), d3.hsv(138, 1, 0.64), d3.hsv(55, 1, 0.89), d3.hsv(38, 1, 0.9), d3.hsv(8, 1, 0.85)]);
 const assessGradeLevelMap = {};
 
 
@@ -915,6 +915,7 @@ function newLinkNotinOldSet(brokeExam, brokeGrade, isBreakdown) {
  */
 function getNodeColor(nodeName) {
     /* case for whole letter grade nodes */
+    console.log(sankeyColor(nodeName));
     if (letrs.has(nodeName))
         return sankeyColor(nodeName);
     /* case for + and - grade nodes */
