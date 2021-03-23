@@ -39,8 +39,6 @@ function getShadePlusMinus(baseColor, sign) {
 function getShadeNumber(baseColor, name) {
     color = d3.hsv(baseColor.h, baseColor.s, baseColor.v);
 
-    //special case for 
-
     //special case for 100
     if (name == "100") {
         color.s += 0.5;
