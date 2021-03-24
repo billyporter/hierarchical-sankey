@@ -9,3 +9,4 @@ src/d3path.js
 src/d3sankey.js
 src/d3shape.js
 src/d3v6.js
+data/.*
