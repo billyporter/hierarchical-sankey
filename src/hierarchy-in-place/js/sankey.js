@@ -216,6 +216,8 @@ function drawLinks(graph) {
                 .style("visibility", "hidden");
             clearPrevLegend();
             d3.selectAll(".lines").style('pointer-events', 'none');
+            d3.selectAll(".link").style("opacity", 1);
+            d3.selectAll(".node").style("opacity", 1);
         }
     })
 
@@ -238,8 +240,8 @@ function drawLinks(graph) {
             isActive = true
             activeLink = i.index;
             hoverBehavior(i, true);
-            d3.selectAll(".link").style('pointer-events', 'none').style("opacity", 0.6);
-            d3.selectAll(".node").style("opacity", 0.6);
+            d3.selectAll(".link").style('pointer-events', 'none').style("opacity", 0.5);
+            d3.selectAll(".node").style("opacity", 0.5);
             d3.selectAll(".axes").style("visibility", "visible");
             d3.selectAll(".lines").style('pointer-events', 'visiblePained');
         })
