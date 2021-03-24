@@ -191,7 +191,7 @@ function createColorMap(i) {
     const priority = ["#3c3c3c", "#525252", "#696969", "#8f8f8f", "#adadad", "#c7c7c7", "#d9d9d9", "#ededed"]; //nice
 
     for (let j = priority.length; j <= i; j++) {
-        priority.push("#AA00FF");
+        priority.push("#44475a");
     }
 
     return priority

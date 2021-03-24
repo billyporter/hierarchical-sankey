@@ -145,11 +145,12 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
         })
         .on('mouseover', function (d, i) {
             highlightGroup(colorArray, filteredData, i['Exam']);
-            d3.select(this).style('opacity', 0.5);
+            d3.select(this).style('fill', "#ff79c6");
         })
         .on('mouseout', function (d, i) {
             setDefaults();
-            d3.select(this).style('opacity', 1.0);
+            console.log(groupsList);
+            d3.select(this).style('fill', groupsList.indexOf(i));
         })
 
     /* Draw numeric labels to right of bar */
@@ -228,7 +229,7 @@ function highlightGroup(colorArray, filteredData, group) {
     d3.selectAll(".lines").each(function (d) {
         d3.select(this)
             .style("stroke", () => {
-                return d['concat'] === group ? colorArray[d['group']] : deflineColor;
+                return d['concat'] === group ? "#ff79c6" : deflineColor; // set line highlight color
             })
             .style("opacity", () => {
                 return d['concat'] === group ? 1 : 0.5;

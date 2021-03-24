@@ -228,6 +228,7 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
 
     /* Get groups and their sizes */
     let groupsMap = new Map();
+    let groupsList = [];
     for (let line of newData) {
         let allExams = ''
         for (let assessment of assessments.slice(0, -1)) {
@@ -242,6 +243,7 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
         else {
             groupsMap.set(allExams, 1);
         }
+        groupsList.push(allExams);
     }
 
     /* Rank the groups */
