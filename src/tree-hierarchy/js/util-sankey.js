@@ -527,8 +527,9 @@ function hierarchSankeyRouter(node, flag) {
     if (newLevel == undefined) {
         newLevel = -1;
     }
-    removePlots();
-    drawSankey(newSankey, false, flag, oldGraph, stringToInput, locGrade, newLevel);
+    // removePlots();
+    // drawSankey(newSankey, false, flag, oldGraph, stringToInput, locGrade, newLevel);
+    drawTreeSankey(node, newSankey);
 }
 
 /**
@@ -539,6 +540,7 @@ function removePlots() {
     d3.selectAll(".link").remove();
     d3.selectAll(".axes").remove();
     d3.selectAll(".lines").remove();
+    d3.selectAll(".tree").remove();
 }
 
 /**
