@@ -30,7 +30,7 @@ let sankey = d3.sankey()
 /**
  * Top level Sankey drawing function
  */
-function drawSankey(sankeyData, isFirst, oldData) {
+function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeGrade) {
     /* Keep copy of old graph for animation purposes */
     if (oldData) {
         oldGraph = sankey(oldData);
@@ -38,7 +38,22 @@ function drawSankey(sankeyData, isFirst, oldData) {
 
 
     graph = sankey(sankeyData);
-    if (!isFirst) {
+
+
+    if (isFirst) {
+        populateLinkStorageObj(graph);
+        drawNodes(graph);
+        drawLinks(graph);
+    }
+
+    /* Store new points and new links*/
+    storeNewLinks(graph);
+
+
+    [oldLinkSet, oldLinksObj] = oldLinkNotinNewSet(brokeExam, brokeGrade);
+    [newLinkSet, newLinksObj] = newLinkNotinOldSet(brokeExam, brokeGrade, isBreakdown);
+
+    if (isBreakdown) {
         oldGraphLinks = {};
         for (const link of oldGraph.links) {
             const linkLevel = assessGradeLevelMap[link.source.assessment][link.source.name];
@@ -52,34 +67,19 @@ function drawSankey(sankeyData, isFirst, oldData) {
                 oldGraphLinks[link.target.name]["totalWidth"] += link.width;
             }
         }
-        console.log(totalWidth);
-        let prev_y0;
-        let prev_y1;
-        let prev_width = 0;
-        // for (const link of graph.links) {
-        //     if (link["sourceName"]) {
-        //         if (link.sourceName === 'A') {
-        //             prev_y0 = oldGraphLinks[link.target.name]["y0"] - 0.5 * oldGraphLinks[link.target.name]["width"] + 0.5 * link.width;
-        //             prev_y1 = oldGraphLinks[link.target.name]["y1"] - 0.5 * oldGraphLinks[link.target.name]["width"] + 0.5 * link.width;;
-        //             prev_width = 0;
-        //         }
-        //         else {
-        //             link.y0 = prev_y0 + 0.5 * prev_width + 0.5 * link.width;
-        //             link.y1 = prev_y1 + 0.5 * prev_width + 0.5 * link.width;
-        //         }
-        //         // link.y0 = oldGraphLinks[link.target.name]["y0"];
-        //         // link.y1 = oldGraphLinks[link.target.name]["y1"];
-        //         // link.width = 1; // oldGraphLinks[link.target.name]["width"];
+        drawNodes(graph,);
+        drawLinks(graph, newLinkSet, brokeExam, brokeGrade, isBreakdown);
 
-        //         prev_y0 = link.y0;
-        //         prev_width = link.width;
-        //         prev_y1 = link.y1;
-        //     }
-        // }
-        console.log(graph.links);
+        /* Animate to the new values */
+        transitionToNewBreakdown();
     }
-    drawNodes(graph);
-    drawLinks(graph);
+    else if (!isFirst) {
+        drawNodes(graph);
+        drawLinks(oldGraph, newLinkSet, brokeExam, brokeGrade, isBreakdown);
+        transitionToNewBuildup(oldLinkSet, newLinkSet, newLinksObj, brokeExam, brokeGrade)
+    }
+    oldLinks = JSON.parse(JSON.stringify(newLinks));
+    oldLinksMap = new Map(newLinksMap);
 }
 
 
@@ -113,11 +113,38 @@ function drawNodes(graph) {
             return d3.rgb(sankeyColor(d.name[0])).darker(0.6);
         })
         .on("click", function (d, i) {
-            hierarchSankeyRouter(i, true);
+            if (assessGradeLevelMap[i['assessment']][i['name'][0]] === 0) {
+                hierarchSankeyRouter(i, true);
+            }
+        })
+        .on("mouseover", function (i, d) {
+            d3.selectAll(".link").style("stroke-opacity", function (link) {
+                const dIndex = assessments.indexOf(d.assessment);
+                const aIndex = assessments.indexOf(link.source.assessment);
+                if (link.source.name === d.name && link.source.assessment === d.assessment) {
+                    return 0.9;
+                }
+                else if (assessGradeLevelMap[link.source.assessment.trim()][link.source.name] === 1
+                    && dIndex < aIndex
+                    && (aIndex - dIndex === 1 || assessGradeLevelMap[assessments[aIndex - 1]][d.name] === 1)
+                    && (link.sourceName === d.name)) {
+                    return 0.9;
+                }
+                else {
+                    return 0.4;
+                }
+            });
+        })
+        .on("mouseout", () => {
+            d3.selectAll(".link").style("stroke-opacity", function (link) {
+                return 0.4;
+            });
         })
         .on("contextmenu", function (d, i) {
-            // d.preventDefault();
-            // hierarchSankeyRouter(i, false);
+            d.preventDefault();
+            if (assessGradeLevelMap[i['assessment']][i['name'][0]] === 1) {
+                hierarchSankeyRouter(i, false);
+            }
         });
 
     /* Add in text */
@@ -144,7 +171,7 @@ function drawNodes(graph) {
  * Function to draw Links of Sankey
  */
 var graphlink;
-function drawLinks(graph) {
+function drawLinks(graph, newLinkSet, brokeExam, brokeGrade, isBreakdown) {
 
     /* Creates Link */
     graphlink = svg
@@ -160,11 +187,76 @@ function drawLinks(graph) {
         .attr("class", "link")
         .attr("d", d3.sankeyLinkHorizontal())
         .attr("fill", "none")
+        .attr("stop-opacity", 0.5)
         .style("stroke-width", d => d.width)
         .style("stroke", d => {
+            const key = `${d.source.assessment},${d.source.name},${d.target.assessment},${d.target.name}`;
+            if (newLinkSet && newLinkSet.has(key) && d.source.assessment === brokeExam && d.source.name === brokeGrade) {
+                if (isBreakdown) {
+                    return sankeyColor(d.source.name[0]);
+                }
+                return sankeyColor(d.sourceName);
+            }
+            else if (newLinkSet && d.sourceName) {
+                return sankeyColor(d.sourceName);
+            }
+            return sankeyColor(d.source.name[0]);
+        });
+}
+
+/**
+ * Function to animate the transition from breaking down a node
+ */
+function transitionToNewBreakdown() {
+
+    /* Animate link */
+    graphlink
+        .transition()
+        .ease(d3.easeCubic)
+        .duration(transitionDuration + 500)
+        .style("stroke", function (d) {
             if (d.sourceName) {
                 return sankeyColor(d.sourceName);
             }
             return sankeyColor(d.source.name[0]);
+        });
+}
+
+/**
+ * Function that animates transition when building up a node
+ * 
+ * @param {*} newPointsNotInOldSet --> New Nodes not in old Graph (ex. build up A+/A/A-, new node is A)
+ * @param {*} oldPointsNotInNewSet --> Old Nodes not in new graph (ex., old is A+/A/A-)
+ * @param {*} oldLinkSet --> Same but for links
+ * @param {*} newLinkSet --> Same but for links
+ * @param {*} newLinksObj --> new link set but in a different structure
+ * @param {*} sankeyData --> sankey data
+ * @param {*} brokeExam 
+ */
+function transitionToNewBuildup(oldLinkSet, newLinkSet, newLinksObj, brokeExam, brokeGrade) {
+
+    let soFar = 0;
+    let total = graphlink["_groups"][0].length;
+    /* Draws Link */
+    graphlink
+        .transition()
+        .ease(d3.easeCubic)
+        .duration(transitionDuration + 500)
+        .style("stroke", d => {
+            const key = `${d.source.assessment},${d.source.name},${d.target.assessment},${d.target.name}`;
+            if (newLinkSet && newLinkSet.has(key) && d.source.assessment === brokeExam && d.source.name === brokeGrade) {
+                return sankeyColor(d.source.name[0]);
+            }
+            else if (newLinkSet && d.sourceName) {
+                return sankeyColor(d.sourceName);
+            }
+            return sankeyColor(d.source.name[0]);
+        }).on("end", function () {
+            soFar += 1;
+            if (soFar === total) {
+                removePlots();
+                drawNodes(graph);
+                drawLinks(graph, newLinkSet);
+            }
         });
 }
