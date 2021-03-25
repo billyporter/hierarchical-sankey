@@ -149,8 +149,7 @@ function buildLegend(colorArray, rankedArray, filteredData, source_targets) {
         })
         .on('mouseout', function (d, i) {
             setDefaults();
-            console.log(groupsList);
-            d3.select(this).style('fill', groupsList.indexOf(i));
+            d3.select(this).style('fill', colorArray[groupsList.indexOf(i.Exam)]);
         })
 
     /* Draw numeric labels to right of bar */
