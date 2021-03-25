@@ -523,13 +523,15 @@ function hierarchSankeyRouter(node, flag) {
         }
     }
 
-    const newSankey = formatSankey();
+    // const newSankey = formatSankey();
+    const treeSankey = formatTreeSankey(node);
     if (newLevel == undefined) {
         newLevel = -1;
     }
     // removePlots();
     // drawSankey(newSankey, false, flag, oldGraph, stringToInput, locGrade, newLevel);
-    drawTreeSankey(node, newSankey);
+    // removeTreePlots();
+    drawTreeSankey(node, treeSankey);
 }
 
 /**

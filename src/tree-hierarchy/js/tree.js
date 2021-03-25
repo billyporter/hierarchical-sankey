@@ -2,11 +2,14 @@
  * Draw hierarchical tree sankey for node expansion
  */
 function drawTreeSankey(node, sankeyData){
-    svg.append("text")
+
+    treesvg.style("visibility", "visible");
+
+    treesvg.append("text")
     .attr("class", "title")
     .attr("class", "tree")
     .attr("x", width / 2)
-    .attr("y", treeStart + 50)
+    .attr("y", -15)
     .style("text-anchor", "middle")
     .style("font-size", "20px")
     .style("font-weight", "600")
@@ -23,7 +26,7 @@ function drawTreeSankey(node, sankeyData){
  */
  function drawTreeNodes(graph) {
     /* Creates Node */
-    var graphnode = svg
+    var graphnode = treesvg
         .append("g")
         .classed("nodes", true)
         .selectAll("rect")
@@ -34,7 +37,7 @@ function drawTreeSankey(node, sankeyData){
     graphnode.append("rect")
         .attr("class", "node")
         .attr("x", d => d.x0)
-        .attr("y", d => d.y0 + treeStart)
+        .attr("y", d => d.y0)
         .attr("width", d => (d.x1 - d.x0))
         .attr("height", d => {
             d.rectHeight = d.y1 - d.y0;
@@ -65,19 +68,11 @@ function drawTreeSankey(node, sankeyData){
         .style("font-size", "16px")
         .attr("class", "nodeText")
         .attr("x", function (d) { return d.x0 - 30; })
-        .attr("y", function (d) { return (d.y1 + d.y0) / 2 + treeStart; })
+        .attr("y", function (d) { return (d.y1 + d.y0) / 2; })
         .attr("dy", "0.35em")
         .text(function (d) { return d.name; });
 
 }
-
-
-
-/**
- * 
- * Links Section
- * 
- */
 
 /**
  * 
@@ -87,7 +82,7 @@ var graphlink;
 function drawTreeLinks(graph) {
 
     /* Creates Link */
-    graphlink = svg
+    graphlink = treesvg
         .append("g")
         .attr("class", "links")
         .selectAll("path")
@@ -103,9 +98,91 @@ function drawTreeLinks(graph) {
         .attr("fill", "none")
         .style("stroke-width", d => d.width)
         .attr("y0", d => {
-            d.y0 + treeStart;
+            d.y0;
         })
         .style("stroke", d => {
             return getNodeColor(d.source.name);
         })
+}
+
+
+/**
+ * Function to create node and link data for expanded tree hierarchy sankey
+ */
+function formatTreeSankey(node) {
+    newIds = createIDS();
+    newLinks = createLinks(newIds);
+    newNodes = createNodes(newIds);
+    newGrades = createGrades(newIds);
+
+    console.log(newIds);
+    console.log(newLinks);
+    console.log(newNodes);
+    console.log(newGrades);
+
+    output = {
+        "ids": newIds,
+        "grades": newGrades,
+        "nodes": newNodes,
+        "links": newLinks
+    }
+    for (const student of Object.entries(rawData)) {
+        for ([index, assessment] of assessments.entries()) {
+            if (!student[1][assessment]) {
+                continue;
+            }
+            let grade = gradeScale(student[1][assessment]);
+            let level = assessGradeLevelMap[assessment][grade]["level"];
+            if (level === 1) {
+                grade = specificLetterScale(grade, student[1][assessment]);
+                if (grade.localeCompare('F') === 0) {
+                    grade = "0-59";
+                }
+            }
+            if (level === 2) {
+                grade = specificLetterScale(grade, student[1][assessment]);
+                if (grade.length === 1 && assessGradeLevelMap[assessment][grade]["def"] === 2) {
+                    grade = student[1][assessment];
+                }
+                else if (assessGradeLevelMap[assessment][grade[0]][grade[grade.length - 1]] === 2) {
+                    grade = student[1][assessment];
+                }
+            }
+            output["grades"][assessment.trim()][grade]["count"]++;
+
+            if (index < 3) {
+                let nextGrade = gradeScale(student[1][assessments[index + 1]]);
+                let copyNextGrade = student[1][assessments[index + 1]];
+                if (nextGrade == "") {
+                    continue;
+                }
+                let level = assessGradeLevelMap[assessments[index + 1]][nextGrade]["level"];
+                if (level === 1) {
+                    nextGrade = specificLetterScale(nextGrade, student[1][assessments[index + 1]]);
+                    if (nextGrade.localeCompare('F') === 0) {
+                        nextGrade = "0-59";
+                    }
+                }
+                if (level === 2) {
+                    nextGrade = specificLetterScale(nextGrade, student[1][assessments[index + 1]]);
+                    if (nextGrade.length === 1 && assessGradeLevelMap[assessments[index + 1]][nextGrade]["def"] === 2) {
+                        nextGrade = copyNextGrade;
+                    }
+                    else if (assessGradeLevelMap[assessments[index + 1]][nextGrade[0]][nextGrade[nextGrade.length - 1]] === 2) {
+                        nextGrade = copyNextGrade;
+                    }
+                }
+                let source = output["grades"][assessment.trim()][grade]["id"]; // prev grade id
+                let target = output["grades"][assessments[index + 1].trim()]
+                [nextGrade]["id"]; // next grade id
+
+                for (const [index, link] of output["links"].entries()) {
+                    if (JSON.stringify(link["source"]) == source && JSON.stringify(link["target"]) == target) {
+                        output["links"][index]["value"]++;
+                    }
+                }
+            }
+        }
+    }
+    return output;
 }
