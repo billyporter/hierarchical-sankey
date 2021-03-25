@@ -204,6 +204,7 @@ function drawLinks(graph) {
         .enter()
         .append("path")
 
+    // resets on additional click
     document.addEventListener("click", function (event) {
         const target = event.target;
         if (!target.closest('.link')) {
@@ -215,6 +216,13 @@ function drawLinks(graph) {
                 .style("visibility", "hidden");
             clearPrevLegend();
             d3.selectAll(".lines").style('pointer-events', 'none');
+            d3.selectAll(".link").style("opacity", 1);
+            d3.selectAll(".node").style("opacity", 1);
+
+            // lighten PC lines
+            deflineColor = "#90A4AE";
+            d3.selectAll(".lines").style("stroke", deflineColor);
+
         }
     })
 
@@ -237,9 +245,14 @@ function drawLinks(graph) {
             isActive = true
             activeLink = i.index;
             hoverBehavior(i, true);
-            d3.selectAll(".link").style('pointer-events', 'none');
+            d3.selectAll(".link").style('pointer-events', 'none').style("opacity", 0.5);
+            d3.selectAll(".node").style("opacity", 0.5);
             d3.selectAll(".axes").style("visibility", "visible");
             d3.selectAll(".lines").style('pointer-events', 'visiblePained');
+
+            // darken color of PC lines
+            deflineColor = "#44475a";
+            d3.selectAll(".lines").style("stroke", deflineColor);
         })
         .on("mouseout", () => {
             if (!isActive) {
