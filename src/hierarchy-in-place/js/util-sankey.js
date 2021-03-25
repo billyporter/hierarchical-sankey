@@ -16,90 +16,44 @@ let activeLink = -1;
 const gradeCountDict = {};
 const sankeyColor = d3.scaleOrdinal()
     .domain(['A', 'B', 'C', 'D', 'F'])
-    .range(['#00ABA5', '#00A231', '#e2d000', '#E69200', '#DA1D02']);
+    .range([d3.hsv(178, 0.75, 0.67), d3.hsv(138, 0.75, 0.64), d3.hsv(55, 0.75, 0.89), d3.hsv(38, 0.75, 0.9), d3.hsv(8, 0.75, 0.85)]);
 const assessGradeLevelMap = {};
 
-/* converts from hex color code to rgb color code struct */
-function hexToRgb(hex) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-    } : null;
-}
-
-/* converts from rgb color code struct to hex color code */
-function rgbToHex(rgb) {
-    hex = rgb.r.toString(16);
-    r = hex.length == 1 ? "0" + hex : hex;
-    hex = rgb.g.toString(16);
-    g = hex.length == 1 ? "0" + hex : hex;
-    hex = rgb.b.toString(16);
-    b = hex.length == 1 ? "0" + hex : hex;
-    return "#" + r + g + b;
-}
 
 /* Gets color shade for + and - grades */
 function getShadePlusMinus(baseColor, sign) {
-    color = hexToRgb(baseColor);
-
+    color = d3.hsv(baseColor.h, baseColor.s, baseColor.v);
     if (sign == '-') {
         // 1/3 shade darker, maximum rgb value of 255
-        color.r = color.r * 2 / 3 < 255 ? parseInt(color.r * 2 / 3) : 255;
-        color.g = color.g * 2 / 3 < 255 ? parseInt(color.g * 2 / 3) : 255;
-        color.b = color.b * 2 / 3 < 255 ? parseInt(color.b * 2 / 3) : 255;
+        color.s -= 0.25;
     } else if (sign == '+') {
         // 1/3 shade brighter
-        color.r = color.r * 4 / 3 < 255 ? parseInt(color.r * 4 / 3) : 255;
-        color.g = color.g * 4 / 3 < 255 ? parseInt(color.g * 4 / 3) : 255;
-        color.b = color.b * 4 / 3 < 255 ? parseInt(color.b * 4 / 3) : 255;
+        color.s += 0.25;
     } else { // there is a bug if this case is reached
         return baseColor;
     }
-
-    return rgbToHex(color);
+    return color;
 }
 
 /* Gets color shade for number grades */
 function getShadeNumber(baseColor, name) {
-    color = hexToRgb(baseColor);
+    color = d3.hsv(baseColor.h, baseColor.s, baseColor.v);
 
     //special case for 100
     if (name == "100") {
-        color.r = color.r * (1 + 1 / 2) < 255 ? parseInt(color.r * (1 + 1 / 2)) : 255;
-        color.g = color.g * (1 + 1 / 2) < 255 ? parseInt(color.g * (1 + 1 / 2)) : 255;
-        color.b = color.b * (1 + 1 / 2) < 255 ? parseInt(color.b * (1 + 1 / 2)) : 255;
-        return rgbToHex(color);
+        color.s += 0.5;
+        return color;
     }
 
     n = parseInt(name[1]); //examine the 1's column of the node name to determine shade
 
-    if (n == 5) // middle will take base color 
-        return baseColor;
+    // special case for F
+    if (isNaN(n))
+        return color;
 
-    // 1's place 0-4 (darker)
-    for (i = 0; i < 5; i++) {
-        if (n == i) {
-            color.r = color.r * 1 / 2 * (1 + i / 5) < 255 ? parseInt(color.r * 1 / 2 * (1 + i / 5)) : 255;
-            color.g = color.g * 1 / 2 * (1 + i / 5) < 255 ? parseInt(color.g * 1 / 2 * (1 + i / 5)) : 255;
-            color.b = color.b * 1 / 2 * (1 + i / 5) < 255 ? parseInt(color.b * 1 / 2 * (1 + i / 5)) : 255;
-            return rgbToHex(color);
-        }
-    }
+    color.s += 0.08*(n-5);
 
-    // 1's place 6-9 (brighter)
-    for (i = 6; i < 10; i++) {
-        if (n == i) {
-            color.r = color.r * (1 + 1 / 2 * (i - 5) / 5) < 255 ? parseInt(color.r * (1 + 1 / 2 * (i - 5) / 5)) : 255;
-            color.g = color.g * (1 + 1 / 2 * (i - 5) / 5) < 255 ? parseInt(color.g * (1 + 1 / 2 * (i - 5) / 5)) : 255;
-            color.b = color.b * (1 + 1 / 2 * (i - 5) / 5) < 255 ? parseInt(color.b * (1 + 1 / 2 * (i - 5) / 5)) : 255;
-            return rgbToHex(color);
-        }
-    }
-
-    // bug if this case is reached
-    return baseColor;
+    return color;
 }
 
 /* Returns corresponding letter grade */
