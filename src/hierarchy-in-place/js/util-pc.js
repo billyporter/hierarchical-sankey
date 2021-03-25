@@ -1,3 +1,5 @@
+var groupsList = [];
+
 /**
  * Returns array of pixel values for y-axis based on sankey  
  * */
@@ -228,6 +230,7 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
 
     /* Get groups and their sizes */
     let groupsMap = new Map();
+    groupsList = [];
     for (let line of newData) {
         let allExams = ''
         for (let assessment of assessments.slice(0, -1)) {
@@ -243,6 +246,8 @@ function filterParallelData(sourceGrade, targetGrade, sourceAssessment, targetAs
             groupsMap.set(allExams, 1);
         }
     }
+    groupsList = [...groupsMap.keys()];
+    console.log(groupsMap);
 
     /* Rank the groups */
     let rankedArray = [];
