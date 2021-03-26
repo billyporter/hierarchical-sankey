@@ -36,6 +36,7 @@ function drawTreeSankey(node, sankeyData){
     /* Draws Node */
     graphnode.append("rect")
         .attr("class", "node")
+        .attr("class", "tree")
         .attr("x", d => d.x0)
         .attr("y", d => d.y0)
         .attr("width", d => (d.x1 - d.x0))
@@ -67,6 +68,7 @@ function drawTreeSankey(node, sankeyData){
     graphnode.append("text")
         .style("font-size", "16px")
         .attr("class", "nodeText")
+        .attr("class", "tree")
         .attr("x", function (d) { return d.x0 - 30; })
         .attr("y", function (d) { return (d.y1 + d.y0) / 2; })
         .attr("dy", "0.35em")
@@ -85,6 +87,7 @@ function drawTreeLinks(graph) {
     graphlink = treesvg
         .append("g")
         .attr("class", "links")
+        .attr("class", "tree")
         .selectAll("path")
         .data(graph.links)
         .enter()
@@ -115,10 +118,11 @@ function formatTreeSankey(node) {
     newNodes = createNodes(newIds);
     newGrades = createGrades(newIds);
 
-    console.log(newIds);
-    console.log(newLinks);
-    console.log(newNodes);
-    console.log(newGrades);
+    // console.log(newIds);
+    // console.log(newLinks);
+    // console.log(newNodes);
+    // console.log(newGrades);
+    // console.log(node);
 
     output = {
         "ids": newIds,
@@ -126,8 +130,16 @@ function formatTreeSankey(node) {
         "nodes": newNodes,
         "links": newLinks
     }
+
+    let assess = node.assessment;
+    let treeAssessments = [assess, assessments[assessments.indexOf(assess)+1]];
+    if(assess.localeCompare("Final Exam") === 0){
+        assess = " " + assess;
+        treeAssessments = [assess];
+    }
+
     for (const student of Object.entries(rawData)) {
-        for ([index, assessment] of assessments.entries()) {
+        for ([index, assessment] of treeAssessments.entries()) {
             if (!student[1][assessment]) {
                 continue;
             }
@@ -150,30 +162,30 @@ function formatTreeSankey(node) {
             }
             output["grades"][assessment.trim()][grade]["count"]++;
 
-            if (index < 3) {
-                let nextGrade = gradeScale(student[1][assessments[index + 1]]);
-                let copyNextGrade = student[1][assessments[index + 1]];
+            if (assess.localeCompare(" Final Exam") !== 0) {
+                let nextGrade = gradeScale(student[1][treeAssessments[index + 1]]);
+                let copyNextGrade = student[1][treeAssessments[index + 1]];
                 if (nextGrade == "") {
                     continue;
                 }
-                let level = assessGradeLevelMap[assessments[index + 1]][nextGrade]["level"];
+                let level = assessGradeLevelMap[treeAssessments[index + 1]][nextGrade]["level"];
                 if (level === 1) {
-                    nextGrade = specificLetterScale(nextGrade, student[1][assessments[index + 1]]);
+                    nextGrade = specificLetterScale(nextGrade, student[1][treeAssessments[index + 1]]);
                     if (nextGrade.localeCompare('F') === 0) {
                         nextGrade = "0-59";
                     }
                 }
                 if (level === 2) {
-                    nextGrade = specificLetterScale(nextGrade, student[1][assessments[index + 1]]);
-                    if (nextGrade.length === 1 && assessGradeLevelMap[assessments[index + 1]][nextGrade]["def"] === 2) {
+                    nextGrade = specificLetterScale(nextGrade, student[1][treeAssessments[index + 1]]);
+                    if (nextGrade.length === 1 && assessGradeLevelMap[treeAssessments[index + 1]][nextGrade]["def"] === 2) {
                         nextGrade = copyNextGrade;
                     }
-                    else if (assessGradeLevelMap[assessments[index + 1]][nextGrade[0]][nextGrade[nextGrade.length - 1]] === 2) {
+                    else if (assessGradeLevelMap[treeAssessments[index + 1]][nextGrade[0]][nextGrade[nextGrade.length - 1]] === 2) {
                         nextGrade = copyNextGrade;
                     }
                 }
                 let source = output["grades"][assessment.trim()][grade]["id"]; // prev grade id
-                let target = output["grades"][assessments[index + 1].trim()]
+                let target = output["grades"][treeAssessments[index + 1].trim()]
                 [nextGrade]["id"]; // next grade id
 
                 for (const [index, link] of output["links"].entries()) {
@@ -184,5 +196,14 @@ function formatTreeSankey(node) {
             }
         }
     }
+    console.log(output);
     return output;
+}
+
+
+/**
+ * Function for reset button to remove tree plot elements
+ */
+ function removeTreePlots() {
+    d3.selectAll(".tree").remove();
 }

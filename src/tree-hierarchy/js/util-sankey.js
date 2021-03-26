@@ -530,7 +530,7 @@ function hierarchSankeyRouter(node, flag) {
     }
     // removePlots();
     // drawSankey(newSankey, false, flag, oldGraph, stringToInput, locGrade, newLevel);
-    // removeTreePlots();
+    removeTreePlots();
     drawTreeSankey(node, treeSankey);
 }
 
