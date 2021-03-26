@@ -123,7 +123,7 @@ function getTreeAxes(node){
     axes.push(`${assessment} Level 0`);
     axes.push(`${assessment} Level 1`);
 
-    const level = assessGradeLevelMap[assess][node.name]["level"];
+    const level = assessGradeLevelMap[assess][node.name[0]]["level"];
     if(level == 2){
         axes.push(`${assessment} Level 2`);
     }
@@ -143,7 +143,6 @@ function getTreeAxes(node){
  */
 function drawTreeAxes(node, sankeyData){
     const axes = getTreeAxes(node);
-    const n = axes.length;
 
     const assessment = node.assessment; // for use as axis label
     let assess = assessment; //for checking in assessGradeLevelMap
@@ -151,7 +150,7 @@ function drawTreeAxes(node, sankeyData){
         assess = " " + assess;
     } 
 
-    const level = assessGradeLevelMap[assess][node.name]["level"];
+    const level = assessGradeLevelMap[assess][node.name[0]]["level"];
 
     // get x coordinates for each axis 
     const xs = [];
@@ -163,9 +162,6 @@ function drawTreeAxes(node, sankeyData){
     last = sankeyData["nodes"].length;
     xs.push(sankeyData["nodes"][last-1]["x0"]);
 
-    console.log(axes);
-    console.log(xs);
-    
     for([index, coord] of xs.entries()){
         treesvg.append("text")
         .attr("class", "axis-label")
@@ -268,7 +264,7 @@ function formatTreeSankey(node) {
             }
         }
     }
-    console.log(output);
+    // console.log(output);
     return output;
 }
 
@@ -288,7 +284,6 @@ function createTreeIDS(node) {
     dict = {} // dict to hold ids
 
     let assessment = node.assessment.trim();
-    dict[id++] = { [assessment]: node.name[0]};
     const grade = node.name[0]; // stores the parent grade name
     if(assessment.localeCompare("Final Exam") === 0){
         assessment = " " + assessment;
@@ -296,18 +291,18 @@ function createTreeIDS(node) {
     const levels = assessGradeLevelMap[assessment][grade]; // breakdowns for the level of each part of the assessment
     const currLevel = levels["level"]; // overall level for the assessment
 
-    if(currLevel == 1){ // on +/_/- case
-        if (grade !== 'F') {
-            if (grade !== 'A') {
-                dict[id++] = { [assessment]: node.name.concat("+") };
-            }
-            dict[id++] = { [assessment.trim()]: node.name };
-            dict[id++] = { [assessment.trim()]: node.name.concat("-") };
+    dict[id++] = { [assessment]: grade}; //id for the parent node
+    if (grade !== 'F') {
+        if (grade !== 'A') {
+            dict[id++] = { [assessment]: grade.concat("+") };
         }
-        else {
-            dict[id++] = { [assessment.trim()]: "0-59" };
-        }
-    } else { // on percent case
+        dict[id++] = { [assessment.trim()]: grade };
+        dict[id++] = { [assessment.trim()]: grade.concat("-") };
+    }
+    else {
+        dict[id++] = { [assessment.trim()]: "0-59" };
+    }
+    if(currLevel === 2) { // on percent case
         let subgrade = node.name[1];
         if(!subgrade){
             subgrade = "def";
@@ -317,15 +312,15 @@ function createTreeIDS(node) {
 
         /* numbersArray stores nodes that are filtered right */
         const numbersArray = []
-        for (const student of Object.entries(rawData)) {
+        for (const student of Object.entries(rawData)) { // see which percentage grades that correspond to parent have entries
             if (!student[1][assessment]) {
                 continue;
             }
             const currGrade = student[1][assessment];
-            if (seen.has(currGrade)) {
+            if (seen.has(currGrade)) { 
                 continue;
             }
-            seen.add(currGrade);
+            seen.add(currGrade); // mark number grade as valid
             currGradeLevel = specificLetterScale(gradeScale(currGrade), currGrade);
             let suffix = subgrade;
             if (suffix.localeCompare("def") === 0) {
@@ -367,24 +362,57 @@ function createTreeLinks(newIds, node) {
 
     let count = -1;
     for([index, exam] of Object.entries(newIds)){ // get count of +/_/- nodes 
-        let mark = Object.keys(exam);
-        if(assessment.localeCompare(mark) === 0){
+        let mark = Object.keys(exam)[0];
+        let score = Object.values(exam)[0];
+        if(assessment.localeCompare(mark) === 0 && isNaN(score)){
             count += 1;
         }
     }
     const firstCount = count;
 
-    let id = 0;
+    let firstParentId = 0;
+    let secondParentId = 0;
     for(i = 1; i <= firstCount; i++){ // create +/_/- links
-        links.push({ "source": id, "target": i, "value": 0 })
+        links.push({ "source": firstParentId, "target": i, "value": 0 });
+        if(newIds[i][assessment].localeCompare(node.name) === 0){
+            secondParentId = i;
+        }
     }
 
-    /* TODO: get count of percentage nodes */
 
-    if(assessment.localeCompare("Final Exam") !== 0){
-        for(i = 1; i <= firstCount; i++){
-            for(j = firstCount + 1; j < Object.entries(newIds).length; j++){
-                links.push({ "source": i, "target" : j, "value": 0 });
+    // get count of percentage nodes 
+    count = 0;
+    const level = assessGradeLevelMap[assessment][node.name[0]]["level"];
+    if(level == 2){
+        percent = firstCount + 1;
+        while(!isNaN(newIds[percent][assessment])){ // create numeral links
+            links.push({ "source": secondParentId, "target": percent, "value": 0 })
+            percent++;
+            count ++;
+        }
+    }
+    const secondCount = count;
+
+    if(assessment.localeCompare("Final Exam") !== 0){ // fill in links to the following assessment
+        if(level == 1){
+            for(i = 1; i <= firstCount; i++){ 
+                for(j = firstCount + 1; j < Object.entries(newIds).length; j++){ // just fill out +/_/- mapped to ABCDF
+                    links.push({ "source": i, "target" : j, "value": 0 });
+                }
+            }
+        } else {
+            for(i = 1; i <= firstCount; i++){
+                if(i !== secondParentId){
+                    for(j = firstCount + 1; j < Object.entries(newIds).length; j++){ // map whichever of +/_/- are not the second parent to ABCDF
+                        links.push({ "source": i, "target" : j, "value": 0 });
+                    }
+                } else { // map the numerals corresponding to the second parent to ABCDF on following assessment
+                    for(k = firstCount+1; k<firstCount+1 + secondCount; k++){ //iterate over the integer ids
+                        for(j = firstCount + secondCount + 1; j < Object.entries(newIds).length; j++){
+                            links.push({ "source": k, "target" : j, "value": 0 });
+                        } 
+                    }
+                }
             }
         }
     }
