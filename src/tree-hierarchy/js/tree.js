@@ -208,8 +208,7 @@ function formatTreeSankey(node) {
                     }
                 }
                 let source = output["grades"][assessment.trim()][grade]["id"]; // prev grade id
-                let target = output["grades"][treeAssessments[index + 1].trim()]
-                [nextGrade]["id"]; // next grade id
+                let target = output["grades"][treeAssessments[index + 1].trim()][nextGrade]["id"]; // next grade id
 
                 for (const [index, link] of output["links"].entries()) {
                     if (JSON.stringify(link["source"]) == source && JSON.stringify(link["target"]) == target) {
@@ -256,33 +255,35 @@ function createTreeIDS(node) {
             dict[id++] = { [assessment.trim()]: "0-59" };
         }
     } else { // on percent case
-        for (const subgrade of ["+", "def", "-"]) {
-            /* Seen set so don't have repeat nodes, also memoize */
-            const seen = new Set();
+        let subgrade = node.name[1];
+        if(!subgrade){
+            subgrade = "def";
+        }
+        /* Seen set so don't have repeat nodes, also memoize */
+        const seen = new Set();
 
-            /* numbersArray stores nodes that are filtered right */
-            const numbersArray = []
-            for (const student of Object.entries(rawData)) {
-                if (!student[1][assessment]) {
-                    continue;
-                }
-                const currGrade = student[1][assessment];
-                if (seen.has(currGrade)) {
-                    continue;
-                }
-                seen.add(currGrade);
-                currGradeLevel = specificLetterScale(gradeScale(currGrade), currGrade);
-                let suffix = subgrade;
-                if (suffix.localeCompare("def") === 0) {
-                    suffix = "";
-                }
-                if (currGradeLevel === grade.concat(suffix)) {
-                    numbersArray.push(currGrade);
-                }
+        /* numbersArray stores nodes that are filtered right */
+        const numbersArray = []
+        for (const student of Object.entries(rawData)) {
+            if (!student[1][assessment]) {
+                continue;
             }
-            for (const num of numbersArray.sort(function (a, b) { return parseInt(b) - parseInt(a) })) {
-                dict[id++] = { [assessment.trim()]: num };
+            const currGrade = student[1][assessment];
+            if (seen.has(currGrade)) {
+                continue;
             }
+            seen.add(currGrade);
+            currGradeLevel = specificLetterScale(gradeScale(currGrade), currGrade);
+            let suffix = subgrade;
+            if (suffix.localeCompare("def") === 0) {
+                suffix = "";
+            }
+            if (currGradeLevel === grade.concat(suffix)) {
+                numbersArray.push(currGrade);
+            }
+        }
+        for (const num of numbersArray.sort(function (a, b) { return parseInt(b) - parseInt(a) })) {
+            dict[id++] = { [assessment.trim()]: num };
         }
     }
 
@@ -293,7 +294,8 @@ function createTreeIDS(node) {
             dict[id++] = { [nextAssessment.trim()]: mark};
         }
     }
-
+    
+    console.log(dict);
     return dict;
 }
 
@@ -308,29 +310,34 @@ function createTreeIDS(node) {
 function createTreeLinks(newIds, node) {
 
     links = [];
-    let prevTop = 0; // top of previous column
-    for (column = 0; column < assessments.length - 1; column++) {
-        let firstColLength = 0;
-        let secColLength = 0;
 
-        /* Count length of columns based on expansion */
-        for (const [key, value] of Object.entries(newIds)) {
-            if (assessments[column] === Object.keys(value)[0]) {
-                firstColLength += 1;
-            }
-            if (assessments[column + 1].trim() === Object.keys(value)[0]) {
-                secColLength += 1;
-            }
+    const assessment = node.assessment.trim();
+
+    let count = -1;
+    for([index, exam] of Object.entries(newIds)){ // get count of +/_/- nodes 
+        let mark = Object.keys(exam);
+        if(assessment.localeCompare(mark) === 0){
+            count += 1;
         }
-        for (let first = 0; first < firstColLength; first++) {
-            const currPosition = prevTop + first;
-            for (second = 0; second < secColLength; second++) {
-                const targPosition = prevTop + firstColLength + second;
-                links.push({ "source": currPosition, "target": targPosition, "value": 0 });
-            }
-        }
-        prevTop += firstColLength;
     }
+    const firstCount = count;
+
+    let id = 0;
+    for(i = 1; i <= firstCount; i++){ // create +/_/- links
+        links.push({ "source": id, "target": i, "value": 0 })
+    }
+
+    /* TODO: get count of percentage nodes */
+
+    if(assessment.localeCompare("Final Exam") !== 0){
+        for(i = 1; i <= firstCount; i++){
+            for(j = firstCount + 1; j < Object.entries(newIds).length; j++){
+                links.push({ "source": i, "target" : j, "value": 0 });
+            }
+        }
+    }
+
+    console.log(links);
     return links;
 }
 
@@ -347,6 +354,7 @@ function createTreeNodes(newIds, node) {
             "assessment": Object.keys(value)[0],
         });
     }
+    console.log(nodes);
     return nodes
 }
 
@@ -375,5 +383,12 @@ function createTreeGrades(newIds, node) {
             "count": 0
         }
     }
+
+    /* handle case of parent node because it is a duplicate key ie A -> A A-*/
+    dict["parent"] = {
+        "id": 0,
+        "count": 0
+    };
+    console.log(dict);
     return dict
 }
