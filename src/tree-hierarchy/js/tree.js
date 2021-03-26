@@ -183,37 +183,48 @@ function formatTreeSankey(node) {
                     grade = student[1][assessment];
                 }
             }
-            output["grades"][assessment.trim()][grade]["count"]++;
+            if(grade in output["grades"][assessment.trim()]){
+                output["grades"][assessment.trim()][grade]["count"]++;
+                output["grades"]["parent"]["count"]++;
 
-            if (assess.localeCompare(" Final Exam") !== 0) {
-                let nextGrade = gradeScale(student[1][treeAssessments[index + 1]]);
-                let copyNextGrade = student[1][treeAssessments[index + 1]];
-                if (nextGrade == "") {
-                    continue;
-                }
-                let level = assessGradeLevelMap[treeAssessments[index + 1]][nextGrade]["level"];
-                if (level === 1) {
-                    nextGrade = specificLetterScale(nextGrade, student[1][treeAssessments[index + 1]]);
-                    if (nextGrade.localeCompare('F') === 0) {
-                        nextGrade = "0-59";
+                if (assess.localeCompare(" Final Exam") !== 0) {
+                    let nextGrade = gradeScale(student[1][treeAssessments[index + 1]]);
+                    let copyNextGrade = student[1][treeAssessments[index + 1]];
+                    if (nextGrade == "") {
+                        continue;
                     }
-                }
-                if (level === 2) {
-                    nextGrade = specificLetterScale(nextGrade, student[1][treeAssessments[index + 1]]);
-                    if (nextGrade.length === 1 && assessGradeLevelMap[treeAssessments[index + 1]][nextGrade]["def"] === 2) {
-                        nextGrade = copyNextGrade;
+                    let level = assessGradeLevelMap[treeAssessments[index + 1]][nextGrade]["level"];
+                    if (level === 1) {
+                        nextGrade = specificLetterScale(nextGrade, student[1][treeAssessments[index + 1]]);
+                        if (nextGrade.localeCompare('F') === 0) {
+                            nextGrade = "0-59";
+                        }
                     }
-                    else if (assessGradeLevelMap[treeAssessments[index + 1]][nextGrade[0]][nextGrade[nextGrade.length - 1]] === 2) {
-                        nextGrade = copyNextGrade;
+                    if (level === 2) {
+                        nextGrade = specificLetterScale(nextGrade, student[1][treeAssessments[index + 1]]);
+                        if (nextGrade.length === 1 && assessGradeLevelMap[treeAssessments[index + 1]][nextGrade]["def"] === 2) {
+                            nextGrade = copyNextGrade;
+                        }
+                        else if (assessGradeLevelMap[treeAssessments[index + 1]][nextGrade[0]][nextGrade[nextGrade.length - 1]] === 2) {
+                            nextGrade = copyNextGrade;
+                        }
                     }
-                }
-                let source = output["grades"][assessment.trim()][grade]["id"]; // prev grade id
-                let target = output["grades"][treeAssessments[index + 1].trim()][nextGrade]["id"]; // next grade id
+                    let source = output["grades"][assessment.trim()][grade]["id"]; // prev grade id
+                    let target = output["grades"][treeAssessments[index + 1].trim()][nextGrade]["id"]; // next grade id
 
-                for (const [index, link] of output["links"].entries()) {
-                    if (JSON.stringify(link["source"]) == source && JSON.stringify(link["target"]) == target) {
-                        output["links"][index]["value"]++;
+                    for (const [index, link] of output["links"].entries()) {
+                        if (JSON.stringify(link["source"]) == source && JSON.stringify(link["target"]) == target) {
+                            output["links"][index]["value"]++;
+                        }
                     }
+                    // fill in parent links
+                    let parentTarget = source;
+                    let parentSource = 0;
+                    for (const [index, link] of output["links"].entries()) {
+                        if (JSON.stringify(link["source"]) == parentSource && JSON.stringify(link["target"]) == parentTarget) {
+                            output["links"][index]["value"]++;
+                        }
+                    } 
                 }
             }
         }
@@ -295,7 +306,6 @@ function createTreeIDS(node) {
         }
     }
     
-    console.log(dict);
     return dict;
 }
 
@@ -337,7 +347,6 @@ function createTreeLinks(newIds, node) {
         }
     }
 
-    console.log(links);
     return links;
 }
 
@@ -354,7 +363,6 @@ function createTreeNodes(newIds, node) {
             "assessment": Object.keys(value)[0],
         });
     }
-    console.log(nodes);
     return nodes
 }
 
@@ -389,6 +397,5 @@ function createTreeGrades(newIds, node) {
         "id": 0,
         "count": 0
     };
-    console.log(dict);
     return dict
 }
