@@ -16,6 +16,9 @@ function drawTreeSankey(node, sankeyData){
     .text("Expanded Tree");
 
     graph = sankey(sankeyData); 
+    const treeAxes = getTreeAxes(node, graph);
+    // console.log(treeAxes);
+    // console.log(graph);
     drawTreeNodes(graph);
     drawTreeLinks(graph);
 }
@@ -108,34 +111,54 @@ function drawTreeLinks(graph) {
         })
 }
 
+/**
+ * Function to determine which axes should be used for the hiearchy tree
+ */
+function getTreeAxes(node, graph){
+    const assessment = node.assessment; // for use as axis label
+    const assess = assessment; //for checking in assessGradeLevelMap
+    if(assess.localeCompare("Final Exam") === 0){
+        assess = " " + assess;
+    } 
+
+    const axes = [];
+    axes.push(`${assessment} Level 1`)
+
+    const level = assessGradeLevelMap[assess][node.name]["level"];
+    if(level == 2){
+        axes.push(`${assessment} Level 2`)
+    }
+
+    let next_assess = assessments[assessments.indexOf(assess)+1];
+    if(next_assess.localeCompare(" Final Exam") === 0){
+       next_assess = "Final Exam"; 
+    }  
+    axes.push(`${next_assess}`);
+    return axes;
+}
 
 /**
  * Function to create node and link data for expanded tree hierarchy sankey
  */
 function formatTreeSankey(node) {
-    newIds = createIDS();
-    newLinks = createLinks(newIds);
-    newNodes = createNodes(newIds);
-    newGrades = createGrades(newIds);
-
-    // console.log(newIds);
-    // console.log(newLinks);
-    // console.log(newNodes);
-    // console.log(newGrades);
-    // console.log(node);
-
-    output = {
-        "ids": newIds,
-        "grades": newGrades,
-        "nodes": newNodes,
-        "links": newLinks
-    }
 
     let assess = node.assessment;
     let treeAssessments = [assess, assessments[assessments.indexOf(assess)+1]];
     if(assess.localeCompare("Final Exam") === 0){
         assess = " " + assess;
         treeAssessments = [assess];
+    }
+
+    newIds = createTreeIDS(node);
+    newLinks = createTreeLinks(newIds, node);
+    newNodes = createTreeNodes(newIds, node);
+    newGrades = createTreeGrades(newIds, node);
+
+    output = {
+        "ids": newIds,
+        "grades": newGrades,
+        "nodes": newNodes,
+        "links": newLinks
     }
 
     for (const student of Object.entries(rawData)) {
@@ -196,7 +219,7 @@ function formatTreeSankey(node) {
             }
         }
     }
-    console.log(output);
+    // console.log(output);
     return output;
 }
 
@@ -206,4 +229,151 @@ function formatTreeSankey(node) {
  */
  function removeTreePlots() {
     d3.selectAll(".tree").remove();
+}
+
+/**
+ * Function to create the base of the sankey data based on the node that was clicked
+ */
+function createTreeIDS(node) {
+    let id = 0;
+    dict = {} // dict to hold ids
+
+    const assessment = node.assessment.trim();
+    dict[id++] = { [assessment]: node.name[0]};
+    const grade = node.name[0]; // stores the parent grade name
+    const levels = assessGradeLevelMap[assessment][grade]; // breakdowns for the level of each part of the assessment
+    const currLevel = levels["level"]; // overall level for the assessment
+
+    if(currLevel == 1){ // on +/_/- case
+        if (grade !== 'F') {
+            if (grade !== 'A') {
+                dict[id++] = { [assessment]: node.name.concat("+") };
+            }
+            dict[id++] = { [assessment.trim()]: node.name };
+            dict[id++] = { [assessment.trim()]: node.name.concat("-") };
+        }
+        else {
+            dict[id++] = { [assessment.trim()]: "0-59" };
+        }
+    } else { // on percent case
+        for (const subgrade of ["+", "def", "-"]) {
+            /* Seen set so don't have repeat nodes, also memoize */
+            const seen = new Set();
+
+            /* numbersArray stores nodes that are filtered right */
+            const numbersArray = []
+            for (const student of Object.entries(rawData)) {
+                if (!student[1][assessment]) {
+                    continue;
+                }
+                const currGrade = student[1][assessment];
+                if (seen.has(currGrade)) {
+                    continue;
+                }
+                seen.add(currGrade);
+                currGradeLevel = specificLetterScale(gradeScale(currGrade), currGrade);
+                let suffix = subgrade;
+                if (suffix.localeCompare("def") === 0) {
+                    suffix = "";
+                }
+                if (currGradeLevel === grade.concat(suffix)) {
+                    numbersArray.push(currGrade);
+                }
+            }
+            for (const num of numbersArray.sort(function (a, b) { return parseInt(b) - parseInt(a) })) {
+                dict[id++] = { [assessment.trim()]: num };
+            }
+        }
+    }
+
+    /* create ids for the following assessment */
+    if(assessment.localeCompare("Final Exam") !== 0){ 
+        const nextAssessment = assessments[assessments.indexOf(assessment)+1];
+        for([index, mark] of grades.entries()){
+            dict[id++] = { [nextAssessment.trim()]: mark};
+        }
+    }
+
+    return dict;
+}
+
+/**
+ * [
+ *      {source: current_index, target: target_index, value: 0}
+ * ]
+ * 
+ * formatTreeSankey updates values
+ * 
+ */
+function createTreeLinks(newIds, node) {
+
+    links = [];
+    let prevTop = 0; // top of previous column
+    for (column = 0; column < assessments.length - 1; column++) {
+        let firstColLength = 0;
+        let secColLength = 0;
+
+        /* Count length of columns based on expansion */
+        for (const [key, value] of Object.entries(newIds)) {
+            if (assessments[column] === Object.keys(value)[0]) {
+                firstColLength += 1;
+            }
+            if (assessments[column + 1].trim() === Object.keys(value)[0]) {
+                secColLength += 1;
+            }
+        }
+        for (let first = 0; first < firstColLength; first++) {
+            const currPosition = prevTop + first;
+            for (second = 0; second < secColLength; second++) {
+                const targPosition = prevTop + firstColLength + second;
+                links.push({ "source": currPosition, "target": targPosition, "value": 0 });
+            }
+        }
+        prevTop += firstColLength;
+    }
+    return links;
+}
+
+
+/**
+ * [ {id: 0}, {id: 1}, ...]
+ */
+function createTreeNodes(newIds, node) {
+    nodes = []
+    for (const [key, value] of Object.entries(newIds)) {
+        nodes.push({
+            "id": parseInt(key),
+            "name": Object.values(value)[0],
+            "assessment": Object.keys(value)[0],
+        });
+    }
+    return nodes
+}
+
+
+/**
+ *  [
+ *      {Exam 1: 
+ *          {A: {id: 0, count: 756}}},
+ *          {B: {id: 0, count: 555}}},
+ *          ...
+ *      {Exam 2: 
+ *          {A: {id: 0, count: 756}}},
+ *          {B: {id: 0, count: 555}}},
+ *          ...
+ *  ]
+ * 
+ * */
+function createTreeGrades(newIds, node) {
+    dict = {};
+    for (const [key, value] of Object.entries(newIds)) {
+        if (!dict[Object.keys(value)[0].trim()]) {
+            dict[Object.keys(value)[0].trim()] = {}
+        }
+        dict[Object.keys(value)[0].trim()][Object.values(value)[0]] = {
+            "id": parseInt(key),
+            "count": 0
+        }
+    }
+    return dict
 }
