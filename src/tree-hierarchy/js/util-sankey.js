@@ -474,6 +474,7 @@ function formatSankey() {
  */
 function hierarchSankeyRouter(node, flag) {
     const oldGraph = formatSankey();
+    populateGradeLevelMap();
 
     /* Update Ids */
     const locAs = node['assessment'];
