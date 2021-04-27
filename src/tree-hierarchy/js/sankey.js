@@ -65,10 +65,10 @@ function drawNodes(graph) {
             return (d.y1 - d.y0)
         })
         .style("fill", (d) => {
-            return sankeyColor(d.name[0])
+            return getNodeColor(d.name)
         })
         .attr("stroke", (d) => {
-            return d3.rgb(sankeyColor(d.name[0])).darker(0.6);
+            return d3.rgb(getNodeColor(d.name)).darker(0.6);
         })
         .on("click", function (d, i) {
             hierarchSankeyRouter(i, true);

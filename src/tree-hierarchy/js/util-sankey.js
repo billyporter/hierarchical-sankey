@@ -185,13 +185,11 @@ function createIDS() {
                 case 2:
                     if (!hashSeen.has([assessment.trim(), grade].join())) {
                         dict[id++] = { [assessment.trim()]: grade };
-                        dict[id++] = { [assessment.trim()]: grade.concat("#") };
                         hashSeen.add([assessment.trim(), grade].join());
                     }
                     /* Keep nodes that aren't level 2 */
                     for (const subgrade of ["+", "def", "-"]) {
                         const lev = assessGradeLevelMap[assessment][grade][subgrade]
-                        console.log(assessGradeLevelMap)
                         if (lev) {
                             /* Seen set so don't have repeat nodes, also memoize */
                             const seen = new Set();
@@ -224,6 +222,7 @@ function createIDS() {
                             if (grade !== 'A' && grade !== 'F') {
                                 dict[id++] = { [assessment.trim()]: grade.concat(subgrade) };
                             }
+                            dict[id++] = { [assessment.trim()]: grade.concat("#") };
                         }
                         if (subgrade.localeCompare("-") === 0) {
                             if (grade !== 'F') {
@@ -236,7 +235,6 @@ function createIDS() {
             }
         }
     }
-    console.log(dict);
     return dict;
 }
 
@@ -273,7 +271,7 @@ function createLinks(newIds) {
                         links.push({ "source": parseInt(key), "target": parseInt(key2), "value": 0 });
                     }
                 }
-                else if (sourceExamIndex !== assessTrim.length - 1 && targetExamIndex - sourceExamIndex === 1) {
+                else if (sourceExamIndex !== assessTrim.length - 1 && targetExamIndex - sourceExamIndex === 1 && targetGrade.length === 1) {
                     links.push({ "source": parseInt(key), "target": parseInt(key2), "value": 0 });
                 }
             }
@@ -288,13 +286,40 @@ function createLinks(newIds) {
                     }
                 }
                 else {
-                    let suffix = sourceGrade[1];
-                    if (suffix.localeCompare('#') === 0) {
-                        suffix = 'def';
+                    if (!isNumber(sourceGrade)) {
+                        let suffix = sourceGrade[1];
+                        if (suffix.localeCompare('#') === 0) {
+                            suffix = 'def';
+                        }
+                        const suffixLevel = assessGradeLevelMap[Object.keys(value)[0]][sourceGrade[0]][suffix];
+                        if (suffixLevel) {
+                            // TODO: CHECK IF THE NUMBER IS IN SPECIFIC BREAKDOWN
+                            /*
+                            1) Is it a number
+                            2) Is it the same exam?
+                            3) Is it the specific letter breakdown?
+                            */
+                            let sourceChanged = sourceGrade;
+                            if (sourceGrade[1] == '#') {
+                                sourceChanged = sourceGrade[0];
+                            }
+                            if (isNumber(targetGrade)
+                                && targetExamIndex === sourceExamIndex
+                                && specificLetterScale(gradeScale(targetGrade), targetGrade) === sourceChanged) {
+                                links.push({ "source": parseInt(key), "target": parseInt(key2), "value": 0 });
+                            }
+                        }
+                        else {
+                            if (sourceExamIndex !== assessTrim.length - 1 && targetExamIndex - sourceExamIndex === 1 && targetGrade.length === 1) {
+                                links.push({ "source": parseInt(key), "target": parseInt(key2), "value": 0 });
+                            }
+                        }
                     }
-                    const suffixLevel = assessGradeLevelMap[Object.keys(value)[0]][sourceGrade[0]][suffix];
-                    if (suffixLevel) {
-                        // TODO: CHECK IF THE NUMBER IS IN SPECIFIC BREAKDOWN
+                    /* It is a number */
+                    else {
+                        if (sourceExamIndex !== assessTrim.length - 1 && targetExamIndex - sourceExamIndex === 1 && targetGrade.length === 1) {
+                            links.push({ "source": parseInt(key), "target": parseInt(key2), "value": 0 });
+                        }
                     }
                 }
             }
@@ -372,7 +397,8 @@ function formatSankey() {
         "nodes": newNodes,
         "links": newLinks
     }
-    console.log(newGrades);
+    console.log(newNodes);
+    console.log(newIds);
     for (const student of Object.entries(rawData)) {
         for ([index, assessment] of assessments.entries()) {
             if (!student[1][assessment]) {
@@ -398,6 +424,48 @@ function formatSankey() {
                 }
                 sourceNodeName = targetNodeName;
             }
+            else if (sourceLevel === 2) {
+
+                /* Handle case of B -> B+ / B# / B- */
+                let targetNodeName = specificLetterScale(grade, student[1][assessment]);
+                if (targetNodeName.length === 1) {
+                    targetNodeName += '#';
+                }
+                let source1 = output["grades"][assessment.trim()][sourceNodeName]["id"];
+                let target1 = output["grades"][assessment.trim()][targetNodeName]["id"];
+                if (grade.localeCompare('F') === 0) {
+                    previousGrade = "0-59";
+                }
+                for (const [index, link] of output["links"].entries()) {
+                    if (JSON.stringify(link["source"]) == source1 && JSON.stringify(link["target"]) == target1) {
+                        output["links"][index]["value"]++;
+                    }
+                }
+                sourceNodeName = targetNodeName;
+
+                /* Check to see if need to break into percentages */
+                let specSourceGrade = specificLetterScale(grade, student[1][assessment]);
+                let suffix = specSourceGrade[specSourceGrade.length - 1];
+                if (specSourceGrade.length === 1) {
+                    suffix = 'def'
+                }
+                let specSourceLevel = assessGradeLevelMap[assessment.trim()][grade][suffix];
+
+                /* Handle case of B+ -> 89 / 88 / 87 */
+                if (specSourceLevel) {
+                    if (specSourceGrade.length === 1) {
+                        specSourceGrade += '#';
+                    }
+                    let source1 = output["grades"][assessment.trim()][specSourceGrade]["id"];
+                    let target1 = output["grades"][assessment.trim()][student[1][assessment]]["id"];
+                    for (const [index, link] of output["links"].entries()) {
+                        if (JSON.stringify(link["source"]) == source1 && JSON.stringify(link["target"]) == target1) {
+                            output["links"][index]["value"]++;
+                        }
+                    }
+                    sourceNodeName = student[1][assessment];
+                }
+            }
             output["grades"][assessment.trim()][sourceNodeName]["count"]++;
 
             if (index < 3) {
@@ -405,14 +473,7 @@ function formatSankey() {
                 if (nextGrade == "") {
                     continue;
                 }
-                let targetLevel = assessGradeLevelMap[assessments[index + 1].trim()][nextGrade]["level"];
                 let targetNodeName = nextGrade
-                if (targetLevel === 1) {
-                    targetNodeName = specificLetterScale(targetNodeName, student[1][assessments[index + 1]]);
-                    if (targetNodeName.localeCompare('F') === 0) {
-                        targetNodeName = "0-59";
-                    }
-                }
                 let source = output["grades"][assessment.trim()][sourceNodeName]["id"]; // prev grade id
                 let target = output["grades"][assessments[index + 1].trim()][targetNodeName]["id"]; // next grade id
 
@@ -456,10 +517,15 @@ function hierarchSankeyRouter(node, flag) {
 
     /* Need to add space if final exam */
     let stringToInput = locAs;
-    if (locAs.localeCompare('Final Exam') === 0)
-        stringToInput = ' '.concat(locAs);
+
+    /* Do nothing for F */
+    if (locGrade.localeCompare('F') === 0) {
+        return;
+    }
 
     if (letrs.has(locGrade[0])) {
+        console.log(stringToInput, locGrade);
+        console.log(assessGradeLevelMap);
         currLevel = assessGradeLevelMap[stringToInput][locGrade[0]]["level"]
         newLevel = currLevel + (flag ? 1 : -1 * currLevel);
 
@@ -469,7 +535,7 @@ function hierarchSankeyRouter(node, flag) {
         assessGradeLevelMap[stringToInput][locGrade[0]]["level"] = newLevel;
         /* Expand to percentages if level of 2 */
         if (newLevel === 2) {
-            if (locGrade.length > 1)
+            if (locGrade.length > 1 && locGrade[1] !== '#')
                 assessGradeLevelMap[stringToInput][locGrade[0]][locGrade[1]] = 2;
             else
                 assessGradeLevelMap[stringToInput][locGrade[0]]["def"] = 2;
