@@ -397,7 +397,6 @@ function formatSankey() {
         "nodes": newNodes,
         "links": newLinks
     }
-    console.log(newLinks)
     for (const student of Object.entries(rawData)) {
         for ([index, assessment] of assessments.entries()) {
             if (!student[1][assessment]) {
@@ -559,6 +558,7 @@ function hierarchSankeyRouter(node, flag) {
     }
     const newSankey = formatSankey();
     removePlots();
+    console.log(assessGradeLevelMap)
     drawSankey(newSankey, false, flag, oldGraph, stringToInput, locGrade, newLevel);
 }
 
@@ -751,7 +751,7 @@ function storeNewPoints(graph) {
  * Checks to see which nodes are in the new graph
  * but are not in the old graph
  */
-function newNotInOld() {
+function newNotInOld(brokeExam, brokeGrade, isBreakdown) {
     newNodes = new Set();
     for (const [examName, examValue] of Object.entries(newGraphPoints)) {
         for (const [gradeName, node] of Object.entries(examValue)) {
@@ -760,6 +760,11 @@ function newNotInOld() {
             }
             else if (node.value !== oldGraphPoints[examName][gradeName]["value"]) {
                 newNodes.add([examName, gradeName, node.value].toString());
+            }
+            if (!isBreakdown) {
+                if (examName === brokeExam && gradeName === brokeGrade) {
+                    newNodes.add([examName, gradeName, node.value].toString());
+                }
             }
         }
     }
@@ -770,14 +775,16 @@ function newNotInOld() {
  * Checks to see which nodes are in old graph but
  * not in new graph
  */
-function oldNotInNew(brokeExam, brokeGrade) {
+function oldNotInNew(brokeExam, brokeGrade, isBreakdown) {
     oldNodes = new Set();
     for (const [examName, examValue] of Object.entries(oldGraphPoints)) {
         for (const [gradeName, node] of Object.entries(examValue)) {
             // console.log(examName, gradeName);
-            if (examName === brokeExam && gradeName === brokeGrade) {
+            if (isBreakdown && examName === brokeExam && gradeName === brokeGrade) {
                 oldNodes.add([examName, gradeName, node.value].toString());
-                console.log('here')
+            }
+            if (!isBreakdown && examName === brokeExam && (!(gradeName in newGraphPoints[examName]))) {
+                oldNodes.add([examName, gradeName, node.value].toString());
             }
         }
     }
@@ -798,24 +805,6 @@ function oldLinkNotinNewSet(brokeExam, brokeGrade) {
     for (const key of oldLinksMap.keys()) {
         [first, firstG, sec, secG] = key.split(',');
         if (!newLinksMap.has(key)) {
-            oldLinksSet.add(key);
-            if (brokeExam.localeCompare(first) === 0) {
-                oldLinksObj['right'][secG] = oldLinks[first][firstG][sec][secG]
-            }
-            else {
-                oldLinksObj['left'][firstG] = oldLinks[first][firstG][sec][secG]
-            }
-        }
-        else if (newLinksMap.get(key).value !== oldLinksMap.get(key).value) {
-            oldLinksSet.add(key);
-            if (brokeExam.localeCompare(first) === 0) {
-                oldLinksObj['right'][secG] = oldLinks[first][firstG][sec][secG]
-            }
-            else {
-                oldLinksObj['left'][firstG] = oldLinks[first][firstG][sec][secG]
-            }
-        }
-        else if ((sec === brokeExam && secG === brokeGrade) || (first === brokeExam && firstG === brokeGrade)) {
             oldLinksSet.add(key);
             if (brokeExam.localeCompare(first) === 0) {
                 oldLinksObj['right'][secG] = oldLinks[first][firstG][sec][secG]
