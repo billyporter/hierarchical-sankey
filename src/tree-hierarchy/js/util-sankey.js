@@ -397,8 +397,7 @@ function formatSankey() {
         "nodes": newNodes,
         "links": newLinks
     }
-    console.log(newNodes);
-    console.log(newIds);
+    console.log(newLinks)
     for (const student of Object.entries(rawData)) {
         for ([index, assessment] of assessments.entries()) {
             if (!student[1][assessment]) {
@@ -524,8 +523,6 @@ function hierarchSankeyRouter(node, flag) {
     }
 
     if (letrs.has(locGrade[0])) {
-        console.log(stringToInput, locGrade);
-        console.log(assessGradeLevelMap);
         currLevel = assessGradeLevelMap[stringToInput][locGrade[0]]["level"]
         newLevel = currLevel + (flag ? 1 : -1 * currLevel);
 
@@ -562,7 +559,7 @@ function hierarchSankeyRouter(node, flag) {
     }
     const newSankey = formatSankey();
     removePlots();
-    drawSankey(newSankey, false, flag, oldGraph, stringToInput, locGrade);
+    drawSankey(newSankey, false, flag, oldGraph, stringToInput, locGrade, newLevel);
 }
 
 
@@ -619,4 +616,268 @@ function specificLetterScale(letter, number) {
  */
 function isNumber(name) {
     return parseInt(name) >= 0 && parseInt(name) <= 100
+}
+
+/**
+ * Animation section
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
+
+
+/**
+ * Takes in a graph and puts all points into
+ * object
+ */
+function populatePointStorageObj(graph) {
+    for (const node of graph.nodes) {
+        if (!(node.assessment in oldGraphPoints)) {
+            oldGraphPoints[node.assessment] = {}
+        }
+        oldGraphPoints[node.assessment][node.name] =
+        {
+            "x0": node.x0,
+            "x1": node.x1,
+            "y0": node.y0,
+            "y1": node.y1,
+            "rectHeight": node.rectHeight,
+            "value": node.value
+        }
+    }
+}
+
+/**
+ * Function to fill the old link storage
+ * object with data
+ */
+function populateLinkStorageObj(graph) {
+    oldLinks = {};
+    oldLinksMap = new Map();
+    for (const link of graph.links) {
+        const sourceA = link.source.assessment;
+        const sourceG = link.source.name;
+        const targetA = link.target.assessment;
+        const targetG = link.target.name;
+
+        if (!(sourceA in oldLinks))
+            oldLinks[sourceA] = {}
+        if (!(sourceG in oldLinks[sourceA]))
+            oldLinks[sourceA][sourceG] = {}
+        if (!(targetA in oldLinks[sourceA][sourceG]))
+            oldLinks[sourceA][sourceG][targetA] = {}
+        if (!(targetG in oldLinks[sourceA][sourceG][targetA]))
+            oldLinks[sourceA][sourceG][targetA][targetG] = {}
+
+        oldLinks[sourceA][sourceG][targetA][targetG] = {
+            "y0": link.y0,
+            "y1": link.y1,
+            "width": link.width,
+            "value": link.value
+        }
+        oldLinksMap.set([sourceA, sourceG, targetA, targetG].toString(), {
+            "y0": link.y0,
+            "y1": link.y1,
+            "width": link.width,
+            "value": link.value
+        });
+
+    }
+}
+
+/** 
+ * Stores new links in a new links object
+ */
+function storeNewLinks(graph) {
+    newLinks = {};
+    newLinksMap = new Map();
+    for (const link of graph.links) {
+        const sourceA = link.source.assessment;
+        const sourceG = link.source.name;
+        const targetA = link.target.assessment;
+        const targetG = link.target.name;
+
+        if (!(sourceA in newLinks))
+            newLinks[sourceA] = {}
+        if (!(sourceG in newLinks[sourceA]))
+            newLinks[sourceA][sourceG] = {}
+        if (!(targetA in newLinks[sourceA][sourceG]))
+            newLinks[sourceA][sourceG][targetA] = {}
+        if (!(targetG in newLinks[sourceA][sourceG][targetA]))
+            newLinks[sourceA][sourceG][targetA][targetG] = {}
+
+        newLinks[sourceA][sourceG][targetA][targetG] = {
+            "y0": link.y0,
+            "y1": link.y1,
+            "width": link.width,
+            "value": link.value
+        }
+        newLinksMap.set([sourceA, sourceG, targetA, targetG].toString(), {
+            "y0": link.y0,
+            "y1": link.y1,
+            "width": link.width,
+            "value": link.value
+        });
+    }
+}
+
+/**
+ * Takes in a new graph and stores points
+ * in objects
+ */
+function storeNewPoints(graph) {
+    newGraphPoints = {};
+    for (const node of graph.nodes) {
+        if (!(node.assessment in newGraphPoints)) {
+            newGraphPoints[node.assessment] = {}
+        }
+        newGraphPoints[node.assessment][node.name] =
+        {
+            "x0": node.x0,
+            "x1": node.x1,
+            "y0": node.y0,
+            "y1": node.y1,
+            "rectHeight": node.y1 - node.y0,
+            "value": node.value,
+            "id": node.id
+        }
+    }
+}
+
+/**
+ * Checks to see which nodes are in the new graph
+ * but are not in the old graph
+ */
+function newNotInOld() {
+    newNodes = new Set();
+    for (const [examName, examValue] of Object.entries(newGraphPoints)) {
+        for (const [gradeName, node] of Object.entries(examValue)) {
+            if (!(gradeName in oldGraphPoints[examName])) {
+                newNodes.add([examName, gradeName, node.value].toString());
+            }
+            else if (node.value !== oldGraphPoints[examName][gradeName]["value"]) {
+                newNodes.add([examName, gradeName, node.value].toString());
+            }
+        }
+    }
+    return newNodes
+}
+
+/**
+ * Checks to see which nodes are in old graph but
+ * not in new graph
+ */
+function oldNotInNew(brokeExam, brokeGrade) {
+    oldNodes = new Set();
+    for (const [examName, examValue] of Object.entries(oldGraphPoints)) {
+        for (const [gradeName, node] of Object.entries(examValue)) {
+            // console.log(examName, gradeName);
+            if (examName === brokeExam && gradeName === brokeGrade) {
+                oldNodes.add([examName, gradeName, node.value].toString());
+                console.log('here')
+            }
+        }
+    }
+    return oldNodes
+}
+
+/**
+ * Checks to see which links are in old graph 
+ * that are not in new graph
+ * @param {*} brokeExam --> broken down exam
+ * @param {*} brokeGrade --> broken down grade
+ */
+function oldLinkNotinNewSet(brokeExam, brokeGrade) {
+    oldLinksSet = new Set();
+    oldLinksObj = {};
+    oldLinksObj['right'] = {}
+    oldLinksObj['left'] = {}
+    for (const key of oldLinksMap.keys()) {
+        [first, firstG, sec, secG] = key.split(',');
+        if (!newLinksMap.has(key)) {
+            oldLinksSet.add(key);
+            if (brokeExam.localeCompare(first) === 0) {
+                oldLinksObj['right'][secG] = oldLinks[first][firstG][sec][secG]
+            }
+            else {
+                oldLinksObj['left'][firstG] = oldLinks[first][firstG][sec][secG]
+            }
+        }
+        else if (newLinksMap.get(key).value !== oldLinksMap.get(key).value) {
+            oldLinksSet.add(key);
+            if (brokeExam.localeCompare(first) === 0) {
+                oldLinksObj['right'][secG] = oldLinks[first][firstG][sec][secG]
+            }
+            else {
+                oldLinksObj['left'][firstG] = oldLinks[first][firstG][sec][secG]
+            }
+        }
+        else if ((sec === brokeExam && secG === brokeGrade) || (first === brokeExam && firstG === brokeGrade)) {
+            oldLinksSet.add(key);
+            if (brokeExam.localeCompare(first) === 0) {
+                oldLinksObj['right'][secG] = oldLinks[first][firstG][sec][secG]
+            }
+            else {
+                oldLinksObj['left'][firstG] = oldLinks[first][firstG][sec][secG]
+            }
+        }
+    }
+    return [oldLinksSet, oldLinksObj];
+}
+
+/**
+ * Checks to see which links are in new graph 
+ * that are not in old graph
+ * @param {*} brokeExam --> broken down exam
+ * @param {*} brokeGrade --> broken down grade
+ */
+function newLinkNotinOldSet(brokeExam, brokeGrade, isBreakdown) {
+    newLinksSet = new Set();
+    newLinksObj = {}
+    newLinksObj['right'] = {}
+    newLinksObj['left'] = {}
+    for (const key of newLinksMap.keys()) {
+        [first, firstG, sec, secG] = key.split(',');
+        // console.log(oldLinksMap)
+        if (!oldLinksMap.has(key)) {
+            newLinksSet.add(key);
+            if (brokeExam.localeCompare(first) === 0) {
+                newLinksObj['right'][secG] = newLinks[first][firstG][sec][secG]
+            }
+            else {
+                newLinksObj['left'][firstG] = newLinks[first][firstG][sec][secG]
+            }
+        }
+        else if (oldLinksMap.get(key).value !== newLinksMap.get(key).value) {
+            newLinksSet.add(key);
+            if (brokeExam.localeCompare(first) === 0) {
+                newLinksObj['right'][secG] = newLinks[first][firstG][sec][secG]
+            }
+            else {
+                newLinksObj['left'][firstG] = newLinks[first][firstG][sec][secG]
+            }
+        }
+        else if (!isBreakdown && (!isNumber(brokeGrade)) && ((sec === brokeExam && secG[0] === brokeGrade[0]) || (first === brokeExam && firstG[0] === brokeGrade[0]))) {
+            newLinksSet.add(key);
+            if (brokeExam.localeCompare(first) === 0) {
+                newLinksObj['right'][secG] = newLinks[first][firstG][sec][secG]
+            }
+            else {
+                newLinksObj['left'][firstG] = newLinks[first][firstG][sec][secG]
+            }
+        }
+        else if (!isBreakdown && (isNumber(brokeGrade)) && ((sec === brokeExam && secG === brokeGrade) || (first === brokeExam && firstG === brokeGrade))) {
+            newLinksSet.add(key);
+            if (brokeExam.localeCompare(first) === 0) {
+                newLinksObj['right'][secG] = newLinks[first][firstG][sec][secG]
+            }
+            else {
+                newLinksObj['left'][firstG] = newLinks[first][firstG][sec][secG]
+            }
+        }
+    }
+    return [newLinksSet, newLinksObj];
 }
