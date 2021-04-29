@@ -10,8 +10,6 @@ svg.append("text")
     .text("Exam Grade Pathways");
 
 function setLabels(graph) {
-    console.log(graph);
-    console.log(assessments)
     const examGraphLabel = [];
     let assessIndex = 0;
     for (const node of graph.nodes) {
@@ -24,7 +22,6 @@ function setLabels(graph) {
             break;
         }
     }
-    console.log(examGraphLabel);
 
     /* Adds x axis labels of pathway */
     svg.append("text")
