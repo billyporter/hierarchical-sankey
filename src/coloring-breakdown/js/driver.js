@@ -6,7 +6,7 @@ drawSankey(starterData, true);
 /* Reset Function */
 function resetGraph() {
     removePlots();
-    // populateGradeLevelMap();
+    populateGradeLevelMap();
     const starterData = formatSankey()
     drawSankey(starterData, true);
 }

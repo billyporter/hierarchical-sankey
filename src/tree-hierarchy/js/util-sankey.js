@@ -512,6 +512,8 @@ function hierarchSankeyRouter(node, flag) {
 
     if (letrs.has(locGrade[0])) {
         currLevel = assessGradeLevelMap[stringToInput][locGrade[0]]["level"]
+        newLevel = currLevel
+
 
         if (flag || currLevel !== 2) {
             newLevel = currLevel + (flag ? 1 : -1 * currLevel);;
@@ -558,7 +560,9 @@ function hierarchSankeyRouter(node, flag) {
             if (locGrade[1] === '#') {
                 suffix = 'def'
             }
-            assessGradeLevelMap[stringToInput][locGrade[0]][suffix] = 0;
+            assessGradeLevelMap[stringToInput][locGrade[0]]["+"] = 0;
+            assessGradeLevelMap[stringToInput][locGrade[0]]["def"] = 0;
+            assessGradeLevelMap[stringToInput][locGrade[0]]["-"] = 0;
         }
     }
     else if (!flag) {
