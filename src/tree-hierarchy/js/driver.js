@@ -4,9 +4,9 @@ const starterData = formatSankey()
 drawSankey(starterData, true);
 
 /* Reset Function */
-// function resetGraph() {
-//     removePlots();
-//     populateGradeLevelMap();
-//     const starterData = formatSankey()
-//     drawSankey(starterData, true);
-// }
+function resetGraph() {
+    removePlots();
+    populateGradeLevelMap();
+    const starterData = formatSankey()
+    drawSankey(starterData, true);
+}

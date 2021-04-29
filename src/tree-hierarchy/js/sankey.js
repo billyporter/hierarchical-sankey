@@ -28,7 +28,10 @@ let sankey = d3.sankey()
  * Top level Sankey drawing function
  */
 function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeGrade, newLevel) {
-    console.log('---START---')
+
+    /* Check for padding issues */
+    setNewWidth(sankeyData);
+
     /* Keep copy of old graph for animation purposes */
     if (oldData) {
         oldGraph = sankey(oldData);
@@ -52,10 +55,7 @@ function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeG
     /* Get necessary objects */
     newPointsNotInOldSet = newNotInOld(brokeExam, brokeGrade, isBreakdown);
     oldPointsNotInNewSet = oldNotInNew(brokeExam, brokeGrade, isBreakdown);
-    [oldLinkSet, oldLinksObj] = oldLinkNotinNewSet(brokeExam, brokeGrade);
-    console.log(oldLinksMap);
-    console.log(newLinksMap);
-    console.log(oldLinkSet);
+    [oldLinkSet, oldLinksObj] = oldLinkNotinNewSet(brokeExam, brokeGrade, isBreakdown);
     [newLinkSet, newLinksObj] = newLinkNotinOldSet(brokeExam, brokeGrade, isBreakdown);
 
 
@@ -149,6 +149,8 @@ function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeG
  * Function to draw nodes of sankey
  */
 function drawNodes(graph) {
+
+    setLabels(graph);
     /* Creates Node */
     var graphnode = svg
         .append("g")
@@ -392,11 +394,9 @@ function transitionToNewBreakdown(sankeyData, newPointsNotInOldSet, oldPointsNot
  * @param {*} brokeExam 
  */
 function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldLinkSet, newLinkSet, newLinksObj, sankeyData, brokeExam, newLevel, brokeGrade) {
-
     /**
      * Animate nodes
      */
-    // console.log(newPointsNotInOldSet);
     d3.selectAll('.node').each(function (d) {
         d3.select(this)
             .transition().duration(transitionDuration)
@@ -453,6 +453,9 @@ function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldL
             .transition().duration(transitionDuration)
             .attr('y', function (n) {
                 return (n.y0 + n.y1) / 2;
+            })
+            .attr('x', function (n) {
+                return n.x0 - 30;
             });
     });
 
@@ -463,41 +466,47 @@ function transitionToNewBuildup(newPointsNotInOldSet, oldPointsNotInNewSet, oldL
             .toString()
         )
         ) {
-            if (link.source.assessment === 'Exam 3' && link.source.name === 'B+') {
-                // console.log('BILLY')
-            }
             if (link.source.assessment === brokeExam && link.source.name === brokeGrade) {
                 const suffix = link.target.name[1];
                 if (suffix === '+' || ['9', '6', '3'].includes(suffix)) {
-                    visualLink = oldLinksObj['right']['A'];
+                    visualLink = newLinksObj['right']['A'];
                 }
                 else if (suffix === '#' || ['8', '5', '2'].includes(suffix)) {
-                    visualLink = oldLinksObj['right']['B'];
+                    visualLink = newLinksObj['right']['B'];
                 }
                 else if (suffix === '-' || ['7', '4', '1', '0'].includes(suffix)) {
-                    visualLink = oldLinksObj['right']['C'];
+                    visualLink = newLinksObj['right']['C'];
                 }
                 else {
-                    console.log('I AM BROKEN')
+                    console.error('I AM BROKEN')
                 }
                 link.width = 0;
             }
             else {
-                const direction = link.target.assessment.localeCompare(brokeExam) ? "right" : "left";
-                const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
-                visualLink = oldLinksObj[direction][gradeToInput];
-
-                if (link.source.assessment === 'Exam 3' && link.source.name === 'B+') {
-                    // console.log('B');
-                    // console.log(direction);
-                    // console.log(gradeToInput);
-                    // console.log(oldLinksObj)
+                if (oldPointsNotInNewSet.has([link.target.assessment, link.target.name, link.target.value].toString())) {
+                    const suffix = link.target.name[1];
+                    if (suffix === '+' || ['9', '6', '3'].includes(suffix)) {
+                        visualLink = newLinksObj['right']['A'];
+                    }
+                    else if (suffix === '#' || ['8', '5', '2'].includes(suffix)) {
+                        visualLink = newLinksObj['right']['B'];
+                    }
+                    else if (suffix === '-' || ['7', '4', '1', '0'].includes(suffix)) {
+                        visualLink = newLinksObj['right']['C'];
+                    }
+                    else {
+                        console.log('I AM BROKEN')
+                    }
+                    link.width = 0;
                 }
-                link.width = visualLink.width;
+                else {
+                    visualLink = newLinksObj['right'][link.target.name];
+                    link.width = visualLink.width;
+                }
             }
         }
         else {
-            visualLink = oldLinks[link.source.assessment][link.source.name][link.target.assessment][link.target.name];
+            visualLink = newLinks[link.source.assessment][link.source.name][link.target.assessment][link.target.name];
             link.width = visualLink.width;
         }
         link.y0 = visualLink.y0;

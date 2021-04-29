@@ -51,7 +51,7 @@ function getShadeNumber(baseColor, name) {
     if (isNaN(n))
         return color;
 
-    color.s += 0.08*(n-5);
+    color.s += 0.08 * (n - 5);
 
     return color;
 }

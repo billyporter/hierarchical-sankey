@@ -66,7 +66,6 @@ function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeG
 
     /* For case of breaking down */
     if (isBreakdown) {
-        console.log(oldPointsNotInNewSet)
 
         /* Set node values to old graph point to begin animation */
         for (const node of graph.nodes) {
@@ -111,7 +110,7 @@ function drawSankey(sankeyData, isFirst, isBreakdown, oldData, brokeExam, brokeG
         drawLinks(graph);
 
         /* Animate to the new values */
-        // transitionToNewBreakdown(sankeyData, newPointsNotInOldSet, oldPointsNotInNewSet, newLinkSet, brokeExam);
+        transitionToNewBreakdown(sankeyData, newPointsNotInOldSet, oldPointsNotInNewSet, newLinkSet, brokeExam);
     }
     else if (!isFirst) {
         /* Handles case of building up */

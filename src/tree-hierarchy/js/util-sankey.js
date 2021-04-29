@@ -511,19 +511,33 @@ function hierarchSankeyRouter(node, flag) {
 
     /* Update Ids */
     const locAs = node['assessment'];
-    const locGrade = node['name'];
+    let locGrade = node['name'];
+
+    if (isNumber(locGrade)) {
+        locGrade = specificLetterScale(gradeScale(locGrade), locGrade);
+        if (locGrade.length === 1) {
+            locGrade += '#';
+        }
+    }
+
+    if (!flag && assessGradeLevelMap[locAs][locGrade[0]]["level"] === 1) {
+        locGrade = locGrade[0];
+    }
 
     /* Need to add space if final exam */
     let stringToInput = locAs;
 
     /* Do nothing for F */
-    if (locGrade.localeCompare('F') === 0) {
+    if (locGrade.localeCompare('F') === 0 || locAs === 'Final Exam') {
         return;
     }
 
     if (letrs.has(locGrade[0])) {
         currLevel = assessGradeLevelMap[stringToInput][locGrade[0]]["level"]
-        newLevel = currLevel + (flag ? 1 : -1 * currLevel);
+
+        if (flag || currLevel !== 2) {
+            newLevel = currLevel + (flag ? 1 : -1 * currLevel);;
+        }
 
         /* Keep new level in range 0-2 */
         newLevel = newLevel > 2 ? 2 : newLevel;
@@ -531,34 +545,55 @@ function hierarchSankeyRouter(node, flag) {
         assessGradeLevelMap[stringToInput][locGrade[0]]["level"] = newLevel;
         /* Expand to percentages if level of 2 */
         if (newLevel === 2) {
-            if (locGrade.length > 1 && locGrade[1] !== '#')
-                assessGradeLevelMap[stringToInput][locGrade[0]][locGrade[1]] = 2;
-            else
-                assessGradeLevelMap[stringToInput][locGrade[0]]["def"] = 2;
+            if (flag) {
+                if (locGrade.length > 1 && locGrade[1] !== '#')
+                    assessGradeLevelMap[stringToInput][locGrade[0]][locGrade[1]] = 2;
+                else
+                    assessGradeLevelMap[stringToInput][locGrade[0]]["def"] = 2;
+            }
+            else if (!letrs.has(locGrade)) {
+                if (locGrade.length > 1 && locGrade[1] !== '#')
+                    assessGradeLevelMap[stringToInput][locGrade[0]][locGrade[1]] = 0;
+                else
+                    assessGradeLevelMap[stringToInput][locGrade[0]]["def"] = 0;
+
+                if (assessGradeLevelMap[stringToInput][locGrade[0]]["+"] === 0
+                    && assessGradeLevelMap[stringToInput][locGrade[0]]["def"] === 0
+                    && assessGradeLevelMap[stringToInput][locGrade[0]]["-"] === 0) {
+                    newLevel = 1;
+                }
+            }
+            else {
+                newLevel = 0;
+                assessGradeLevelMap[stringToInput][locGrade[0]]["+"] = 0;
+                assessGradeLevelMap[stringToInput][locGrade[0]]["def"] = 0;
+                assessGradeLevelMap[stringToInput][locGrade[0]]["-"] = 0;
+            }
         }
-        else {
+        else if (newLevel === 1) {
             assessGradeLevelMap[stringToInput][locGrade[0]]["+"] = 0;
             assessGradeLevelMap[stringToInput][locGrade[0]]["def"] = 0;
             assessGradeLevelMap[stringToInput][locGrade[0]]["-"] = 0;
         }
+        else {
+            let suffix = locGrade[1];
+            if (locGrade[1] === '#') {
+                suffix = 'def'
+            }
+            assessGradeLevelMap[stringToInput][locGrade[0]][suffix] = 0;
+        }
     }
     else if (!flag) {
-        /* IF F set back to 0 */
-        if (locGrade.localeCompare("0-59") === 0) {
-            assessGradeLevelMap[stringToInput]["F"]["level"] = 0
-        }
         /* If number, clear */
-        else {
-            const specLetter = specificLetterScale(gradeScale(locGrade), locGrade);
-            if (specLetter.length > 1)
-                assessGradeLevelMap[stringToInput][specLetter[0]][specLetter[1]] = 0;
-            else
-                assessGradeLevelMap[stringToInput][specLetter[0]]["def"] = 0;
-        }
+        const specLetter = specificLetterScale(gradeScale(locGrade), locGrade);
+        if (specLetter.length > 1)
+            assessGradeLevelMap[stringToInput][specLetter[0]][specLetter[1]] = 0;
+        else
+            assessGradeLevelMap[stringToInput][specLetter[0]]["def"] = 0;
     }
+    assessGradeLevelMap[stringToInput][locGrade[0]]["level"] = newLevel;
     const newSankey = formatSankey();
     removePlots();
-    console.log(assessGradeLevelMap)
     drawSankey(newSankey, false, flag, oldGraph, stringToInput, locGrade, newLevel);
 }
 
@@ -569,6 +604,7 @@ function hierarchSankeyRouter(node, flag) {
 function removePlots() {
     d3.selectAll(".nodes").remove();
     d3.selectAll(".link").remove();
+    d3.selectAll(".axis-label").remove();
 }
 
 
@@ -779,7 +815,6 @@ function oldNotInNew(brokeExam, brokeGrade, isBreakdown) {
     oldNodes = new Set();
     for (const [examName, examValue] of Object.entries(oldGraphPoints)) {
         for (const [gradeName, node] of Object.entries(examValue)) {
-            // console.log(examName, gradeName);
             if (isBreakdown && examName === brokeExam && gradeName === brokeGrade) {
                 oldNodes.add([examName, gradeName, node.value].toString());
             }
@@ -797,7 +832,7 @@ function oldNotInNew(brokeExam, brokeGrade, isBreakdown) {
  * @param {*} brokeExam --> broken down exam
  * @param {*} brokeGrade --> broken down grade
  */
-function oldLinkNotinNewSet(brokeExam, brokeGrade) {
+function oldLinkNotinNewSet(brokeExam, brokeGrade, isBreakdown) {
     oldLinksSet = new Set();
     oldLinksObj = {};
     oldLinksObj['right'] = {}
@@ -830,35 +865,7 @@ function newLinkNotinOldSet(brokeExam, brokeGrade, isBreakdown) {
     newLinksObj['left'] = {}
     for (const key of newLinksMap.keys()) {
         [first, firstG, sec, secG] = key.split(',');
-        // console.log(oldLinksMap)
         if (!oldLinksMap.has(key)) {
-            newLinksSet.add(key);
-            if (brokeExam.localeCompare(first) === 0) {
-                newLinksObj['right'][secG] = newLinks[first][firstG][sec][secG]
-            }
-            else {
-                newLinksObj['left'][firstG] = newLinks[first][firstG][sec][secG]
-            }
-        }
-        else if (oldLinksMap.get(key).value !== newLinksMap.get(key).value) {
-            newLinksSet.add(key);
-            if (brokeExam.localeCompare(first) === 0) {
-                newLinksObj['right'][secG] = newLinks[first][firstG][sec][secG]
-            }
-            else {
-                newLinksObj['left'][firstG] = newLinks[first][firstG][sec][secG]
-            }
-        }
-        else if (!isBreakdown && (!isNumber(brokeGrade)) && ((sec === brokeExam && secG[0] === brokeGrade[0]) || (first === brokeExam && firstG[0] === brokeGrade[0]))) {
-            newLinksSet.add(key);
-            if (brokeExam.localeCompare(first) === 0) {
-                newLinksObj['right'][secG] = newLinks[first][firstG][sec][secG]
-            }
-            else {
-                newLinksObj['left'][firstG] = newLinks[first][firstG][sec][secG]
-            }
-        }
-        else if (!isBreakdown && (isNumber(brokeGrade)) && ((sec === brokeExam && secG === brokeGrade) || (first === brokeExam && firstG === brokeGrade))) {
             newLinksSet.add(key);
             if (brokeExam.localeCompare(first) === 0) {
                 newLinksObj['right'][secG] = newLinks[first][firstG][sec][secG]
@@ -869,4 +876,38 @@ function newLinkNotinOldSet(brokeExam, brokeGrade, isBreakdown) {
         }
     }
     return [newLinksSet, newLinksObj];
+}
+
+function setNewWidth(sankeyData) {
+    let widthAdder = 0;
+    for (const [key, value] of Object.entries(assessGradeLevelMap)) {
+        let temp = 0;
+        for (const [key1, value1] of Object.entries(value)) {
+            if (value1.level > temp) {
+                if (value1.level == 2) {
+                    temp = 1.5;
+                }
+                else {
+                    temp = value1.level;
+                }
+            }
+        }
+        widthAdder += temp;
+    }
+
+
+
+    if (sankeyData.nodes.length > 20) {
+        /* Sets up svg */
+        sankey = d3.sankey()
+            .size([width + widthAdder * 100, height])
+            .nodeId(d => d.id)
+            .nodeWidth(nodeWdt)
+            .nodePadding(padding)
+            .nodeAlign(d3.sankeyCenter)
+            .nodeSort(null);
+
+    }
+
+
 }
