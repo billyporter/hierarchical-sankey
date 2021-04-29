@@ -1,0 +1,61 @@
+* {
+    font-family: 'Roboto', 'Arial';
+}
+
+body {
+    background-color: #ecf0f1;
+    margin-right: 0;
+}
+
+.flex-container {
+    /* display: flex;
+    flex-direction: row; */
+}
+
+.select-graph {
+    position: absolute;
+    left: 1100px;
+    top: 100px;
+}
+
+.instructions {
+    margin-top: 50px;
+}
+
+.instructions div {
+    margin-top: 10px;
+}
+
+.select-graph form div {
+    padding-top: 10px;
+}
+.select-graph form div input {
+    margin-right: 10px;
+}
+
+.graphic {
+    width: 300px;
+}
+
+.graphic svg {
+    /* display: block; */
+    /* margin-top: 50px; */
+    /* margin-left: auto; */
+    /* margin-right: auto; */
+}
+
+.link {
+    stroke-opacity: 0.4;
+}
+
+.button:hover {
+    cursor: pointer;
+}
+
+.nodes:hover {
+    cursor: pointer;
+}
+
+.select-graph {
+    width: 400px;
+}

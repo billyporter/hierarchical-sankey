@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>LearningViz</title>
+        <link href="styles.css" rel="stylesheet" />
+    </head>
+    <body>
+        <div class="graphic">
+            <svg id="canvas"></svg>
+        </div>
+        <div class="select-graph">
+            <form name="graphChoice">
+                <div>
+                    <label
+                        ><input
+                            type="radio"
+                            name="graph1"
+                            id="bd"
+                            value="bd"
+                            checked
+                        />Prior Knowldge: Breakdown</label
+                    >
+                </div>
+                <div>
+                    <label
+                        ><input
+                            type="radio"
+                            name="graph1"
+                            id="color"
+                            value="color"
+                        />Prior Knowledge: Color</label
+                    >
+                </div>
+                <div>
+                    <label
+                        ><input
+                            type="radio"
+                            name="graph1"
+                            id="tree"
+                            value="tree"
+                        />Hierarchy: Tree</label
+                    >
+                </div>
+                <div>
+                    <label
+                        ><input
+                            type="radio"
+                            name="graph1"
+                            id="hier"
+                            value="hier"
+                        />Hierarchy: Breakdown</label
+                    >
+                </div>
+            </form>
+            <div class="instructions">
+                <div>
+                    <span>Click on a node to break it down</span>
+                </div>
+                <div>
+                    <span>Right click on a node to build it up</span>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://d3js.org/d3-color.v1.min.js"></script>
+    <script src="https://d3js.org/d3-hsv.v0.1.min.js"></script>
+    <script src="https://unpkg.com/d3-array@1"></script>
+    <script src="https://unpkg.com/d3-collection@1"></script>
+    <script src="https://unpkg.com/d3-path@1"></script>
+    <script src="https://unpkg.com/d3-shape@1"></script>
+    <script src="https://unpkg.com/d3-sankey@0"></script>
+    <script src="../hierarchy-in-place/js/data.js"></script>
+    <script src="js/breakdown-js.js"></script>
+    <script src="js/color-js.js"></script>
+    <script src="js/tree-js.js"></script>
+    <script src="js/hier-js.js"></script>
+    <script src="js/choose-graph.js"></script>
+</html>
