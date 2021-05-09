@@ -59,3 +59,18 @@ body {
 .select-graph {
     width: 400px;
 }
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: 180px;
+    height: 56px;
+    padding: 2px;
+    font: 14px 'Roboto';
+    background: lightsteelblue;
+    border: 1px;
+    border-color: black;
+    border-style: solid;
+    border-radius: 8px;
+    pointer-events: none;
+}

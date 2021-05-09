@@ -907,7 +907,6 @@ function treeJS() {
             }
             widthAdder += temp;
         }
-        console.log(widthAdder)
         if (widthAdder > 2.0) {
             widthAdder = 2.0;
         }
@@ -1520,7 +1519,7 @@ function treeJS() {
         .style("text-anchor", "middle")
         .style("font-size", "20px")
         .style("font-weight", "600")
-        .text("Exam Grade Pathways");
+        .text("Hierarchical Sankey Diagram");
 
     function setLabels(graph) {
         const examGraphLabel = [];
@@ -1575,29 +1574,29 @@ function treeJS() {
         .attr("width", 200)
         .attr("height", 50)
         .attr("class", "resetButton")
-        .style("fill", "#FFFFFF")
+        .style("fill", "#DEDEDE")
         .style("stroke", "#000000")
         .style("stroke-width", "2")
-        .style("fill-opacity", 0.0)
+        .style("fill-opacity", 0.7)
         .style("rx", "12")
         .style("ry", "12")
         .classed("button", true)
         .on("mouseover", function (d) {
             d3.select(this)
-                .style("fill", "#DEDEDE")
+                .style("fill", "#a9a9a9")
                 .style("fill-opacity", 0.7);
         })
         .on("mouseout", function (d) {
             d3.select(this)
-                .style("fill", "#000000")
-                .style("fill-opacity", 0.0);
+                .style("fill", "#DEDEDE")
+                .style("fill-opacity", 0.7);
         })
         .on("click", () => resetGraph());
 
 
     /* Adds reset button */
     svg.append("text")
-        .attr("x", width + 295)
+        .attr("x", width + 300)
         .attr("y", 30)
         .classed("button", true)
         .text("Reset")

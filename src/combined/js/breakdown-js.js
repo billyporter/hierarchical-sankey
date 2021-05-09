@@ -855,6 +855,39 @@ function breakdownJS() {
      * Function to draw nodes of sankey
      */
     function drawNodes(graph) {
+
+
+        function getAllStudents(exam, value) {
+            let allCount = 0;
+            for (const node of graph.nodes) {
+                if (node.assessment === exam) {
+                    allCount += node.value;
+                }
+            }
+            return parseFloat(value / allCount * 100).toFixed(2) + "%";
+        }
+
+        function getParentPercentage(exam, grade, value) {
+            const locAs = exam;
+            const locGrade = grade[0];
+            const level = assessGradeLevelMap[locAs.trim()][locGrade];
+            console.log(assessGradeLevelMap)
+            if (level === 0) {
+                return parseFloat(100).toFixed(2) + "%";
+            }
+            let count = 0;
+            for (const node of graph.nodes) {
+                if (node.assessment === exam && node.name[0] === grade[0]) {
+                    count += node.value
+                }
+            }
+            return parseFloat(value / count * 100).toFixed(2) + "%";
+        }
+
+        var div = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
         setLabels(graph);
         /* Creates Node */
         var graphnode = svg
@@ -881,11 +914,38 @@ function breakdownJS() {
                 return d3.rgb(sankeyColor(d.name[0])).darker(0.6);
             })
             .on("click", function (d, i) {
-                hierarchSankeyRouter(i, true);
+                if (d.shiftKey) {
+                    hierarchSankeyRouter(i, false);
+                }
+                else {
+                    hierarchSankeyRouter(i, true);
+                }
             })
             .on("contextmenu", function (d, i) {
                 d.preventDefault();
                 hierarchSankeyRouter(i, false);
+            })
+            .on("mouseover", function (d, i) {
+                d3.selectAll('.tooltip').each(function (d) {
+                    d3.select(this).transition()
+                        .duration(500)
+                        .style('opacity', 0)
+                        .remove();
+                });
+
+                const percent = getAllStudents(i.assessment, i.value);
+                const childPercent = getParentPercentage(i.assessment, i.name, i.value);
+                div.transition()
+                    .duration(400)
+                    .style("opacity", 1.0);
+                div.html(`${i.value} students </br> ${childPercent} of parent node </br> ${percent} of all students `)
+                    .style("left", (d.pageX) + "px")
+                    .style("top", (d.pageY - 28) + "px");
+            })
+            .on("mouseout", function (d) {
+                div.transition()
+                    .duration(500)
+                    .style("opacity", 0);
             });
 
         /* Add in text */
@@ -1174,7 +1234,7 @@ function breakdownJS() {
         .style("text-anchor", "middle")
         .style("font-size", "20px")
         .style("font-weight", "600")
-        .text("Exam Grade Pathways");
+        .text("Hierarchical Sankey Diagram");
 
     function setLabels(graph) {
         const examGraphLabel = [];
@@ -1227,29 +1287,29 @@ function breakdownJS() {
         .attr("width", 200)
         .attr("height", 50)
         .attr("class", "resetButton")
-        .style("fill", "#FFFFFF")
+        .style("fill", "#DEDEDE")
         .style("stroke", "#000000")
         .style("stroke-width", "2")
-        .style("fill-opacity", 0.0)
+        .style("fill-opacity", 0.7)
         .style("rx", "12")
         .style("ry", "12")
         .classed("button", true)
         .on("mouseover", function (d) {
             d3.select(this)
-                .style("fill", "#DEDEDE")
+                .style("fill", "#a9a9a9")
                 .style("fill-opacity", 0.7);
         })
         .on("mouseout", function (d) {
             d3.select(this)
-                .style("fill", "#000000")
-                .style("fill-opacity", 0.0);
+                .style("fill", "#DEDEDE")
+                .style("fill-opacity", 0.7);
         })
         .on("click", () => resetGraph());
 
 
     /* Adds reset button */
     svg.append("text")
-        .attr("x", width + 295)
+        .attr("x", width + 225 + 75)
         .attr("y", 30)
         .classed("button", true)
         .text("Reset")
