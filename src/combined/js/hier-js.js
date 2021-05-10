@@ -948,6 +948,81 @@ function hierJS() {
      * Function to draw nodes of sankey
      */
     function drawNodes(graph) {
+
+        function buildString(percentArray, value) {
+            let maxIndex = percentArray.length;
+            let outputString = '';
+            for (const i in percentArray[0]) {
+                nodeName = percentArray[0][i];
+                totalCount = percentArray[1][i];
+                outputString += parseFloat(value / totalCount * 100).toFixed(2) + "%";
+                outputString += ` of parent node ${nodeName} </br>`;
+            }
+            return outputString;
+        }
+
+        function getAllStudents(exam, value) {
+            let allCount = 0;
+            for (const node of graph.nodes) {
+                if (node.assessment === exam) {
+                    allCount += node.value;
+                }
+            }
+            return parseFloat(value / allCount * 100).toFixed(2) + "%";
+        }
+
+        function getParentPercentage(exam, grade, value) {
+            const locAs = exam;
+            const locGrade = grade;
+            let stringToInput = locAs;
+            if (locAs.localeCompare('Final Exam') === 0)
+                stringToInput = ' '.concat(locAs);
+
+            let parentNodeArray = [];
+            let allowAll = true;
+
+            /* Gen parent nodes */
+            if (isNumber(grade)) {
+                parentNodeArray.push(gradeScale(grade));
+                parentNodeArray.push(specificLetterScale(gradeScale(grade), grade))
+            }
+            else {
+                parentNodeArray.push(grade[0]);
+            }
+
+            countArray = []
+            let index = 0
+            for (const parNode of parentNodeArray) {
+                let count = 0;
+                for (const node of graph.nodes) {
+                    if (node.assessment === exam) {
+                        if (isNumber(node.name)) {
+                            nodeName = gradeScale(node.name)
+                            if (index === 1) {
+                                nodeName = specificLetterScale(nodeName, node.name);
+                            }
+                            if (nodeName === parNode) {
+                                count += node.value;
+                            }
+                        }
+                        else {
+                            if (node.name[0] === parNode) {
+                                count += node.value;
+                            }
+                        }
+                    }
+                }
+                countArray.push(count);
+                index += 1
+            }
+            const returnList = [parentNodeArray, countArray];
+            return returnList
+        }
+
+        var div = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
         setLabels(graph);
         /* Creates Node */
         var graphnode = svg
@@ -974,17 +1049,48 @@ function hierJS() {
                 return d3.rgb(getNodeColor(d.name)).darker(0.6);
             })
             .on("click", function (d, i) {
-                hierarchSankeyRouter(i, true);
+                if (d.shiftKey) {
+                    hierarchSankeyRouter(i, false);
+                }
+                else {
+                    hierarchSankeyRouter(i, true);
+                }
             })
             .on("contextmenu", function (d, i) {
                 d.preventDefault();
                 hierarchSankeyRouter(i, false);
+            })
+            .on("mouseover", function (d, i) {
+                d3.selectAll('.tooltip').each(function (d) {
+                    console.log(this);
+                    d3.select(this).transition()
+                        .duration(500)
+                        .style('opacity', 0)
+                        .remove();
+                });
+
+                const percent = getAllStudents(i.assessment, i.value);
+                const childPercentArray = getParentPercentage(i.assessment, i.name, i.value);
+                const htmlString = buildString(childPercentArray, i.value);
+                const childPercent = childPercentArray[0];
+                const parentNode = childPercentArray[1];
+                div.transition()
+                    .duration(400)
+                    .style("opacity", 1.0);
+                div.html(`Node ${i.assessment} ${i.name} </br>${i.value} students </br> ${htmlString} ${percent} of all students `)
+                    .style("left", (d.pageX) + "px")
+                    .style("top", (d.pageY - 28) + "px");
+            })
+            .on("mouseout", function (d) {
+                div.transition()
+                    .duration(500)
+                    .style("opacity", 0);
             });
 
 
         /* Add in title */
-        graphnode.append("title")
-            .text((d) => d.name + "\n" + " Students")
+        // graphnode.append("title")
+        //     .text((d) => d.name + "\n" + " Students")
 
 
         /* Add in text */
@@ -1013,6 +1119,58 @@ function hierJS() {
     var graphlink;
     function drawLinks(graph) {
 
+        var div = d3.select("body").append("div")
+            .attr("class", "tooltipLink")
+            .style("opacity", 0);
+
+        function buildString(percentArray, value) {
+            let maxIndex = percentArray.length;
+            let outputString = '';
+            let index = 0;
+            for (const i in percentArray[0]) {
+                nodeName = percentArray[0][i];
+                totalCount = percentArray[1][i];
+                outputString += parseFloat(value / totalCount * 100).toFixed(2) + "%";
+                if (index === 0) {
+                    outputString += ` of source node ${nodeName} </br>`;
+                }
+                else {
+                    outputString += ` of target node ${nodeName} </br>`;
+                }
+                index += 1;
+            }
+            return outputString;
+        }
+
+        function getAllStudents(exam, value) {
+            let allCount = 0;
+            for (const node of graph.nodes) {
+                if (node.assessment === exam) {
+                    allCount += node.value;
+                }
+            }
+            return parseFloat(value / allCount * 100).toFixed(2) + "%";
+        }
+
+        function getParentPercentage(sourceIndex, sourceName, targetIndex, targetName) {
+
+            sourceCount = 0;
+            targetCount = 0;
+            const parentNodeArray = [sourceName, targetName]
+            for (const node of graph.nodes) {
+                if (node.id === sourceIndex) {
+                    sourceCount += node.value;
+                }
+                if (node.id === targetIndex) {
+                    targetCount += node.value;
+                }
+            }
+            const countArray = [sourceCount, targetCount];
+            const returnList = [parentNodeArray, countArray];
+            // console.log(returnList)
+            return returnList
+        }
+
         /* Creates Link */
         graphlink = svg
             .append("g")
@@ -1031,6 +1189,31 @@ function hierJS() {
             .style("stroke", d => {
                 return getNodeColor(d.source.name);
             })
+            .on("mouseover", function (d, i) {
+
+                d3.selectAll('.tooltipLink').each(function (d) {
+                    d3.select(this).transition()
+                        .duration(500)
+                        .style('opacity', 0)
+                        .remove();
+                });
+                const percent = getAllStudents(i.target.assessment, i.value);
+                const childPercentArray = getParentPercentage(i.source.id, i.source.name, i.target.id, i.target.name);
+                const htmlString = buildString(childPercentArray, i.value);
+                div.transition()
+                    .duration(500)
+                    .ease(d3.easeCircle)
+                    .style("opacity", 1.0);
+                div.html(`Link: ${i.source.name[0]} to ${i.target.name[0]} </br> ${i.value} students </br> ${htmlString} ${percent} of all students `)
+                    .style("left", (d.pageX) + "px")
+                    .style("top", (d.pageY - 28) + "px");
+
+            })
+            .on("mouseout", function (d) {
+                div.transition()
+                    .duration(400)
+                    .style("opacity", 0);
+            });
 
     }
 
@@ -1316,7 +1499,7 @@ function hierJS() {
         .style("text-anchor", "middle")
         .style("font-size", "20px")
         .style("font-weight", "600")
-        .text("Exam Grade Pathways");
+        .text("Hierarchical Sankey Diagram");
 
     function setLabels(graph) {
         const examGraphLabel = [];
@@ -1369,29 +1552,29 @@ function hierJS() {
         .attr("width", 200)
         .attr("height", 50)
         .attr("class", "resetButton")
-        .style("fill", "#FFFFFF")
+        .style("fill", "#DEDEDE")
         .style("stroke", "#000000")
         .style("stroke-width", "2")
-        .style("fill-opacity", 0.0)
+        .style("fill-opacity", 0.7)
         .style("rx", "12")
         .style("ry", "12")
         .classed("button", true)
         .on("mouseover", function (d) {
             d3.select(this)
-                .style("fill", "#DEDEDE")
+                .style("fill", "#a9a9a9")
                 .style("fill-opacity", 0.7);
         })
         .on("mouseout", function (d) {
             d3.select(this)
-                .style("fill", "#000000")
-                .style("fill-opacity", 0.0);
+                .style("fill", "#DEDEDE")
+                .style("fill-opacity", 0.7);
         })
         .on("click", () => resetGraph());
 
 
     /* Adds reset button */
     svg.append("text")
-        .attr("x", width + 295)
+        .attr("x", width + 300)
         .attr("y", 30)
         .classed("button", true)
         .text("Reset")

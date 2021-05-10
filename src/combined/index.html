@@ -2,8 +2,13 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <title>LearningViz</title>
+        <title>Hierarchical Sankey</title>
         <link href="styles.css" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+            rel="stylesheet"
+        />
     </head>
     <body>
         <div class="graphic">
@@ -19,7 +24,7 @@
                             id="bd"
                             value="bd"
                             checked
-                        />Prior Knowldge: Breakdown</label
+                        />Inflow: Vertical Separation</label
                     >
                 </div>
                 <div>
@@ -29,7 +34,7 @@
                             name="graph1"
                             id="color"
                             value="color"
-                        />Prior Knowledge: Color</label
+                        />Inflow: Color Distinction</label
                     >
                 </div>
                 <div>
@@ -39,7 +44,7 @@
                             name="graph1"
                             id="tree"
                             value="tree"
-                        />Hierarchy: Tree</label
+                        />Level of Detail: Horizontal Split</label
                     >
                 </div>
                 <div>
@@ -49,16 +54,16 @@
                             name="graph1"
                             id="hier"
                             value="hier"
-                        />Hierarchy: Breakdown</label
+                        />Level of Detail: Vertical Split</label
                     >
                 </div>
             </form>
             <div class="instructions">
                 <div>
-                    <span>Click on a node to break it down</span>
+                    <span>Click on a node to split</span>
                 </div>
                 <div>
-                    <span>Right click on a node to build it up</span>
+                    <span>Right-Click or Shift-Click on a node to merge</span>
                 </div>
             </div>
         </div>

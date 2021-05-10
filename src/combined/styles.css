@@ -48,6 +48,11 @@ body {
     stroke-opacity: 0.4;
 }
 
+.link:hover {
+    cursor: pointer;
+    stroke-opacity: 0.8;
+}
+
 .button:hover {
     cursor: pointer;
 }
@@ -58,4 +63,34 @@ body {
 
 .select-graph {
     width: 400px;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: 180px;
+    height: 81px;
+    padding: 2px;
+    font: 14px 'Roboto';
+    background: lightsteelblue;
+    border: 1px;
+    border-color: black;
+    border-style: solid;
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+div.tooltipLink {
+    position: absolute;
+    text-align: center;
+    width: 180px;
+    height: 81px;
+    padding: 2px;
+    font: 14px 'Roboto';
+    background: #ff6961;
+    border: 1px;
+    border-color: black;
+    border-style: solid;
+    border-radius: 8px;
+    pointer-events: none;
 }
