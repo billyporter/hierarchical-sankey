@@ -871,7 +871,6 @@ function breakdownJS() {
             const locAs = exam;
             const locGrade = grade[0];
             const level = assessGradeLevelMap[locAs.trim()][locGrade];
-            console.log(assessGradeLevelMap)
             if (level === 0) {
                 return parseFloat(100).toFixed(2) + "%";
             }
@@ -974,6 +973,10 @@ function breakdownJS() {
     var graphlink;
     function drawLinks(graph) {
 
+        var div = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
         /* Creates Link */
         graphlink = svg
             .append("g")
@@ -991,6 +994,21 @@ function breakdownJS() {
             .style("stroke-width", d => d.width)
             .style("stroke", d => {
                 return sankeyColor(d.source.name[0]);
+            })
+            .on("mouseover", function (d, i) {
+                d3.selectAll('.tooltip').each(function (d) {
+                    d3.select(this).transition()
+                        .duration(500)
+                        .style('opacity', 0)
+                        .remove();
+                });
+                console.log(d);
+                console.log(i);
+            })
+            .on("mouseout", function (d) {
+                div.transition()
+                    .duration(500)
+                    .style("opacity", 0);
             });
     }
 

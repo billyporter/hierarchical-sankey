@@ -1086,6 +1086,82 @@ function treeJS() {
      */
     function drawNodes(graph) {
 
+        function buildString(percentArray, value) {
+            let maxIndex = percentArray.length;
+            let outputString = '';
+            for (const i in percentArray[0]) {
+                nodeName = percentArray[0][i];
+                totalCount = percentArray[1][i];
+                outputString += parseFloat(value / totalCount * 100).toFixed(2) + "%";
+                outputString += ` of parent node ${nodeName} </br>`;
+            }
+            return outputString;
+        }
+
+        function getAllStudents(exam, value) {
+            let allCount = 0;
+            for (const node of graph.nodes) {
+                if (node.assessment === exam) {
+                    allCount += node.value;
+                }
+            }
+            return parseFloat(value / allCount * 100).toFixed(2) + "%";
+        }
+
+        function getParentPercentage(exam, grade, value) {
+            const locAs = exam;
+            const locGrade = grade;
+            let stringToInput = locAs;
+            if (locAs.localeCompare('Final Exam') === 0)
+                stringToInput = ' '.concat(locAs);
+
+            let parentNodeArray = [];
+            let allowAll = true;
+
+            /* Gen parent nodes */
+            if (isNumber(grade)) {
+                parentNodeArray.push(gradeScale(grade));
+                parentNodeArray.push(specificLetterScale(gradeScale(grade), grade))
+            }
+            else {
+                parentNodeArray.push(grade[0]);
+            }
+
+            countArray = []
+            let jindex = 0
+            for (const parNode of parentNodeArray) {
+                let count = 0;
+                let brother = 0;
+                for (const student of Object.entries(rawData)) {
+                    for ([index, assessment] of assessments.entries()) {
+                        if (!student[1][assessment]) {
+                            continue;
+                        }
+                        if (assessment.trim() !== exam.trim()) {
+                            continue;
+                        }
+                        brother += 1;
+                        let currGrade = gradeScale(student[1][assessment])
+                        if (jindex === 1) {
+                            currGrade = specificLetterScale(currGrade, student[1][assessment])
+                        }
+                        if (currGrade === parNode) {
+                            count += 1
+                        }
+                    }
+                }
+                brother = 0;
+                countArray.push(count);
+                jindex += 1
+            }
+            const returnList = [parentNodeArray, countArray];
+            return returnList
+        }
+
+        var div = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
         setLabels(graph);
         /* Creates Node */
         var graphnode = svg
@@ -1112,11 +1188,41 @@ function treeJS() {
                 return d3.rgb(getNodeColor(d.name)).darker(0.6);
             })
             .on("click", function (d, i) {
-                hierarchSankeyRouter(i, true);
+                if (d.shiftKey) {
+                    hierarchSankeyRouter(i, false);
+                }
+                else {
+                    hierarchSankeyRouter(i, true);
+                }
             })
             .on("contextmenu", function (d, i) {
                 d.preventDefault();
                 hierarchSankeyRouter(i, false);
+            })
+            .on("mouseover", function (d, i) {
+                d3.selectAll('.tooltip').each(function (d) {
+                    d3.select(this).transition()
+                        .duration(500)
+                        .style('opacity', 0)
+                        .remove();
+                });
+
+                const percent = getAllStudents(i.assessment, i.value);
+                const childPercentArray = getParentPercentage(i.assessment, i.name, i.value);
+                const htmlString = buildString(childPercentArray, i.value);
+                const childPercent = childPercentArray[0];
+                const parentNode = childPercentArray[1];
+                div.transition()
+                    .duration(400)
+                    .style("opacity", 1.0);
+                div.html(`${i.value} students </br> ${htmlString} ${percent} of all students `)
+                    .style("left", (d.pageX) + "px")
+                    .style("top", (d.pageY - 28) + "px");
+            })
+            .on("mouseout", function (d) {
+                div.transition()
+                    .duration(500)
+                    .style("opacity", 0);
             });
 
         /* Add in text */

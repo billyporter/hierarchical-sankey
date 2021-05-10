@@ -949,6 +949,18 @@ function hierJS() {
      */
     function drawNodes(graph) {
 
+        function buildString(percentArray, value) {
+            let maxIndex = percentArray.length;
+            let outputString = '';
+            for (const i in percentArray[0]) {
+                nodeName = percentArray[0][i];
+                totalCount = percentArray[1][i];
+                outputString += parseFloat(value / totalCount * 100).toFixed(2) + "%";
+                outputString += ` of parent node ${nodeName} </br>`;
+            }
+            return outputString;
+        }
+
         function getAllStudents(exam, value) {
             let allCount = 0;
             for (const node of graph.nodes) {
@@ -965,71 +977,45 @@ function hierJS() {
             let stringToInput = locAs;
             if (locAs.localeCompare('Final Exam') === 0)
                 stringToInput = ' '.concat(locAs);
-            console.log(assessGradeLevelMap)
-            let level = 0;
-            let parentNode = grade[0]
+
             let parentNodeArray = [];
             let allowAll = true;
 
             /* Gen parent nodes */
             if (isNumber(grade)) {
-                parentNode.push(gradeScale(grade));
-                parentNode.push(specificLetterScale(gradeScale(grade), grade))
+                parentNodeArray.push(gradeScale(grade));
+                parentNodeArray.push(specificLetterScale(gradeScale(grade), grade))
             }
             else {
-                parentNode.push(grade[0]);
+                parentNodeArray.push(grade[0]);
             }
 
-            /* Check if letter */
-            if (letrs.has(locGrade[0])) {
-                level = assessGradeLevelMap[stringToInput][locGrade[0]]["level"];
-                // if (level > 1) {
-                //     if (locGrade.length > 1) {
-                //         level = assessGradeLevelMap[stringToInput][locGrade[0]][locGrade[1]];
-                //     }
-                //     else {
-                //         level = assessGradeLevelMap[stringToInput][locGrade[0]]["def"] = 2;
-                //     }
-                // }
-
-            }
-            else {
-                parentNode = specificLetterScale(gradeScale(locGrade), locGrade);
-
-                allowAll = false;
-                let tempLetter = gradeScale(locGrade);
-                plusLevel = assessGradeLevelMap[stringToInput][tempLetter]["+"];
-                defLevel = assessGradeLevelMap[stringToInput][tempLetter]["def"];
-                minusLevel = assessGradeLevelMap[stringToInput][tempLetter]["-"];
-
-                if (plusLevel && defLevel && minusLevel) {
-                    allowAll = true;
-                    parentNode = tempLetter;
-                }
-
-                // let suffix = locGrade[1]
-                level = 2;
-            }
-
-
-            let count = 0;
-            for (const node of graph.nodes) {
-                if (isNumber(node.name)) {
-                    let specLetter = specificLetterScale(gradeScale(node.name), node.name)
-                    if (allowAll) {
-                        specLetter = gradeScale(node.name);
-                    }
-                    if (node.assessment === exam && specLetter === parentNode) {
-                        count += node.value
+            countArray = []
+            let index = 0
+            for (const parNode of parentNodeArray) {
+                let count = 0;
+                for (const node of graph.nodes) {
+                    if (node.assessment === exam) {
+                        if (isNumber(node.name)) {
+                            nodeName = gradeScale(node.name)
+                            if (index === 1) {
+                                nodeName = specificLetterScale(nodeName, node.name);
+                            }
+                            if (nodeName === parNode) {
+                                count += node.value;
+                            }
+                        }
+                        else {
+                            if (node.name[0] === parNode) {
+                                count += node.value;
+                            }
+                        }
                     }
                 }
-                else if (allowAll && node.assessment === exam) {
-                    if (node.name[0] === parentNode || (isNumber(node.name) && gradeScale(node.name) == parentNode)) {
-                        count += node.value
-                    }
-                }
+                countArray.push(count);
+                index += 1
             }
-            const returnList = [parseFloat(value / count * 100).toFixed(2) + "%", parentNode];
+            const returnList = [parentNodeArray, countArray];
             return returnList
         }
 
@@ -1063,7 +1049,12 @@ function hierJS() {
                 return d3.rgb(getNodeColor(d.name)).darker(0.6);
             })
             .on("click", function (d, i) {
-                hierarchSankeyRouter(i, true);
+                if (d.shiftKey) {
+                    hierarchSankeyRouter(i, false);
+                }
+                else {
+                    hierarchSankeyRouter(i, true);
+                }
             })
             .on("contextmenu", function (d, i) {
                 d.preventDefault();
@@ -1080,12 +1071,13 @@ function hierJS() {
 
                 const percent = getAllStudents(i.assessment, i.value);
                 const childPercentArray = getParentPercentage(i.assessment, i.name, i.value);
+                const htmlString = buildString(childPercentArray, i.value);
                 const childPercent = childPercentArray[0];
                 const parentNode = childPercentArray[1];
                 div.transition()
                     .duration(400)
                     .style("opacity", 1.0);
-                div.html(`${i.value} students </br> ${childPercent} of parent node ${parentNode}</br> ${percent} of all students `)
+                div.html(`${i.value} students </br> ${htmlString} ${percent} of all students `)
                     .style("left", (d.pageX) + "px")
                     .style("top", (d.pageY - 28) + "px");
             })
