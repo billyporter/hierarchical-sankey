@@ -937,7 +937,7 @@ function breakdownJS() {
                 div.transition()
                     .duration(400)
                     .style("opacity", 1.0);
-                div.html(`${i.value} students </br> ${childPercent} of parent node </br> ${percent} of all students `)
+                div.html(`Node ${i.assessment} ${i.name} </br>${i.value} students </br> ${childPercent} of parent node </br> ${percent} of all students `)
                     .style("left", (d.pageX) + "px")
                     .style("top", (d.pageY - 28) + "px");
             })
@@ -974,8 +974,56 @@ function breakdownJS() {
     function drawLinks(graph) {
 
         var div = d3.select("body").append("div")
-            .attr("class", "tooltip")
+            .attr("class", "tooltipLink")
             .style("opacity", 0);
+
+        function buildString(percentArray, value) {
+            let maxIndex = percentArray.length;
+            let outputString = '';
+            let index = 0;
+            for (const i in percentArray[0]) {
+                nodeName = percentArray[0][i];
+                totalCount = percentArray[1][i];
+                outputString += parseFloat(value / totalCount * 100).toFixed(2) + "%";
+                if (index === 0) {
+                    outputString += ` of source node ${nodeName} </br>`;
+                }
+                else {
+                    outputString += ` of target node ${nodeName} </br>`;
+                }
+                index += 1;
+            }
+            return outputString;
+        }
+
+        function getAllStudents(exam, value) {
+            let allCount = 0;
+            for (const node of graph.nodes) {
+                if (node.assessment === exam) {
+                    allCount += node.value;
+                }
+            }
+            return parseFloat(value / allCount * 100).toFixed(2) + "%";
+        }
+
+        function getParentPercentage(sourceIndex, sourceName, targetIndex, targetName) {
+
+            sourceCount = 0;
+            targetCount = 0;
+            const parentNodeArray = [sourceName, targetName]
+            for (const node of graph.nodes) {
+                if (node.id === sourceIndex) {
+                    sourceCount += node.value;
+                }
+                if (node.id === targetIndex) {
+                    targetCount += node.value;
+                }
+            }
+            const countArray = [sourceCount, targetCount];
+            const returnList = [parentNodeArray, countArray];
+            // console.log(returnList)
+            return returnList
+        }
 
         /* Creates Link */
         graphlink = svg
@@ -996,18 +1044,28 @@ function breakdownJS() {
                 return sankeyColor(d.source.name[0]);
             })
             .on("mouseover", function (d, i) {
-                d3.selectAll('.tooltip').each(function (d) {
+
+                d3.selectAll('.tooltipLink').each(function (d) {
                     d3.select(this).transition()
                         .duration(500)
                         .style('opacity', 0)
                         .remove();
                 });
-                console.log(d);
-                console.log(i);
+                const percent = getAllStudents(i.target.assessment, i.value);
+                const childPercentArray = getParentPercentage(i.source.id, i.source.name, i.target.id, i.target.name);
+                const htmlString = buildString(childPercentArray, i.value);
+                div.transition()
+                    .duration(500)
+                    .ease(d3.easeCircle)
+                    .style("opacity", 1.0);
+                div.html(`Link: ${i.source.name[0]} to ${i.target.name[0]} </br> ${i.value} students </br> ${htmlString} ${percent} of all students `)
+                    .style("left", (d.pageX) + "px")
+                    .style("top", (d.pageY - 28) + "px");
+
             })
             .on("mouseout", function (d) {
                 div.transition()
-                    .duration(500)
+                    .duration(400)
                     .style("opacity", 0);
             });
     }

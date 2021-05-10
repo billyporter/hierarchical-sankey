@@ -776,7 +776,6 @@ function colorJS() {
 
         function getParentPercentage(exam, grade, value) {
             const locAs = exam;
-            console.log(exam, grade, value);
             const locGrade = grade[0];
             const level = assessGradeLevelMap[locAs.trim()][locGrade];
             if (level === 0) {
@@ -784,7 +783,6 @@ function colorJS() {
             }
             let count = 0;
             for (const node of graph.nodes) {
-                console.log(node.assessment, node.name[0], node.value)
                 if (node.assessment === exam && node.name[0] === grade[0]) {
                     count += node.value
                 }
@@ -832,7 +830,6 @@ function colorJS() {
 
                 /* Tooltip */
                 d3.selectAll('.tooltip').each(function (d) {
-                    console.log(this);
                     d3.select(this).transition()
                         .duration(500)
                         .style('opacity', 0)
@@ -844,7 +841,7 @@ function colorJS() {
                 div.transition()
                     .duration(400)
                     .style("opacity", 1.0);
-                div.html(`${d.value} students </br> ${childPercent} of parent node </br> ${percent} of all students `)
+                div.html(`Node ${i.assessment} ${i.name} </br>${d.value} students </br> ${childPercent} of parent node </br> ${percent} of all students `)
                     .style("left", (i.pageX) + "px")
                     .style("top", (i.pageY - 28) + "px");
 
@@ -909,6 +906,58 @@ function colorJS() {
     var graphlink;
     function drawLinks(graph, newLinkSet, brokeExam, brokeGrade, isBreakdown) {
 
+        var div = d3.select("body").append("div")
+            .attr("class", "tooltipLink")
+            .style("opacity", 0);
+
+        function buildString(percentArray, value) {
+            let maxIndex = percentArray.length;
+            let outputString = '';
+            let index = 0;
+            for (const i in percentArray[0]) {
+                nodeName = percentArray[0][i];
+                totalCount = percentArray[1][i];
+                outputString += parseFloat(value / totalCount * 100).toFixed(2) + "%";
+                if (index === 0) {
+                    outputString += ` of source node ${nodeName} </br>`;
+                }
+                else {
+                    outputString += ` of target node ${nodeName} </br>`;
+                }
+                index += 1;
+            }
+            return outputString;
+        }
+
+        function getAllStudents(exam, value) {
+            let allCount = 0;
+            for (const node of graph.nodes) {
+                if (node.assessment === exam) {
+                    allCount += node.value;
+                }
+            }
+            return parseFloat(value / allCount * 100).toFixed(2) + "%";
+        }
+
+        function getParentPercentage(sourceIndex, sourceName, targetIndex, targetName) {
+
+            sourceCount = 0;
+            targetCount = 0;
+            const parentNodeArray = [sourceName, targetName]
+            for (const node of graph.nodes) {
+                if (node.id === sourceIndex) {
+                    sourceCount += node.value;
+                }
+                if (node.id === targetIndex) {
+                    targetCount += node.value;
+                }
+            }
+            const countArray = [sourceCount, targetCount];
+            const returnList = [parentNodeArray, countArray];
+            // console.log(returnList)
+            return returnList
+        }
+
         /* Creates Link */
         graphlink = svg
             .append("g")
@@ -923,8 +972,8 @@ function colorJS() {
             .attr("class", "link")
             .attr("d", d3.sankeyLinkHorizontal())
             .attr("fill", "none")
-            .attr("stop-opacity", 0.5)
             .style("stroke-width", d => d.width)
+            .style("stroke-opacity", 0.4)
             .style("stroke", d => {
                 const key = `${d.source.assessment},${d.source.name},${d.target.assessment},${d.target.name}`;
                 if (newLinkSet && newLinkSet.has(key) && d.source.assessment === brokeExam && d.source.name === brokeGrade) {
@@ -937,6 +986,38 @@ function colorJS() {
                     return sankeyColor(d.sourceName);
                 }
                 return sankeyColor(d.source.name[0]);
+            })
+            .on("mouseover", function (d, i) {
+
+                d3.selectAll('.tooltipLink').each(function (d) {
+                    d3.select(this).transition()
+                        .duration(500)
+                        .style('opacity', 0)
+                        .remove();
+                });
+                const percent = getAllStudents(i.target.assessment, i.value);
+                const childPercentArray = getParentPercentage(i.source.id, i.source.name, i.target.id, i.target.name);
+                const htmlString = buildString(childPercentArray, i.value);
+                div.transition()
+                    .duration(500)
+                    .ease(d3.easeCircle)
+                    .style("opacity", 1.0);
+                div.html(`Link: ${i.source.name[0]} to ${i.target.name[0]} </br> ${i.value} students </br> ${htmlString} ${percent} of all students `)
+                    .style("left", (d.pageX) + "px")
+                    .style("top", (d.pageY - 28) + "px");
+
+                d3.select(this).style('stroke-opacity', function () {
+                    return 0.8;
+                })
+
+            })
+            .on("mouseout", function (d) {
+                div.transition()
+                    .duration(400)
+                    .style("opacity", 0);
+                d3.select(this).style('stroke-opacity', function () {
+                    return 0.5;
+                })
             });
     }
 
