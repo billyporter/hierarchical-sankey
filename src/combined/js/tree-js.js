@@ -48,7 +48,7 @@ function treeJS() {
     const gradeCountDict = {};
     const sankeyColor = d3.scaleOrdinal()
         .domain(['A', 'B', 'C', 'D', 'F'])
-        .range([d3.hsv(178, 0.75, 0.67), d3.hsv(138, 0.75, 0.64), d3.hsv(55, 0.75, 0.89), d3.hsv(38, 0.75, 0.9), d3.hsv(8, 0.75, 0.85)]);
+        .range([d3.hsv(200, 0.8810, 0.8235), d3.hsv(138, 0.75, 0.64), d3.hsv(55, 0.75, 0.89), d3.hsv(38, 0.75, 0.9), d3.hsv(8, 0.75, 0.85)]);
     const assessGradeLevelMap = {};
     const blacklist = new Set();
 

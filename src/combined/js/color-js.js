@@ -50,7 +50,7 @@ function colorJS() {
     const gradeCountDict = {};
     const sankeyColor = d3.scaleOrdinal()
         .domain(['A', 'B', 'C', 'D', 'F'])
-        .range([d3.hsv(178, 0.75, 0.67), d3.hsv(138, 0.75, 0.64), d3.hsv(55, 0.75, 0.89), d3.hsv(38, 0.75, 0.9), d3.hsv(8, 0.75, 0.85)]);
+        .range([d3.hsv(200, 0.8810, 0.8235), d3.hsv(138, 0.75, 0.64), d3.hsv(55, 0.75, 0.89), d3.hsv(38, 0.75, 0.9), d3.hsv(8, 0.75, 0.85)]);
     const assessGradeLevelMap = {};
     const nodeHistoryMap = {};
 
@@ -841,7 +841,7 @@ function colorJS() {
                 div.transition()
                     .duration(400)
                     .style("opacity", 1.0);
-                div.html(`Node ${i.assessment} ${i.name} </br>${d.value} students </br> ${childPercent} of parent node </br> ${percent} of all students `)
+                div.html(`Node ${d.assessment} ${d.name} </br>${d.value} students </br> ${childPercent} of parent node </br> ${percent} of all students `)
                     .style("left", (i.pageX) + "px")
                     .style("top", (i.pageY - 28) + "px");
 
