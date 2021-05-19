@@ -1162,6 +1162,11 @@ function treeJS() {
             .attr("class", "tooltip")
             .style("opacity", 0);
 
+
+        var divbig = d3.select("body").append("div")
+            .attr("class", "tooltipbig")
+            .style("opacity", 0);
+
         setLabels(graph);
         /* Creates Node */
         var graphnode = svg
@@ -1200,27 +1205,55 @@ function treeJS() {
                 hierarchSankeyRouter(i, false);
             })
             .on("mouseover", function (d, i) {
-                d3.selectAll('.tooltip').each(function (d) {
-                    d3.select(this).transition()
-                        .duration(500)
-                        .style('opacity', 0)
-                        .remove();
-                });
+                if (d3.selectAll('.tooltip')._groups[0].length > 1) {
+                    d3.selectAll('.tooltip').each(function (d) {
+                        d3.select(this).transition()
+                            .duration(500)
+                            .style('opacity', 0)
+                            .remove();
+                    });
+                }
+
+                /* Spec one */
+                if (d3.selectAll('.tooltipbig')._groups[0].length > 1) {
+                    d3.selectAll('.tooltipbig').each(function (d) {
+                        d3.select(this).transition()
+                            .duration(500)
+                            .style('opacity', 0)
+                            .remove();
+                    });
+                }
 
                 const percent = getAllStudents(i.assessment, i.value);
                 const childPercentArray = getParentPercentage(i.assessment, i.name, i.value);
                 const htmlString = buildString(childPercentArray, i.value);
                 const childPercent = childPercentArray[0];
                 const parentNode = childPercentArray[1];
-                div.transition()
-                    .duration(400)
-                    .style("opacity", 1.0);
-                div.html(`Node ${i.assessment} ${i.name} </br>${i.value} students </br> ${htmlString} ${percent} of all students `)
-                    .style("left", (d.pageX) + "px")
-                    .style("top", (d.pageY - 28) + "px");
+                /* Replace hashtag */
+                let nodeInput = i.name.replace('#', '');
+
+                if (isNumber(i.name)) {
+                    divbig.transition()
+                        .duration(400)
+                        .style("opacity", 1.0);
+                    divbig.html(`Node: ${i.assessment} ${nodeInput} </br>${i.value} students </br> ${htmlString} ${percent} of all students `)
+                        .style("left", (d.pageX) + "px")
+                        .style("top", (d.pageY - 28) + "px");
+                }
+                else {
+                    div.transition()
+                        .duration(400)
+                        .style("opacity", 1.0);
+                    div.html(`Node: ${i.assessment} ${nodeInput} </br>${i.value} students </br> ${htmlString} ${percent} of all students `)
+                        .style("left", (d.pageX) + "px")
+                        .style("top", (d.pageY - 28) + "px");
+                }
             })
             .on("mouseout", function (d) {
                 div.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+                divbig.transition()
                     .duration(500)
                     .style("opacity", 0);
             });
@@ -1327,27 +1360,34 @@ function treeJS() {
                 return getNodeColor(d.source.name);
             })
             .on("mouseover", function (d, i) {
-
-                d3.selectAll('.tooltipLink').each(function (d) {
-                    d3.select(this).transition()
-                        .duration(500)
-                        .style('opacity', 0)
-                        .remove();
-                });
+                if (d3.selectAll('.tooltipLink')._groups[0].length > 1) {
+                    d3.selectAll('.tooltipLink').each(function (d) {
+                        d3.select(this).transition()
+                            .duration(500)
+                            .style('opacity', 0)
+                            .remove();
+                    });
+                }
                 const percent = getAllStudents(i.target.assessment, i.value);
                 const childPercentArray = getParentPercentage(i.source.id, i.source.name, i.target.id, i.target.name);
                 const htmlString = buildString(childPercentArray, i.value);
+                /* Replace hashtag */
+                let sourceInput = i.source.name.replace('#', '');
+                let targetInput = i.target.name.replace('#', '');
                 div.transition()
                     .duration(500)
                     .ease(d3.easeCircle)
                     .style("opacity", 1.0);
-                div.html(`Link: ${i.source.name} to ${i.target.name} </br> ${i.value} students </br> ${htmlString} ${percent} of all students `)
+                div.html(`Link: ${sourceInput} to ${targetInput} </br> ${i.value} students </br> ${htmlString} ${percent} of all students `)
                     .style("left", (d.pageX) + "px")
                     .style("top", (d.pageY - 28) + "px");
 
             })
             .on("mouseout", function (d) {
                 div.transition()
+                    .duration(400)
+                    .style("opacity", 0);
+                divwide.transition()
                     .duration(400)
                     .style("opacity", 0);
             });

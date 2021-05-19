@@ -1023,6 +1023,10 @@ function hierJS() {
             .attr("class", "tooltip")
             .style("opacity", 0);
 
+        var divbig = d3.select("body").append("div")
+            .attr("class", "tooltipbig")
+            .style("opacity", 0);
+
         setLabels(graph);
         /* Creates Node */
         var graphnode = svg
@@ -1061,28 +1065,53 @@ function hierJS() {
                 hierarchSankeyRouter(i, false);
             })
             .on("mouseover", function (d, i) {
-                d3.selectAll('.tooltip').each(function (d) {
-                    console.log(this);
-                    d3.select(this).transition()
-                        .duration(500)
-                        .style('opacity', 0)
-                        .remove();
-                });
+                if (d3.selectAll('.tooltip')._groups[0].length > 1) {
+                    d3.selectAll('.tooltip').each(function (d) {
+                        d3.select(this).transition()
+                            .duration(500)
+                            .style('opacity', 0)
+                            .remove();
+                    });
+                }
+
+                /* Spec one */
+                if (d3.selectAll('.tooltipbig')._groups[0].length > 1) {
+                    d3.selectAll('.tooltipbig').each(function (d) {
+                        d3.select(this).transition()
+                            .duration(500)
+                            .style('opacity', 0)
+                            .remove();
+                    });
+                }
 
                 const percent = getAllStudents(i.assessment, i.value);
                 const childPercentArray = getParentPercentage(i.assessment, i.name, i.value);
                 const htmlString = buildString(childPercentArray, i.value);
                 const childPercent = childPercentArray[0];
                 const parentNode = childPercentArray[1];
-                div.transition()
-                    .duration(400)
-                    .style("opacity", 1.0);
-                div.html(`Node ${i.assessment} ${i.name} </br>${i.value} students </br> ${htmlString} ${percent} of all students `)
-                    .style("left", (d.pageX) + "px")
-                    .style("top", (d.pageY - 28) + "px");
+
+                if (isNumber(i.name)) {
+                    divbig.transition()
+                        .duration(400)
+                        .style("opacity", 1.0);
+                    divbig.html(`Node: ${i.assessment} ${i.name} </br>${i.value} students </br> ${htmlString} ${percent} of all students `)
+                        .style("left", (d.pageX) + "px")
+                        .style("top", (d.pageY - 28) + "px");
+                }
+                else {
+                    div.transition()
+                        .duration(400)
+                        .style("opacity", 1.0);
+                    div.html(`Node: ${i.assessment} ${i.name} </br>${i.value} students </br> ${htmlString} ${percent} of all students `)
+                        .style("left", (d.pageX) + "px")
+                        .style("top", (d.pageY - 28) + "px");
+                }
             })
             .on("mouseout", function (d) {
                 div.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+                divbig.transition()
                     .duration(500)
                     .style("opacity", 0);
             });

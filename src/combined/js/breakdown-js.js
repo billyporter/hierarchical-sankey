@@ -36,6 +36,7 @@ function breakdownJS() {
 
     /* Constants */
     const assessments = ["Exam 1", "Exam 2", "Exam 3", " Final Exam"];
+    const assessmentsNoSpace = ["Exam 1", "Exam 2", "Exam 3", "Final Exam"];
     const grades = ["A", "B", "C", "D", "F"];
 
     const letrs = new Set(["A", "B", "C", "D", "F"]);
@@ -887,6 +888,10 @@ function breakdownJS() {
             .attr("class", "tooltip")
             .style("opacity", 0);
 
+        var divwide = d3.select("body").append("div")
+            .attr("class", "tooltipwide")
+            .style("opacity", 0);
+
         setLabels(graph);
         /* Creates Node */
         var graphnode = svg
@@ -925,24 +930,55 @@ function breakdownJS() {
                 hierarchSankeyRouter(i, false);
             })
             .on("mouseover", function (d, i) {
-                d3.selectAll('.tooltip').each(function (d) {
-                    d3.select(this).transition()
-                        .duration(500)
-                        .style('opacity', 0)
-                        .remove();
-                });
+                if (d3.selectAll('.tooltip')._groups[0].length > 1) {
+                    d3.selectAll('.tooltip').each(function (d) {
+                        d3.select(this).transition()
+                            .duration(500)
+                            .style('opacity', 0)
+                            .remove();
+                    });
+                }
+
+                if (d3.selectAll('.tooltipwide')._groups[0].length > 1) {
+                    d3.selectAll('.tooltipwide').each(function (d) {
+                        d3.select(this).transition()
+                            .duration(500)
+                            .style('opacity', 0)
+                            .remove();
+                    });
+                }
 
                 const percent = getAllStudents(i.assessment, i.value);
                 const childPercent = getParentPercentage(i.assessment, i.name, i.value);
-                div.transition()
-                    .duration(400)
-                    .style("opacity", 1.0);
-                div.html(`Node ${i.assessment} ${i.name} </br>${i.value} students </br> ${childPercent} of parent node </br> ${percent} of all students `)
-                    .style("left", (d.pageX) + "px")
-                    .style("top", (d.pageY - 28) + "px");
+
+                let nodeNameString = i.name[0];
+                if (i.name.length > 1) {
+                    const extraString = ` (${assessments[assessmentsNoSpace.indexOf(i.assessment) - 1]} ${i.name[1]})`;
+                    nodeNameString += extraString;
+                }
+                isNormal = true;
+                if (i.assessment === 'Final Exam') {
+                    divwide.transition()
+                        .duration(400)
+                        .style("opacity", 1.0);
+                    divwide.html(`Node: ${i.assessment} ${nodeNameString} </br>${i.value} students </br> ${childPercent} of parent node </br> ${percent} of all students `)
+                        .style("left", (d.pageX) + "px")
+                        .style("top", (d.pageY - 28) + "px");
+                }
+                else {
+                    div.transition()
+                        .duration(400)
+                        .style("opacity", 1.0);
+                    div.html(`Node: ${i.assessment} ${nodeNameString} </br>${i.value} students </br> ${childPercent} of parent node </br> ${percent} of all students `)
+                        .style("left", (d.pageX) + "px")
+                        .style("top", (d.pageY - 28) + "px");
+                }
             })
             .on("mouseout", function (d) {
                 div.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+                divwide.transition()
                     .duration(500)
                     .style("opacity", 0);
             });
@@ -977,7 +1013,11 @@ function breakdownJS() {
             .attr("class", "tooltipLink")
             .style("opacity", 0);
 
-        function buildString(percentArray, value) {
+        var divwide = d3.select("body").append("div")
+            .attr("class", "tooltipLinkWide")
+            .style("opacity", 0);
+
+        function buildString(percentArray, value, sourceExam, targetExam) {
             let maxIndex = percentArray.length;
             let outputString = '';
             let index = 0;
@@ -986,10 +1026,20 @@ function breakdownJS() {
                 totalCount = percentArray[1][i];
                 outputString += parseFloat(value / totalCount * 100).toFixed(2) + "%";
                 if (index === 0) {
-                    outputString += ` of source node ${nodeName} </br>`;
+                    let inputString = nodeName[0];
+                    if (nodeName.length > 1) {
+                        let beforeExam = assessments[assessmentsNoSpace.indexOf(sourceExam) - 1];
+                        inputString = `(${sourceExam}) ${nodeName[0]} (${beforeExam}) ${nodeName[1]}`;
+                    }
+                    outputString += ` of source node ${inputString} </br>`;
                 }
                 else {
-                    outputString += ` of target node ${nodeName} </br>`;
+                    let inputString = nodeName[0];
+                    if (nodeName.length > 1) {
+                        let afterExam = assessments[assessmentsNoSpace.indexOf(targetExam) + 1];
+                        inputString = `(${targetExam}) ${nodeName[0]} (${afterExam}) ${nodeName[1]}`;
+                    }
+                    outputString += ` of target node ${inputString} </br>`;
                 }
                 index += 1;
             }
@@ -1021,7 +1071,6 @@ function breakdownJS() {
             }
             const countArray = [sourceCount, targetCount];
             const returnList = [parentNodeArray, countArray];
-            // console.log(returnList)
             return returnList
         }
 
@@ -1045,26 +1094,52 @@ function breakdownJS() {
             })
             .on("mouseover", function (d, i) {
 
-                d3.selectAll('.tooltipLink').each(function (d) {
-                    d3.select(this).transition()
-                        .duration(500)
-                        .style('opacity', 0)
-                        .remove();
-                });
+                // if (d3.selectAll('.tooltipLink')._groups[0].length > 1) {
+                //     d3.selectAll('.tooltipLink').each(function (d) {
+                //         d3.select(this).transition()
+                //             .duration(500)
+                //             .style('opacity', 0)
+                //             .remove();
+                //     });
+                // }
+                if (d3.selectAll('.tooltipLinkWide')._groups[0].length > 1) {
+                    d3.selectAll('.tooltipLinkWide').each(function (d) {
+                        d3.select(this).transition()
+                            .duration(500)
+                            .style('opacity', 0)
+                            .remove();
+                    });
+                }
                 const percent = getAllStudents(i.target.assessment, i.value);
                 const childPercentArray = getParentPercentage(i.source.id, i.source.name, i.target.id, i.target.name);
-                const htmlString = buildString(childPercentArray, i.value);
-                div.transition()
-                    .duration(500)
-                    .ease(d3.easeCircle)
-                    .style("opacity", 1.0);
-                div.html(`Link: ${i.source.name[0]} to ${i.target.name[0]} </br> ${i.value} students </br> ${htmlString} ${percent} of all students `)
-                    .style("left", (d.pageX) + "px")
-                    .style("top", (d.pageY - 28) + "px");
+                const htmlString = buildString(childPercentArray, i.value, i.source.assessment, i.target.assessment);
+
+                if (i.source.name.length > 1 || i.target.name.length > 1) {
+                    divwide.transition()
+                        .duration(500)
+                        .ease(d3.easeCircle)
+                        .style("opacity", 1.0);
+                    divwide.html(`Link: ${i.source.name[0]} to ${i.target.name[0]} </br> ${i.value} students </br> ${htmlString} ${percent} of all students `)
+                        .style("left", (d.pageX) + "px")
+                        .style("top", (d.pageY - 28) + "px");
+                }
+                else {
+                    div.transition()
+                        .duration(500)
+                        .ease(d3.easeCircle)
+                        .style("opacity", 1.0);
+                    div.html(`Link: ${i.source.name[0]} to ${i.target.name[0]} </br> ${i.value} students </br> ${htmlString} ${percent} of all students `)
+                        .style("left", (d.pageX) + "px")
+                        .style("top", (d.pageY - 28) + "px");
+
+                }
 
             })
             .on("mouseout", function (d) {
                 div.transition()
+                    .duration(400)
+                    .style("opacity", 0);
+                divwide.transition()
                     .duration(400)
                     .style("opacity", 0);
             });

@@ -841,7 +841,7 @@ function colorJS() {
                 div.transition()
                     .duration(400)
                     .style("opacity", 1.0);
-                div.html(`Node ${d.assessment} ${d.name} </br>${d.value} students </br> ${childPercent} of parent node </br> ${percent} of all students `)
+                div.html(`Node: ${d.assessment} ${d.name} </br>${d.value} students </br> ${childPercent} of parent node </br> ${percent} of all students `)
                     .style("left", (i.pageX) + "px")
                     .style("top", (i.pageY - 28) + "px");
 
