@@ -194,7 +194,7 @@ function treeJS() {
                         }
                         /* Keep nodes that aren't level 2 */
                         for (const subgrade of ["+", "def", "-"]) {
-                            const lev = assessGradeLevelMap[assessment][grade][subgrade]
+                            const lev = assessGradeLevelMap[assessment.trim()][grade][subgrade]
                             if (lev) {
                                 /* Seen set so don't have repeat nodes, also memoize */
                                 const seen = new Set();
@@ -417,6 +417,7 @@ function treeJS() {
                     }
                     let source1 = output["grades"][assessment.trim()][sourceNodeName]["id"];
                     let target1 = output["grades"][assessment.trim()][targetNodeName]["id"];
+
                     if (grade.localeCompare('F') === 0) {
                         previousGrade = "0-59";
                     }
@@ -537,7 +538,7 @@ function treeJS() {
         let stringToInput = locAs;
 
         /* Do nothing for F */
-        if (locGrade.localeCompare('F') === 0 || locAs === 'Final Exam') {
+        if (locGrade.localeCompare('F') === 0) {
             return;
         }
 
@@ -1027,7 +1028,6 @@ function treeJS() {
                     * all to the point of the original
                     * node 
                     */
-
                     if (link.source.assessment === brokeExam && link.source.name === brokeGrade) {
                         const suffix = link.target.name[1];
                         if (suffix === '+' || ['9', '6', '3'].includes(suffix)) {
@@ -1049,6 +1049,10 @@ function treeJS() {
                         const gradeToInput = direction.localeCompare("left") === 0 ? link.source.name : link.target.name;
                         visualLink = oldLinksObj[direction][gradeToInput];
                         link.width = visualLink.width;
+                    }
+
+                    if (link.source.assessment === 'Final Exam') {
+                        visualLink = link;
                     }
                 }
                 else {
@@ -1387,9 +1391,6 @@ function treeJS() {
                 div.transition()
                     .duration(400)
                     .style("opacity", 0);
-                divwide.transition()
-                    .duration(400)
-                    .style("opacity", 0);
             });
     }
 
@@ -1667,6 +1668,10 @@ function treeJS() {
                         visualLink = newLinksObj['right'][link.target.name];
                         link.width = visualLink.width;
                     }
+                }
+
+                if (link.source.assessment === 'Final Exam') {
+                    visualLink = link;
                 }
             }
             else {
