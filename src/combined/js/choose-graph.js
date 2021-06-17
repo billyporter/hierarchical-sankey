@@ -1,6 +1,6 @@
-// breakdownJS();
+breakdownJS();
 // colorJS();
-treeJS();
+// treeJS();
 var graphChoices = ["Breakdown", "Color", "Tree", "Hierarchy"]
 // var form = d3.select("body").append("form").attr("transform", "translate(40,0)");
 // graphLabels = form.selectAll("label")
